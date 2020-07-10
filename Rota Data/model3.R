@@ -1,6 +1,6 @@
 setwd("")
 
-library(rstan)
+library(rstan) #install.packages("rstan")
 source('Formatting Data.R')
 
 # takes about 12 hours to run
