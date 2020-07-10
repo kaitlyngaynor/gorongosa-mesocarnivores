@@ -1,3 +1,7 @@
+## this script loads data and puts it in the 
+## appropriate format for Stan (statistical 
+## programming language for modelling) 
+
 # importing detection / non-detection data
 bobcat <- as.matrix(read.csv('Bobcat.csv', F))
 coyote <- as.matrix(read.csv('Coyote.csv', F))

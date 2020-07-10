@@ -1,3 +1,8 @@
+## Runs “Formatting Data.R”, executes the Stan model, 
+## and has code for calculating WAIC and 
+## summarizing posterior distributions for slope 
+## parameters.
+
 setwd("")
 
 library(rstan) #install.packages("rstan")
@@ -13,6 +18,9 @@ max(summary(fit)[[1]][, 'Rhat'])
 post.lik <- extract(fit, 'll')
 
 # WAIC
+## an estimator of out-of-sample prediction error 
+## and thereby relative quality of statistical models 
+## for a given set of data
 -2 * sum(log(apply(exp(post.lik[[1]]), 2, mean))) +
   2 * sum(apply(post.lik[[1]], 2, var))
 
