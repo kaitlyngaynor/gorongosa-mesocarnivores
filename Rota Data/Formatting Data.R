@@ -1,15 +1,15 @@
 # importing detection / non-detection data
-bobcat <- as.matrix(read.csv('Bobcat.csv', F))
-coyote <- as.matrix(read.csv('Coyote.csv', F))
-gryfox <- as.matrix(read.csv('Gray Fox.csv', F))
-redfox <- as.matrix(read.csv('Red Fox.csv', F))
+bobcat <- as.matrix(read.csv('Rota Data/Bobcat.csv', F))
+coyote <- as.matrix(read.csv('Rota Data/Coyote.csv', F))
+gryfox <- as.matrix(read.csv('Rota Data/Gray Fox.csv', F))
+redfox <- as.matrix(read.csv('Rota Data/Red Fox.csv', F))
 
 # total number of camera days
 cday <- apply(bobcat, 1, function(x) sum(is.na(x) == F))
 
 # importing covariate data
-psi.cov <- read.csv('psi covariates.csv')
-p.cov <- read.csv('p covariates.csv')
+psi.cov <- read.csv('Rota Data/psi covariates.csv')
+p.cov <- read.csv('Rota Data/p covariates.csv')
 
 # CREATING DESIGN MATRIX
 X.array <- array(0, dim = c(nrow(bobcat), 16, 32))
@@ -23,8 +23,9 @@ hike <- scale(psi.cov$People_site * 1000 / cday)
 
 # importing the general form of the design matrix
 library(xlsx) #install.packages("xlsx") 
-dm <- read.xlsx('Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
+dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
                 header = F)
+# this gives a warning, but it's okay
 
 # filling in the design matrix
 for(i in 1:nrow(bobcat)){
