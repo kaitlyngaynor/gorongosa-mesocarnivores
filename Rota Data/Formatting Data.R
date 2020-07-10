@@ -22,7 +22,7 @@ lbyl <- lati * long
 hike <- scale(psi.cov$People_site * 1000 / cday)
 
 # importing the general form of the design matrix
-library(xlsx)
+library(xlsx) #install.packages("xlsx") 
 dm <- read.xlsx('Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
                 header = F)
 
