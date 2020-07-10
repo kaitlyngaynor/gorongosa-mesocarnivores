@@ -3,21 +3,44 @@
 ## programming language for modelling) 
 
 # importing detection / non-detection data
-bobcat <- as.matrix(read.csv('Bobcat.csv', F))
-coyote <- as.matrix(read.csv('Coyote.csv', F))
-gryfox <- as.matrix(read.csv('Gray Fox.csv', F))
-redfox <- as.matrix(read.csv('Red Fox.csv', F))
+bobcat <- as.matrix(read.csv('Rota Data/Bobcat.csv', F))
+coyote <- as.matrix(read.csv('Rota Data/Coyote.csv', F))
+gryfox <- as.matrix(read.csv('Rota Data/Gray Fox.csv', F))
+redfox <- as.matrix(read.csv('Rota Data/Red Fox.csv', F))
+
+# take a look at the format of these input files
+head(bobcat) 
+# looks like it's a detection matrix of 0 (non-detection), 1 (detection), NA (not operating)
+# each row is one camera site
+# each column is a sampling period (ex. day)
 
 # total number of camera days
 cday <- apply(bobcat, 1, function(x) sum(is.na(x) == F))
 
+# take a look at this output
+head(cday)
+# output is the number of days for which each camera was operating (0s or 1s; not NAs)
+
 # importing covariate data
-psi.cov <- read.csv('psi covariates.csv')
-p.cov <- read.csv('p covariates.csv')
+psi.cov <- read.csv('Rota Data/psi covariates.csv')
+p.cov <- read.csv('Rota Data/p covariates.csv')
+
+# take a look
+head(psi.cov)
+head(p.cov)
+# one row per camera - has covariate values for occupancy (psi) and detection (p) 
 
 # CREATING DESIGN MATRIX
 X.array <- array(0, dim = c(nrow(bobcat), 16, 32))
 
+# take a look - this doesn't really work because it's a 3-dimensional array
+head(X.array) 
+# just made a blank matrix full of 0s. 
+# x dimension = number of cameras (rows in bobcat)
+# y dimension = 16 (NOT SURE WHY)
+# z dimension = 32 (NOT SURE WHY)
+
+# scale all covariates to have a mean of 0 and SD of 1 - for modeling
 d5km <- scale(psi.cov$Dist_5km)[, 1]
 hden <- scale(psi.cov$HDens_5km)[, 1]
 lati <- scale(psi.cov$Latitude)[, 1]
@@ -25,10 +48,17 @@ long <- scale(psi.cov$Longitude)[, 1]
 lbyl <- lati * long
 hike <- scale(psi.cov$People_site * 1000 / cday)
 
+# take a look 
+head(d5km)
+
 # importing the general form of the design matrix
 library(xlsx) #install.packages("xlsx") 
-dm <- read.xlsx('Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
+dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
                 header = F)
+# this gives a warning in the later versions of R, but it's okay
+
+# take a look at the design matrix; not totally sure what it is?
+head(dm)
 
 # filling in the design matrix
 for(i in 1:nrow(bobcat)){

@@ -6,10 +6,10 @@
 setwd("")
 
 library(rstan) #install.packages("rstan")
-source('Formatting Data.R')
+source('Rota Data/Formatting Data.R')
 
 # takes about 12 hours to run
-fit <- stan('model3.stan', data = data, pars = params, chains = 2, init = inits,
+fit <- stan('Rota Data/model3.stan', data = data, pars = params, chains = 2, init = inits,
             iter = 2000, warmup = 1000, thin = 1)
 
 # checking convergence
