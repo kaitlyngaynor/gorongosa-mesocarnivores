@@ -55,7 +55,7 @@ hike <- scale(psi.cov$People_site * 1000 / cday)
 head(d5km)
 
 # importing the general form of the design matrix
- library(xlsx) # install.packages("xlsx")
+library(xlsx) # install.packages("xlsx")
 dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
                 header = F)
 # this gives a warning in the later versions of R, but it's okay
