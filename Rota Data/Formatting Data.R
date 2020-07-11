@@ -59,12 +59,16 @@ library(xlsx) # install.packages("xlsx")
 dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
                 header = F)
 # this gives a warning in the later versions of R, but it's okay
+## the 3 means it's taking from the third sheet of
+## that excel file, and the row/colIndex tells which rows/columns
+## to extract. header = F because the first element of the 
+## rowIndex vector does not contain the variables' names
 
 # take a look at the design matrix; not totally sure what it is?
 head(dm)
 
 # filling in the design matrix
-for(i in 1:nrow(bobcat)){
+for(i in 1:nrow(bobcat)){ ##for every row
   for(j in 1:15){
     X.array[i, j, dm[j, ] == 1] <-
       c(1, lati[i], long[i], lbyl[i], hike[i],
@@ -81,6 +85,7 @@ for(i in 1:nrow(bobcat)){
 }
 
 # OBSERVED Y
+## function skips over any NA values
 y1max <- apply(bobcat, 1, max, na.rm = T)
 y2max <- apply(coyote, 1, max, na.rm = T)
 y3max <- apply(gryfox, 1, max, na.rm = T)
