@@ -20,9 +20,12 @@ cday <- apply(bobcat, 1, function(x) sum(is.na(x) == F))
 # take a look at this output
 head(cday)
 # output is the number of days for which each camera was operating (0s or 1s; not NAs)
+## these numbers are the same across species
 
 # importing covariate data
+## covariates for probability of occurrence models
 psi.cov <- read.csv('Rota Data/psi covariates.csv')
+## covariates for detection probability models
 p.cov <- read.csv('Rota Data/p covariates.csv')
 
 # take a look
@@ -52,7 +55,7 @@ hike <- scale(psi.cov$People_site * 1000 / cday)
 head(d5km)
 
 # importing the general form of the design matrix
-library(xlsx) #install.packages("xlsx") 
+ library(xlsx) # install.packages("xlsx")
 dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
                 header = F)
 # this gives a warning in the later versions of R, but it's okay
