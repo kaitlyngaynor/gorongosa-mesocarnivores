@@ -4,9 +4,9 @@
 
 # Import data -------------------------------------------------------------
 
-library(overlap)
+library(overlap) #install.packages("overlap")
 library(tidyverse)
-library(circular)
+library(circular) #install.packages("circular")
 
 # load in Gorongosa record table (note: if you use read_csv from tidyverse instead of read.csv, it will automatically format date)
 record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
