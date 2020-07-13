@@ -1,3 +1,7 @@
+## this script loads data and puts it in the 
+## appropriate format for Stan (statistical 
+## programming language for modelling) 
+
 # importing detection / non-detection data
 bobcat <- as.matrix(read.csv('Rota Data/Bobcat.csv', F))
 coyote <- as.matrix(read.csv('Rota Data/Coyote.csv', F))
@@ -16,9 +20,12 @@ cday <- apply(bobcat, 1, function(x) sum(is.na(x) == F))
 # take a look at this output
 head(cday)
 # output is the number of days for which each camera was operating (0s or 1s; not NAs)
+## these numbers are the same across species
 
 # importing covariate data
+## covariates for probability of occurrence models
 psi.cov <- read.csv('Rota Data/psi covariates.csv')
+## covariates for detection probability models
 p.cov <- read.csv('Rota Data/p covariates.csv')
 
 # take a look
@@ -48,16 +55,20 @@ hike <- scale(psi.cov$People_site * 1000 / cday)
 head(d5km)
 
 # importing the general form of the design matrix
-library(xlsx) #install.packages("xlsx") 
+library(xlsx) # install.packages("xlsx")
 dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
                 header = F)
 # this gives a warning in the later versions of R, but it's okay
+## the 3 means it's taking from the third sheet of
+## that excel file, and the row/colIndex tells which rows/columns
+## to extract. header = F because the first element of the 
+## rowIndex vector does not contain the variables' names
 
 # take a look at the design matrix; not totally sure what it is?
 head(dm)
 
 # filling in the design matrix
-for(i in 1:nrow(bobcat)){
+for(i in 1:nrow(bobcat)){ ##for every row
   for(j in 1:15){
     X.array[i, j, dm[j, ] == 1] <-
       c(1, lati[i], long[i], lbyl[i], hike[i],
@@ -74,6 +85,7 @@ for(i in 1:nrow(bobcat)){
 }
 
 # OBSERVED Y
+## function skips over any NA values
 y1max <- apply(bobcat, 1, max, na.rm = T)
 y2max <- apply(coyote, 1, max, na.rm = T)
 y3max <- apply(gryfox, 1, max, na.rm = T)
