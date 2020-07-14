@@ -42,5 +42,7 @@ DetHist_genet <- detectionHistory(recordTable     = record_table,
                              occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                              day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
                              includeEffort        = FALSE,
-                             occasionStartTime    = 12  #start at noon b/c nocturnal animals
-)
+                             occasionStartTime    = 12,  #start at noon b/c nocturnal animals
+                             writecsv             = TRUE,
+                             outDir               = "model data transformation" 
+                             )
