@@ -15,24 +15,29 @@ camop <- cameraOperation(CTtable      = camtraps,
                          dateFormat   = "mdy"
 )
 
+#unnecessary because record table already exists
 # define image directory
-wd_images_ID <- system.file("pictures/sample_images_species_dir", package = "camtrapR")
+#wd_images_ID <- system.file("pictures/sample_images_species_dir", package = "camtrapR")
 
 # make record table
-recordTableSample <- recordTable(inDir               = wd_images_ID,
-                                 IDfrom              = "directory",
-                                 minDeltaTime        = 60,
-                                 deltaTimeComparedTo = "lastIndependentRecord",
-                                 timeZone            = "Asia/Kuala_Lumpur"
-)
+#recordTableSample <- recordTable(inDir               = wd_images_ID,
+#                                 IDfrom              = "directory",
+#                                 minDeltaTime        = 15,
+#                                 deltaTimeComparedTo = "lastIndependentRecord",
+#                                 timeZone            = "Asia/Kuala_Lumpur"
+#)
 
-# make detection history (without trapping effort)
-DetHist1 <- detectionHistory(recordTable         = recordTableSample,
-                             camOp                = camop_no_problem,
-                             stationCol           = "Station",
+#load in Gorongosa record table
+record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
+
+# make detection history for genets (without trapping effort)
+DetHist_genet <- detectionHistory(recordTable     = record_table,
+                             camOp                = camop,
+                             stationCol           = "Camera",
                              speciesCol           = "Species",
                              recordDateTimeCol    = "DateTimeOriginal",
-                             species              = "VTA",
+                             recordDateTimeFormat = "%m-%d-%Y %H:%M:%S",
+                             species              = "Genet",
                              occasionLength       = 7,
                              day1                 = "station",
                              includeEffort        = FALSE
