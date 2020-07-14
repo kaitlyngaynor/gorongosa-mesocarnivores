@@ -2,9 +2,8 @@
 
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
-# setwd("")
 
-#load in Gorongosa camera operability data table
+#load in Gorongosa camera operations data table
 camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1and2.csv")
 
 # create camera operation matrix
