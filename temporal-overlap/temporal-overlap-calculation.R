@@ -22,12 +22,12 @@ record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_s
 record_table_subset <- record_table[record_table$Date >= as.Date("7/1/16", format = "%m/%d/%y") 
                                     & record_table$Date <= as.Date("9/30/16", format = "%m/%d/%y"),]
 
-# just extract the data for civets
-civets <- record_table %>% 
+# just extract the data for civets for the dates of interest
+civets <- record_table_subset %>% 
     filter(Species == "Civet") 
 
-# just extract the data for genets
-genets <- record_table %>% 
+# just extract the data for genets for the dates of interest
+genets <- record_table_subset %>% 
     filter(Species == "Genet") 
 
 
