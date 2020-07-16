@@ -18,9 +18,9 @@ record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_s
 
 # Subset data to periods and species of interest --------------------------
 
-# subset record table to dates of interest - you'll need to change, this is arbitrary!
-record_table_subset <- record_table[record_table$Date >= as.Date("7/1/16", format = "%m/%d/%y") #inclusive dates
-                                    & record_table$Date <= as.Date("9/30/16", format = "%m/%d/%y"),]
+# subset record table to dates of interest 
+record_table_subset <- record_table[record_table$Date >= as.Date("8/1/16", format = "%m/%d/%y") #inclusive dates
+                                    & record_table$Date <= as.Date("11/30/16", format = "%m/%d/%y"),]
 
 # just extract the data for civets for the dates of interest
 civets <- record_table_subset %>% 
