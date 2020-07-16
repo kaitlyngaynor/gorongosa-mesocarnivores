@@ -49,6 +49,9 @@ plot(select(lions, -StudySite)) # plot all columns against each other (except St
 # look specifically at dry vs all lions
 plot(lions$lion_camera ~ lions$lion_camera_dry1617)
 
+#look at wet vs late dry lions from collar data
+plot(lions$lion_latedry ~ lions$lion_wet)
+
 # append to the other metadata
 metadata <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster.csv")
 metadata_lion <- left_join(metadata, lions)
