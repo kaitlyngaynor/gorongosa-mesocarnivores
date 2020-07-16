@@ -68,7 +68,7 @@ dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2
 head(dm)
 
 # filling in the design matrix
-for(i in 1:nrow(bobcat)){ ##for every row
+for(i in 1:nrow(bobcat)){ ## for every row (camera)
   for(j in 1:15){
     X.array[i, j, dm[j, ] == 1] <-
       c(1, lati[i], long[i], lbyl[i], hike[i],
@@ -108,12 +108,13 @@ for(i in 2:nrow(bobcat)){
   start <- c(start, sum(cday[1:(i - 1)]) + 1)
 }
 
+# the descriptions of these values are in the model3.stan file
 data <- list(
-  K = ncol(X.array[1, , ]),
-  L = 3,
-  N = nrow(bobcat),
-  NJ = length(Y1),
-  S = 16,
+  K = ncol(X.array[1, , ]), # the number of occupancy parameters
+  L = 3, # the number of detection parameters (HARD CODED)
+  N = nrow(bobcat), # the number of camera sites
+  NJ = length(Y1), # the total number of observations
+  S = 16, # the number of unique combinations of 0s and 1s (across the 4 species?) (HARD CODED)
   obs = cday,
   start = start,
   x = X.array,
