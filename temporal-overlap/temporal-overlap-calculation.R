@@ -26,7 +26,7 @@ record_table_subset <- record_table[record_table$Date >= as.Date("7/1/16", forma
 civets <- record_table %>% 
     filter(Species == "Civet") 
 
-# just extract the data for civets
+# just extract the data for genets
 genets <- record_table %>% 
     filter(Species == "Genet") 
 
