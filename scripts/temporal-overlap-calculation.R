@@ -34,6 +34,7 @@ genets <- record_table_subset %>%
 # Make overlap plots ------------------------------------------------------
 
 overlapPlot(civets$Time.Sun, genets$Time.Sun)
+# shades the area corresponding to the coefficient of overlap
 # I have code for making these prettier when the time comes
 
 # Compare distributions with Watson test ----------------------------------
