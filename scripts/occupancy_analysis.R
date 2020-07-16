@@ -1,11 +1,12 @@
 #goal: take GNP data and make it look like Rota data
+#dry season: August - November
 
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 
 # define start and end date - these are used to subset both operation matrix and record table
-start.date <- "2016-07-01"
-end.date <- "2016-09-30"
+start.date <- "2016-08-01"
+end.date <- "2016-11-30"
 
 #load in Gorongosa camera operations data table
 camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1and2.csv")
