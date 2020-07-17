@@ -30,6 +30,9 @@ civets <- record_table_subset %>%
 genets <- record_table_subset %>% 
     filter(Species == "Genet") 
 
+# just extract the data for honey badgers for the dates of interest
+honey_badgers <- record_table_subset %>%
+    filter(Species == "Honey_badger")
 
 # Make overlap plots ------------------------------------------------------
 
