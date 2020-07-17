@@ -99,12 +99,12 @@ The first chunk seem like factors that influence the occupancy probability of a 
 * F4 - 5 columns; have a value of "1" for all 8 rows in which species 4 is present
 
 The next chunk seem like factors influencing the co-occurrence of pairs of species.
-* F12 - 2 columns, have a value of "1" for all 3 rows in which species 1 and 2 are present
-* F13 - 2 columns, have a value of "1" for all 3 rows in which species 1 and 3 are present
-* F14 - 2 columns, have a value of "1" for all 3 rows in which species 1 and 4 are present
-* F23 - 2 columns, have a value of "1" for all 3 rows in which species 2 and 3 are present
-* F24 - 2 columns, have a value of "1" for all 3 rows in which species 2 and 4 are present
-* F34 - 2 columns, have a value of "1" for all 3 rows in which species 3 and 4 are present
+* F12 - 2 columns, have a value of "1" for all 4 rows in which species 1 and 2 are present
+* F13 - 2 columns, have a value of "1" for all 4 rows in which species 1 and 3 are present
+* F14 - 2 columns, have a value of "1" for all 4 rows in which species 1 and 4 are present
+* F23 - 2 columns, have a value of "1" for all 4 rows in which species 2 and 3 are present
+* F24 - 2 columns, have a value of "1" for all 4 rows in which species 2 and 4 are present
+* F34 - 2 columns, have a value of "1" for all 4 rows in which species 3 and 4 are present
 
 The values of the design matrix are filled in for each site in the next steps of this script.
 
