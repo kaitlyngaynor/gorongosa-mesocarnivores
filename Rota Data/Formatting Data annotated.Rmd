@@ -1,0 +1,175 @@
+---
+title: "Formatting Data - annotated"
+author: "Kaitlyn"
+date: "7/17/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+Moving the Formatting Data.R file into an RMarkdown document so that it is easier to annotate and dig into what is going on in the model.
+
+This script loads the data and puts it into the appropriate format for Stan.
+
+## Import and organize data
+
+### Load detection matrices
+
+```{r}
+bobcat <- as.matrix(read.csv('Rota Data/Bobcat.csv', F))
+coyote <- as.matrix(read.csv('Rota Data/Coyote.csv', F))
+gryfox <- as.matrix(read.csv('Rota Data/Gray Fox.csv', F))
+redfox <- as.matrix(read.csv('Rota Data/Red Fox.csv', F))
+
+head(bobcat)
+```
+
+Looks like it's a detection matrix of 0 (non-detection), 1 (detection), NA (not operating). Each row is one camera site, and each column is a sampling period (ex. day).
+
+### Calculate dates of camera operation
+
+```{r}
+cday <- apply(bobcat, 1, function(x) sum(is.na(x) == F))
+head(cday)
+```
+
+Output is the number of days for which each camera was operating (0s or 1s; not NAs). These numbers are the same across species.
+
+### Import covariates
+
+```{r}
+## covariates for probability of occurrence models
+psi.cov <- read.csv('Rota Data/psi covariates.csv')
+## covariates for detection probability models
+p.cov <- read.csv('Rota Data/p covariates.csv')
+
+head(psi.cov)
+head(p.cov)
+```
+
+There is one row per camera, which has covariate values for occupancy (psi) and detection (p).
+
+### Scale covariates for modeling
+
+```{r}
+d5km <- scale(psi.cov$Dist_5km)[, 1]
+hden <- scale(psi.cov$HDens_5km)[, 1]
+lati <- scale(psi.cov$Latitude)[, 1]
+long <- scale(psi.cov$Longitude)[, 1]
+lbyl <- lati * long
+hike <- scale(psi.cov$People_site * 1000 / cday)
+```
+
+(Originally this code was lower down in the script but it makes sense logically for it to be here...)
+
+## Create design matrix
+
+### Create array
+
+```{r}
+X.array <- array(0, dim = c(nrow(bobcat), 16, 32))
+```
+
+This makes a blank matrix full of 0s. The x dimension correspond to the number of cameras (or, rows in bobcat). The y dimension corresponds to the unique combination of 0/1s across the 4 species (=16). The z dimension corresponds to the number of detection covariates (=32).
+
+### Import general form of the design matrix
+
+```{r}
+library(xlsx) # install.packages("xlsx")
+dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
+                header = F)
+```
+
+This gives a warning in the later versions of R, but it's okay. The 3 means it's taking from the third sheet of that excel file (where species interactions are influenced by covariates), and the row/colIndex tells which rows/columns to extract. header = F because the first element of the rowIndex vector does not contain the variables' names.
+
+Template for the general form of the design matrix for the occupancy model linear predictor. Each row is a unique combination of latent species presence and absence (16 rows, 4x4 species) And each column represents a parameter. 
+
+A value of 1 indicates the parameter in the column is included in the linear predictor associated with the combination of latent presence and absence represented by the row; a value of 0 indicates the parameter is not included in the linear predictor for that particular combination of latent presence and absence. 
+
+The values of the design matrix are filled in for each site in the next steps of this script.
+
+### Fill in the design matrix
+
+```{r}
+for(i in 1:nrow(bobcat)){ ## for every row (camera)
+  for(j in 1:15){
+    X.array[i, j, dm[j, ] == 1] <-
+      c(1, lati[i], long[i], lbyl[i], hike[i], # filling in with the values of the parameter at that particular site
+        1, lati[i], long[i], lbyl[i], hden[i],
+        1, lati[i], long[i], lbyl[i], hden[i],
+        1, lati[i], long[i], lbyl[i], hike[i],
+        1, d5km[i],
+        1, hden[i],
+        1, hden[i],
+        1, d5km[i],
+        1, hden[i],
+        1, d5km[i])[dm[j, ] == 1]
+  }
+}
+```
+
+```{r}
+# OBSERVED Y
+## function skips over any NA values
+y1max <- apply(bobcat, 1, max, na.rm = T)
+y2max <- apply(coyote, 1, max, na.rm = T)
+y3max <- apply(gryfox, 1, max, na.rm = T)
+y4max <- apply(redfox, 1, max, na.rm = T)
+
+# Vectorizing detection / non-detection
+Y1 <- Y2 <- Y3 <- Y4 <- trail <- dd <- numeric()
+for(i in 1:nrow(bobcat)){
+  Y1 <- c(Y1, bobcat[i, 1:cday[i]])
+  Y2 <- c(Y2, coyote[i, 1:cday[i]])
+  Y3 <- c(Y3, gryfox[i, 1:cday[i]])
+  Y4 <- c(Y4, redfox[i, 1:cday[i]])
+  trail <- c(trail, rep(psi.cov$Trail[i], cday[i]))
+  dd <- c(dd, rep(p.cov$Det_dist[i], cday[i]))
+}
+
+# Stan does not support ragged indexing.  This is a work-around
+start <- 1
+for(i in 2:nrow(bobcat)){
+  start <- c(start, sum(cday[1:(i - 1)]) + 1)
+}
+
+# the descriptions of these values are in the model3.stan file
+data <- list(
+  K = ncol(X.array[1, , ]), # the number of occupancy parameters
+  L = 3, # the number of detection parameters (HARD CODED)
+  N = nrow(bobcat), # the number of camera sites
+  NJ = length(Y1), # the total number of observations
+  S = 16, # the number of unique combinations of 0s and 1s (across the 4 species?) (HARD CODED)
+  obs = cday,
+  start = start,
+  x = X.array,
+  trl = trail,
+  dd = scale(dd)[, 1],
+  I1 = y1max, I2 = y2max, I3 = y3max, I4 = y4max,
+  Y1 = Y1, Y2 = Y2, Y3 = Y3, Y4 = Y4
+  )
+
+inits <- function(){
+  list(
+    a1 = rnorm(3),
+    a2 = rnorm(3),
+    a3 = rnorm(3),
+    a4 = rnorm(3),
+    beta = rnorm(ncol(X.array[1, , ])))
+}
+
+params <- c('a1', 'a2', 'a3', 'a4', 'beta', 'll')
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
