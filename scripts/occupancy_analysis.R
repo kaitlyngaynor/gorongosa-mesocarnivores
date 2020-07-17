@@ -3,6 +3,7 @@
 
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
+library(dplyr)
 
 # define start and end date - these are used to subset both operation matrix and record table
 start.date <- "2016-08-01"
@@ -72,3 +73,19 @@ DetHist_civet <- detectionHistory(recordTable          = record_table_subset,
 DetHist_civet <- as.data.frame(DetHist_civet)
 
 write_csv(DetHist_civet, "data/gorongosa-cameras/civet.csv", col_names = F)
+
+# make covariate tables
+
+# load in cam metadata
+cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
+
+# make psi covariates table (environmental)
+# need to add termite and lion covariates when we decide
+GNP_psi_covariates <- select(cam_meta, urema_dist, tree_hansen)
+
+write_csv(GNP_psi_covariates, "data/gorongosa-cameras/GNP psi covariates.csv", col_names = T)
+
+# make p covariates table (detection)
+GNP_p_covariates <- select(cam_meta, detect.obscured, cover.ground)
+
+write_csv(GNP_p_covariates, "data/gorongosa-cameras/GNP p covariates.csv", col_names = T)
