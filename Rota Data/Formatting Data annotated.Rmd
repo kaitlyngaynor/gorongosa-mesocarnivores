@@ -229,11 +229,12 @@ for(i in 2:nrow(bobcat)){
 
 The descriptions of some of these values are in the model3.stan file, and others are in to be found in the code above.
 
+I have noted which ones are hard coded and need to be changed depending on our approach.
 ```{r}
 # the descriptions of these values are in the model3.stan file
 data <- list(
   K = ncol(X.array[1, , ]), # the number of occupancy parameters
-  L = 3, # the number of detection parameters (HARD CODED)
+  L = 3, # the number of detection parameters (is one of them an intercept..?) (HARD CODED)
   N = nrow(bobcat), # the number of camera sites
   NJ = length(Y1), # the total number of observations
   S = 16, # the number of unique combinations of 0s and 1s (across the 4 species) (HARD CODED)
@@ -241,7 +242,7 @@ data <- list(
   start = start, # 1, as defined above
   x = X.array, # matrix of covariate values
   trl = trail, # the trail detection covariate
-  dd = scale(dd)[, 1], # vector of detections?
+  dd = scale(dd)[, 1], # the detection distance detection covariate (it is scaled in this line of code, as it is defined)
   I1 = y1max, I2 = y2max, I3 = y3max, I4 = y4max, # indications of whether or not species was ever detected at a given site (defined above; if 1, yes, if 0, no)
   Y1 = Y1, Y2 = Y2, Y3 = Y3, Y4 = Y4 # detection vectors
   )
@@ -270,14 +271,3 @@ ll = log likelihood?
 ```{r}
 params <- c('a1', 'a2', 'a3', 'a4', 'beta', 'll')
 ```
-
-
-
-
-
-
-
-
-
-
-
