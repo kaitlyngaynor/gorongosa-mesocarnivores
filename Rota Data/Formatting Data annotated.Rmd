@@ -60,6 +60,8 @@ lbyl <- lati * long
 hike <- scale(psi.cov$People_site * 1000 / cday)
 ```
 
+So the covariates are d5km (Dist_5km), hden (Hdens_5km), hike (People_site*1000/day), and then location (which has lati, longi, and lbyl which is a combination of latitude times longitude).
+
 (Originally this code was lower down in the script but it makes sense logically for it to be here...)
 
 ## Create design matrix
@@ -84,7 +86,25 @@ This gives a warning in the later versions of R, but it's okay. The 3 means it's
 
 Template for the general form of the design matrix for the occupancy model linear predictor. Each row is a unique combination of latent species presence and absence (16 rows, 4x4 species) And each column represents a parameter. 
 
+The rows are named 1111, 1110, 1101, 1100.... 0000; every possible combination of 1s and 0s. For reference, I will refer to this format as 1234 corresponding to the presence/absence of species 1, 2, 3, 4 (following the way Rota seems to do it).
+
 A value of 1 indicates the parameter in the column is included in the linear predictor associated with the combination of latent presence and absence represented by the row; a value of 0 indicates the parameter is not included in the linear predictor for that particular combination of latent presence and absence. 
+
+So, it looks like you fill this out ahead of time based on what covariates you hypothesize to influence different patterns of occupancy. There are 32 columns in the spreadsheet, nested under different "f" headings.
+
+The first chunk seem like factors that influence the occupancy probability of a single species.
+* F1 - 5 columns; have a value of "1" for all 8 rows in which species 1 is present
+* F2 - 5 columns; have a value of "1" for all 8 rows in which species 2 is present
+* F3 - 5 columns; have a value of "1" for all 8 rows in which species 3 is present
+* F4 - 5 columns; have a value of "1" for all 8 rows in which species 4 is present
+
+The next chunk seem like factors influencing the co-occurrence of pairs of species.
+* F12 - 2 columns, have a value of "1" for all 3 rows in which species 1 and 2 are present
+* F13 - 2 columns, have a value of "1" for all 3 rows in which species 1 and 3 are present
+* F14 - 2 columns, have a value of "1" for all 3 rows in which species 1 and 4 are present
+* F23 - 2 columns, have a value of "1" for all 3 rows in which species 2 and 3 are present
+* F24 - 2 columns, have a value of "1" for all 3 rows in which species 2 and 4 are present
+* F34 - 2 columns, have a value of "1" for all 3 rows in which species 3 and 4 are present
 
 The values of the design matrix are filled in for each site in the next steps of this script.
 
@@ -92,21 +112,23 @@ The values of the design matrix are filled in for each site in the next steps of
 
 ```{r}
 for(i in 1:nrow(bobcat)){ ## for every row (camera)
-  for(j in 1:15){
+  for(j in 1:15){ # Not sure why this is 15?????
     X.array[i, j, dm[j, ] == 1] <-
-      c(1, lati[i], long[i], lbyl[i], hike[i], # filling in with the values of the parameter at that particular site
-        1, lati[i], long[i], lbyl[i], hden[i],
-        1, lati[i], long[i], lbyl[i], hden[i],
-        1, lati[i], long[i], lbyl[i], hike[i],
-        1, d5km[i],
-        1, hden[i],
-        1, hden[i],
-        1, d5km[i],
-        1, hden[i],
+      c(1, lati[i], long[i], lbyl[i], hike[i], # individual species covariates
+        1, lati[i], long[i], lbyl[i], hden[i], # individual species covariates
+        1, lati[i], long[i], lbyl[i], hden[i], # individual species covariates
+        1, lati[i], long[i], lbyl[i], hike[i], # individual species covariates
+        1, d5km[i], # species interaction covariates
+        1, hden[i], # species interaction covariates
+        1, hden[i], # species interaction covariates
+        1, d5km[i], # species interaction covariates
+        1, hden[i], # species interaction covariates
         1, d5km[i])[dm[j, ] == 1]
   }
 }
 ```
+
+dm is the imported design matrix template with 0s and 1s, so it's only filling in the array when there is a "1" in this cell... ?
 
 ```{r}
 # OBSERVED Y
