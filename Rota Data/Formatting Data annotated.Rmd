@@ -156,6 +156,11 @@ c(1, lati[1], long[1], lbyl[1], hike[1], # individual species covariates
 head(X.array[,,1])
 head(X.array[,1,])
 head(X.array[1,,])
+
+# now take a random slice too just for fun
+head(X.array[,,5])
+head(X.array[,5,])
+head(X.array[5,,])
 ```
 
 
