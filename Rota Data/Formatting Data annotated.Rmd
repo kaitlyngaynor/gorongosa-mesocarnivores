@@ -108,7 +108,7 @@ The next chunk seem like factors influencing the co-occurrence of pairs of speci
 
 The values of the design matrix are filled in for each site in the next steps of this script.
 
-### Fill in the design matrix
+### Fill in the design matrix with covariates of interest
 
 ```{r}
 for(i in 1:nrow(bobcat)){ ## for every row (camera)
@@ -127,6 +127,13 @@ for(i in 1:nrow(bobcat)){ ## for every row (camera)
   }
 }
 ```
+
+Seems like there are 5 covariates for each species. The first is just "1" so maybe this an intercept? Then latitude, longtiude, latitude*longitude, and a final covariate that differs for the four species (hikers for species 1 and 4, housing density for species 2 and 4). 
+
+For the species co-occurrence covariates, there are 2 covariates. Again, the first is just "1" and the second varies by pairs. It's disturbed habitat for 1-2, 2-3, 3-4, and housing density for 1-3, 1-4, and 2-4.
+
+This makes sense given the Rota et al text: 
+Model M3 reﬂects the hypothesis that the relationship between human disturbance and occupancy probabilities for each species varies in the presence and absence of each of the other species. We modelled the probability that bobcats and coyote, coyote and grey fox, and grey fox and red fox occur together as a function of the proportion of recently disturbed habitat within 5 km; we modelled the probability that bobcat and grey fox, bobcat and red fox, and coyote and red fox occur together as a function of housing density within 5 km. There is little to guide decisions of what variables to use when modelling the probability that two or more of these species occur together, as this is one of the unique features of our model.
 
 dm is the imported design matrix template with 0s and 1s, so it's only filling in the array when there is a "1" in this cell... ?
 
