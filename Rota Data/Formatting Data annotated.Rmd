@@ -190,12 +190,21 @@ The "max" values will either be 0 or 1—it's the maximum value of the detection
 
 ### Vectorizing detection/non-detection
 
-Need to dig into this a little bit more to fully understand what's up.
-
+This just efficiently makes a set of blank numeric vectors (Y1, Y2, Y3, Y4, trail, and dd) rather than doing it separately (ex. Y1 <- numeric() ; Y2 <- numeric() ; etc etc.)
 ```{r}
 Y1 <- Y2 <- Y3 <- Y4 <- trail <- dd <- numeric()
-for(i in 1:nrow(bobcat)){
-  Y1 <- c(Y1, bobcat[i, 1:cday[i]])
+```
+
+Now we fill these vectors.
+
+This loops through each of the cameras, and appends the values to the end of the vector (so it's not a matrix, but one vector with all of the values in it). 
+
+As for what is in the values... For Y1, Y2, Y3, Y4, it's the detection record (0, 1, or NA) for each day in which the camera was operating.
+
+For trail, it is whether or not the camera was on trail (0 or 1) repeated for each day in which the camera was operating. For dd, it is the detection distance for the camera, again repeated for each day in which the camera was operating.
+```{r}
+for(i in 1:nrow(bobcat)){ 
+  Y1 <- c(Y1, bobcat[i, 1:cday[i]]) 
   Y2 <- c(Y2, coyote[i, 1:cday[i]])
   Y3 <- c(Y3, gryfox[i, 1:cday[i]])
   Y4 <- c(Y4, redfox[i, 1:cday[i]])
