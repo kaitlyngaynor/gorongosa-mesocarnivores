@@ -108,6 +108,8 @@ model{
 
     psi[i] <- softmax(x[i] * beta);
 
+    // these are the 16 unique species combinations
+    // the cd1/2/3/4[i] included here are the species that are included in that species combo
     prob[i][1] <- psi[i][1] * cd1[i] * cd2[i] * cd3[i] * cd4[i];
     prob[i][2] <- psi[i][2] * cd1[i] * cd2[i] * cd3[i];
     prob[i][3] <- psi[i][3] * cd1[i] * cd2[i] * cd4[i];
@@ -125,6 +127,7 @@ model{
     prob[i][15] <- psi[i][15] * cd4[i];
     prob[i][16] <- psi[i][16];
 
+    // not totally sure what these are about; presumably relate to the 16 species combos above
     z[i][1] <- I1[i] * I2[i] * I3[i] * I4[i] * log(prob[i][1]);
     z[i][2] <- I1[i] * I2[i] * I3[i] * (1 - I4[i]) *
                 log(prob[i][1] + prob[i][2]);
@@ -166,6 +169,7 @@ model{
     increment_log_prob(sum(z[i]));
   }
 }
+
 generated quantities{
   vector[S] psi[N];   // probability of each combination of 1s and 0s
   vector[S] prob[N];  // psi * probability of detection history
@@ -227,6 +231,7 @@ generated quantities{
 
     psi[i] <- softmax(x[i] * beta);
 
+    // the cd1/2/3/4[i] included here are the species that are included in that species combo
     prob[i][1] <- psi[i][1] * cd1[i] * cd2[i] * cd3[i] * cd4[i];
     prob[i][2] <- psi[i][2] * cd1[i] * cd2[i] * cd3[i];
     prob[i][3] <- psi[i][3] * cd1[i] * cd2[i] * cd4[i];
