@@ -1,3 +1,4 @@
+// these data were defined in the Formatting Data.R code
 data{
   int K;   // the number of occupancy parameters
   int L;   // the number of detection parameters
@@ -14,12 +15,14 @@ data{
   vector[NJ] dd;
 
   // indicators of whether each species was detected at least once at a site
+  // would need to change the number of lines here based on how many species
   int I1[N];
   int I2[N];
   int I3[N];
   int I4[N];
 
   // detection / non-detection data over all sites and replicate surveys
+  // would need to change the number of lines here based on how many species
   vector[NJ] Y1;
   vector[NJ] Y2;
   vector[NJ] Y3;
@@ -28,6 +31,7 @@ data{
 
 parameters{
   // detection model covariates
+  // would need to change the number of lines here based on how many species
   vector[L] a1;
   vector[L] a2;
   vector[L] a3;
@@ -43,12 +47,14 @@ model{
   vector[S] z[N];     // log contribution of each site to the likelihood
 
   // probability of observing the detection history at each site
+  // would need to change the number of lines here based on how many species
   vector[N] cd1;
   vector[N] cd2;
   vector[N] cd3;
   vector[N] cd4;
 
   beta ~ logistic(0, 1);
+  // would need to change the number of lines here based on how many species
   a1 ~ logistic(0, 1);
   a2 ~ logistic(0, 1);
   a3 ~ logistic(0, 1);
@@ -65,17 +71,20 @@ model{
     matrix[obs[i], L] w;
  
     // detection probability at each replicate survey
+    // would need to change the number of lines here based on how many species
     vector[obs[i]] lp1;
     vector[obs[i]] lp2;
     vector[obs[i]] lp3;
     vector[obs[i]] lp4;
 
     // detection history of each species at each replicate survey
+    // would need to change the number of lines here based on how many species
     vector[obs[i]] y1;
     vector[obs[i]] y2;
     vector[obs[i]] y3;
     vector[obs[i]] y4;
 
+    // would need to change the number of lines here based on how many species
     y1 <- segment(Y1, start[i], obs[i]);
     y2 <- segment(Y2, start[i], obs[i]);
     y3 <- segment(Y3, start[i], obs[i]);
@@ -85,11 +94,13 @@ model{
     w2 <- append_col(one, segment(trl, start[i], obs[i]));
     w <- append_col(w2, segment(dd, start[i], obs[i]));
   
+    // would need to change the number of lines here based on how many species
     lp1 <- exp(w * a1) ./ (1 + exp(w * a1));
     lp2 <- exp(w * a2) ./ (1 + exp(w * a2));
     lp3 <- exp(w * a3) ./ (1 + exp(w * a3));
     lp4 <- exp(w * a4) ./ (1 + exp(w * a4));
 
+  // would need to change the number of lines here based on how many species
     cd1[i] <- exp(sum(y1 .* log(lp1) + (1 - y1) .* log(1 - lp1)));
     cd2[i] <- exp(sum(y2 .* log(lp2) + (1 - y2) .* log(1 - lp2)));
     cd3[i] <- exp(sum(y3 .* log(lp3) + (1 - y3) .* log(1 - lp3)));
@@ -161,6 +172,7 @@ generated quantities{
   vector[S] z[N];     // log contribution of each site to the likelihood
 
   // probability of observing the detection history at each site
+  // would need to change the number of lines here based on how many species
   vector[N] cd1;
   vector[N] cd2;
   vector[N] cd3;
@@ -185,11 +197,13 @@ generated quantities{
     vector[obs[i]] lp4;
 
     // detection history of each species at each replicate survey
+    // would need to change the number of lines here based on how many species
     vector[obs[i]] y1;
     vector[obs[i]] y2;
     vector[obs[i]] y3;
     vector[obs[i]] y4;
 
+    // would need to change the number of lines here based on how many species
     y1 <- segment(Y1, start[i], obs[i]);
     y2 <- segment(Y2, start[i], obs[i]);
     y3 <- segment(Y3, start[i], obs[i]);
@@ -198,12 +212,14 @@ generated quantities{
     one <- rep_vector(1, obs[i]);
     w2 <- append_col(one, segment(trl, start[i], obs[i]));
     w <- append_col(w2, segment(dd, start[i], obs[i]));
-  
+
+    // would need to change the number of lines here based on how many species  
     lp1 <- exp(w * a1) ./ (1 + exp(w * a1));
     lp2 <- exp(w * a2) ./ (1 + exp(w * a2));
     lp3 <- exp(w * a3) ./ (1 + exp(w * a3));
     lp4 <- exp(w * a4) ./ (1 + exp(w * a4));
 
+    // would need to change the number of lines here based on how many species
     cd1[i] <- exp(sum(y1 .* log(lp1) + (1 - y1) .* log(1 - lp1)));
     cd2[i] <- exp(sum(y2 .* log(lp2) + (1 - y2) .* log(1 - lp2)));
     cd3[i] <- exp(sum(y3 .* log(lp3) + (1 - y3) .* log(1 - lp3)));
