@@ -151,6 +151,11 @@ c(1, lati[1], long[1], lbyl[1], hike[1], # individual species covariates
   1, d5km[1], # species interaction covariates
   1, hden[1], # species interaction covariates
   1, d5km[1])
+
+# print one slice of matrix
+head(X.array[,,1])
+head(X.array[,1,])
+head(X.array[1,,])
 ```
 
 
