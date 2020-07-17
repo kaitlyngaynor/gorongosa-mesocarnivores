@@ -76,6 +76,7 @@ This makes a blank matrix full of 0s. The x dimension correspond to the number o
 
 ### Import general form of the design matrix
 
+You need to specify the rows and columns that you include in the matrix to exclude the first two rows and the first columns (which include names for the columns/rows)
 ```{r}
 library(xlsx) # install.packages("xlsx")
 dm <- read.xlsx('Rota Data/Design Matrix.xlsx', 3, rowIndex = 3:18, colIndex = 2:33,
@@ -114,7 +115,7 @@ The values of the design matrix are filled in for each site in the next steps of
 ```{r}
 for(i in 1:nrow(bobcat)){ ## for every row (camera)
   for(j in 1:15){ # Maybe this is 15 rather than 16 because the last row is 0000 (so all species absent), and dm[j,] is never equal to 1
-    X.array[i, j, dm[j, ] == 1] <-
+    X.array[i, j, dm[j, ] == 1] <- # the first dimension is the camera site; the second dimension is the covariate; the third is a series of true/false statements depending on whether that row... (type dm[1, ] == 1 for an example)
       c(1, lati[i], long[i], lbyl[i], hike[i], # individual species covariates
         1, lati[i], long[i], lbyl[i], hden[i], # individual species covariates
         1, lati[i], long[i], lbyl[i], hden[i], # individual species covariates
@@ -128,6 +129,18 @@ for(i in 1:nrow(bobcat)){ ## for every row (camera)
   }
 }
 ```
+
+A little bit of detective work
+```{r}
+# what does this do?
+dm[1, ] == 1 
+dm[2, ] == 1 
+
+# series of true false statements
+
+length(dm[1, ] == 1) # 32 long; corresponds to a single row of the design matrix - whether or not it is equal to 1
+```
+
 
 Seems like there are 5 covariates for each species. The first is just "1" so maybe this an intercept? Then latitude, longtiude, latitude*longitude, and a final covariate that differs for the four species (hikers for species 1 and 4, housing density for species 2 and 4). 
 
