@@ -113,7 +113,7 @@ The values of the design matrix are filled in for each site in the next steps of
 
 ```{r}
 for(i in 1:nrow(bobcat)){ ## for every row (camera)
-  for(j in 1:15){ # Not sure why this is 15?????
+  for(j in 1:15){ # Maybe this is 15 rather than 16 because the last row is 0000 (so all species absent), and dm[j,] is never equal to 1
     X.array[i, j, dm[j, ] == 1] <-
       c(1, lati[i], long[i], lbyl[i], hike[i], # individual species covariates
         1, lati[i], long[i], lbyl[i], hden[i], # individual species covariates
