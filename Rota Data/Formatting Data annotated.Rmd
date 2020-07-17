@@ -133,8 +133,8 @@ for(i in 1:nrow(bobcat)){ ## for every row (camera)
 A little bit of detective work
 ```{r}
 # what does this do?
-dm[1, ] == 1 
-dm[2, ] == 1 
+dm[1, ] == 1 #when j = 1 (so the first species combo, 1234), returns TRUE/FALSE for whether a covariate is relevant
+dm[2, ] == 1 #does the same for j = 2 (second species combo)  
 
 # series of true false statements
 
