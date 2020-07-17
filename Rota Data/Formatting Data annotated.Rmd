@@ -138,7 +138,19 @@ dm[2, ] == 1
 
 # series of true false statements
 
-length(dm[1, ] == 1) # 32 long; corresponds to a single row of the design matrix - whether or not it is equal to 1
+length(dm[1, ] == 1) # 32 long; corresponds to a single row of the design matrix - whether or not it is equal to 1]
+
+# this chunk of the for loop identifies the covariate values for a given camera i (in this case, i = 1, or the first camera)
+c(1, lati[1], long[1], lbyl[1], hike[1], # individual species covariates
+  1, lati[1], long[1], lbyl[1], hden[1], # individual species covariates
+  1, lati[1], long[1], lbyl[1], hden[1], # individual species covariates
+  1, lati[1], long[1], lbyl[1], hike[1], # individual species covariates
+  1, d5km[1], # species interaction covariates
+  1, hden[1], # species interaction covariates
+  1, hden[1], # species interaction covariates
+  1, d5km[1], # species interaction covariates
+  1, hden[1], # species interaction covariates
+  1, d5km[1])
 ```
 
 
@@ -150,6 +162,8 @@ This makes sense given the Rota et al text:
 Model M3 reﬂects the hypothesis that the relationship between human disturbance and occupancy probabilities for each species varies in the presence and absence of each of the other species. We modelled the probability that bobcats and coyote, coyote and grey fox, and grey fox and red fox occur together as a function of the proportion of recently disturbed habitat within 5 km; we modelled the probability that bobcat and grey fox, bobcat and red fox, and coyote and red fox occur together as a function of housing density within 5 km. There is little to guide decisions of what variables to use when modelling the probability that two or more of these species occur together, as this is one of the unique features of our model.
 
 dm is the imported design matrix template with 0s and 1s, so it's only filling in the array when there is a "1" in this cell... ?
+
+I still don't fully understand the X.array structure, but I think I have a good sense of what each of the lines of input code means, so I feel like I could manipulate to fit a different data structure.
 
 ### Determine whether or not species was observed at each site
 
