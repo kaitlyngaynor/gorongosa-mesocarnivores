@@ -201,7 +201,7 @@ Now we fill these vectors.
 
 This loops through each of the cameras, and appends the values to the end of the vector (so it's not a matrix, but one vector with all of the values in it). 
 
-As for what is in the values... For Y1, Y2, Y3, Y4, it's the detection record (0, 1, or NA) for each day in which the camera was operating. [Katie: I think it's just getting 0s and 1s, not NAs]
+As for what is in the values... For Y1, Y2, Y3, Y4, it's the detection record (0 or 1) for each day in which the camera was operating.
 
 For trail, it is whether or not the camera was on trail (0 or 1) repeated for each day in which the camera was operating. For dd, it is the detection distance for the camera, again repeated for each day in which the camera was operating. rep means replicate. 
 ```{r}
