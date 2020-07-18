@@ -203,6 +203,8 @@ This loops through each of the cameras, and appends the values to the end of the
 
 As for what is in the values... For Y1, Y2, Y3, Y4, it's the detection record (0 or 1) for each day in which the camera was operating.
 
+DON'T FORGET: this assumes the cameras never stop working and then start again (vectors are only added to until the first NA, then it stops). This will need to be addressed if that's not the case for some of our cameras, which I (Katie) need to check. 
+
 For trail, it is whether or not the camera was on trail (0 or 1) repeated for each day in which the camera was operating. For dd, it is the detection distance for the camera, again repeated for each day in which the camera was operating. rep means replicate. 
 ```{r}
 for(i in 1:nrow(bobcat)){ 
