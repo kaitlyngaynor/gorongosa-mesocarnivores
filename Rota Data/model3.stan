@@ -110,6 +110,7 @@ model{
 
     // these are the 16 unique species combinations
     // the cd1/2/3/4[i] included here are the species that are included in that species combo
+    // this is the same order for combos as in the excel spreadsheet
     prob[i][1] <- psi[i][1] * cd1[i] * cd2[i] * cd3[i] * cd4[i];
     prob[i][2] <- psi[i][2] * cd1[i] * cd2[i] * cd3[i];
     prob[i][3] <- psi[i][3] * cd1[i] * cd2[i] * cd4[i];
