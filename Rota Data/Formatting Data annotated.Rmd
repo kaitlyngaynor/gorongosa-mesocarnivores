@@ -28,6 +28,7 @@ Looks like it's a detection matrix of 0 (non-detection), 1 (detection), NA (not 
 
 ### Calculate dates of camera operation
 
+The 1 means you're applying the function over rows. 
 ```{r}
 cday <- apply(bobcat, 1, function(x) sum(is.na(x) == F))
 head(cday)
@@ -203,7 +204,8 @@ This loops through each of the cameras, and appends the values to the end of the
 
 As for what is in the values... For Y1, Y2, Y3, Y4, it's the detection record (0 or 1) for each day in which the camera was operating.
 
-DON'T FORGET: this assumes the cameras never stop working and then start again (vectors are only added to until the first NA, then it stops). This will need to be addressed if that's not the case for some of our cameras, which I (Katie) need to check. 
+DON'T FORGET: I think this assumes the cameras never stop working and then start again. Vectors are added to from the first day of operation through to the total number of days for that camera, but for a camera that went down and came back, that would include some NAs. (unless something in this inherently tells it to skip NAs? which I don't think it does. Also that would then put the 0s/1s from after the down period in the wrong date column )
+At least 4 of the GNP cameras go off and back on again during our defined dry season, so this will either need to be addressed in the code (or the affected cameras excluded?) [Just noting for now, not sure how to do it]
 
 For trail, it is whether or not the camera was on trail (0 or 1) repeated for each day in which the camera was operating. For dd, it is the detection distance for the camera, again repeated for each day in which the camera was operating. rep means replicate. 
 ```{r}
@@ -224,6 +226,8 @@ Katie:
 - nrow(bobcat) is the number of cameras
 Is this equalizing the number of operational days somehow?
 definition: "Ragged arrays are arrays that are not rectangular, but have different sized entries. This kind of structure crops up when there are different numbers of observations per entry."
+
+This uses cday too, which means it will also need to be addressed for the cameras that go down and back up again. [Just noting that for now, not sure how to do it]
 ```{r}
 # Stan does not support ragged indexing.  This is a work-around
 start <- 1
