@@ -1,5 +1,6 @@
 // another example of using this model: http://people.stat.sfu.ca/~cschwarz/Stat-Occupancy/OccupancyCourse/CourseNotes/OccupancySampleData/MultiSpeciesSingleSeason/Bears/Paper/R%20code/model_GBBB8.stan
 // these data were defined in the Formatting Data.R code
+// you've probably figured this out, but stan requires you to declare objects before working with them
 data{
   int K;   // the number of occupancy parameters
   int L;   // the number of detection parameters
@@ -110,17 +111,20 @@ model{
     
   
     // would need to change the number of lines here based on how many species
+    // these are the detection probabilities at each replicate survey
     lp1 <- exp(w * a1) ./ (1 + exp(w * a1));
     lp2 <- exp(w * a2) ./ (1 + exp(w * a2));
     lp3 <- exp(w * a3) ./ (1 + exp(w * a3));
     lp4 <- exp(w * a4) ./ (1 + exp(w * a4));
 
   // would need to change the number of lines here based on how many species
+  // these are probabilities of observing the detection history at each site  
     cd1[i] <- exp(sum(y1 .* log(lp1) + (1 - y1) .* log(1 - lp1)));
     cd2[i] <- exp(sum(y2 .* log(lp2) + (1 - y2) .* log(1 - lp2)));
     cd3[i] <- exp(sum(y3 .* log(lp3) + (1 - y3) .* log(1 - lp3)));
     cd4[i] <- exp(sum(y4 .* log(lp4) + (1 - y4) .* log(1 - lp4)));
 
+    // I googled it, but still unclear what softmax() does
     psi[i] <- softmax(x[i] * beta);
 
     // these are the 16 unique species combinations
@@ -144,6 +148,11 @@ model{
     prob[i][16] <- psi[i][16];
 
     // not totally sure what these are about; presumably relate to the 16 species combos above
+    // z[N] is the log contribution of each site to the likelihood
+    // each of the I1, I2, etc. is an indicator of whether the species was detected at least once at a site
+    // it's also the same order of species combos as the design matrix
+    // so is this figuring out whether a particular species combo
+    // ever happened at a site, and then how much it contributes to...?
     z[i][1] <- I1[i] * I2[i] * I3[i] * I4[i] * log(prob[i][1]);
     z[i][2] <- I1[i] * I2[i] * I3[i] * (1 - I4[i]) *
                 log(prob[i][1] + prob[i][2]);
