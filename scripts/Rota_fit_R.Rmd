@@ -45,6 +45,7 @@ maxOrder     Optional; specify maximum interaction order. Defaults to number of 
 
 starts     Vector of parameter starting values.
 #not sure what this is
+#is this the first replicate survey at each site? that's something the stan code uses
 
 method     Optimization method used by optim.
 #should be "BFGS"?
