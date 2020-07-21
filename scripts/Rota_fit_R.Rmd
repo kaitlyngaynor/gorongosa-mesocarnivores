@@ -1,0 +1,212 @@
+---
+title: "Rota_fit_R"
+author: "Katie Grabowski"
+date: "7/20/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+Collecting and annotating scripts for running occuMulti, an R function that fits Rota's model. (not going to try to dig completely into every step of this, in case you have a reason not to use it. more looking for overall understanding/a way to take notes so we'd be closer to ready to use it if you think it would be a good option)
+
+**Might be easier for you to start with the links I sent you, and then look at my thoughts in here? Sorry, it's rather long
+
+my sources: https://rdrr.io/cran/unmarked/man/occuMulti.html and https://cran.r-project.org/web/packages/unmarked/unmarked.pdf
+
+#install package
+```{r}
+library("unmarked") #install.packages("unmarked")
+```
+
+## occuMulti
+uses unmarkedFrameOccuMulti to receive data, notes below
+```{r}
+occuMulti(detformulas, stateformulas, data, maxOrder, starts, method="BFGS",
+    se=TRUE, engine=c("C","R"), silent=FALSE, ...)
+```
+detformulas     Character vector of formulas for the detection models, one per species. 
+
+^^from the pdf: Independent detection models (potentially containing different covariates) must be provided for
+each species with the detformulas argument, which takes a character vector of individual formulas with length equal to the number of species s.
+
+#so this would be how we want the detection covariates to be considered? not sure how well I understand right now
+
+stateformulas     Character vector of formulas for the natural parameters. To fix a natural parameter at 0, specify the corresponding formula as "0" or "~0". 
+
+^^from the pdf: The natural parameters can then be modeled as linear functions of covariates. Covariates for each f
+must be specified with the stateformulas argument, which takes a character vector of individual formulas of length equal to the number of natural parameters (which in turn depends on the number of species in the model).
+
+#natural parameters = f1, f2, f12, etc? the formulas that include which factors we believe will affect occupancy? 
+
+data     An unmarkedFrameOccuMulti object 
+#notes below on how to create this
+
+maxOrder     Optional; specify maximum interaction order. Defaults to number of species (all possible interactions). Reducing this value may speed up optimization if you aren’t interested in higher-order interactions. 
+#we're only planning to consider pairwise interactions, right? so the maximum interaction order we'd be interested in is 2?
+
+starts     Vector of parameter starting values.
+#not sure what this is
+
+method     Optimization method used by optim.
+#should be "BFGS"?
+#Method "BFGS" is a quasi-Newton method (also known as a variable metric algorithm), specifically that published simultaneously in 1970 by Broyden, Fletcher, Goldfarb and Shanno. This uses function values and gradients to build up a picture of the surface to be optimized.
+
+se     Logical specifying whether or not to compute standard errors.
+
+engine     Either "C" to use fast C++ code or "R" to use native R code during the optimization.
+
+silent     Boolean; if TRUE, suppress warnings. 
+#this sounds rather ominous
+
+#example code for occuMulti
+```{r}
+## Not run:
+#Simulate 3 species data
+N <- 1000 #number of cameras? (in other places that's called M)
+nspecies <- 3 #often given an 'S', number of species
+J <- 5 #max number of sampling days per site
+#occ_covs has 1000 rows, 10 columns; don't actually understand what they represent though
+occ_covs <- as.data.frame(matrix(rnorm(N * 10),ncol=10))
+names(occ_covs) <- paste('occ_cov',1:10,sep='')
+det_covs <- list() #creates an empty list
+for (i in 1:nspecies){
+det_covs[[i]] <- matrix(rnorm(N*J),nrow=N)
+}
+names(det_covs) <- paste('det_cov',1:nspecies,sep='')
+#True vals
+##why is this arbitrarily assigning beta values?
+beta <- c(0.5,0.2,0.4,0.5,-0.1,-0.3,0.2,0.1,-1,0.1)
+#assuming these are the natural parameter functions, but not sure which relates to which species/species combo
+f1 <- beta[1] + beta[2]*occ_covs$occ_cov1
+f2 <- beta[3] + beta[4]*occ_covs$occ_cov2
+f3 <- beta[5] + beta[6]*occ_covs$occ_cov3
+f4 <- beta[7]
+f5 <- beta[8]
+f6 <- beta[9]
+f7 <- beta[10]
+f <- cbind(f1,f2,f3,f4,f5,f6,f7)
+z <- expand.grid(rep(list(1:0),nspecies))[,nspecies:1]
+colnames(z) <- paste('sp',1:nspecies,sep='')
+
+#paste0()converts its arguments to character strings and concatenates them
+#this creates a spreadsheet with columns for sp 1, sp 2, sp 3, sp 1:sp 2, sp 1:sp 3, sp 2:sp 3, sp 1:sp 2:sp 3, which seems promising?
+dm <- model.matrix(as.formula(paste0("~.^",nspecies,"-1")),z)
+psi <- exp(f %*% t(dm))
+psi <- psi/rowSums(psi)
+#True state
+ztruth <- matrix(NA,nrow=N,ncol=nspecies)
+for (i in 1:N){
+ztruth[i,] <- as.matrix(z[sample(8,1,prob=psi[i,]),])
+}
+p_true <- c(0.6,0.7,0.5)
+# fake y data
+##is this the Y1, Y2, etc. we've been working with?
+y <- list()
+for (i in 1:nspecies){
+y[[i]] <- matrix(NA,N,J)
+for (j in 1:N){
+  for (k in 1:J){
+y[[i]][j,k] <- rbinom(1,1,ztruth[j,i]*p_true[i])
+}
+}
+}
+names(y) <- c('coyote','tiger','bear')
+#Create the unmarked data object
+##wait...are the detection covariates the observation covariates here?
+data = unmarkedFrameOccuMulti(y=y,siteCovs=occ_covs,obsCovs=det_covs)
+#Summary of data object
+summary(data)
+plot(data)
+# Look at f parameter design matrix
+data@fDesign
+# Formulas for state and detection processes
+# Length should match number/order of columns in fDesign
+occFormulas <- c('~occ_cov1','~occ_cov2','~occ_cov3','~1','~1','~1','~1')
+#Length should match number/order of species in data@ylist
+detFormulas <- c('~1','~1','~1')
+fit <- occuMulti(detFormulas,occFormulas,data)
+#Look at output
+fit
+plot(fit)
+#Compare with known values
+cbind(c(beta,log(p_true/(1-p_true))),fit@opt$par)
+#predict method
+lapply(predict(fit,'state'),head)
+lapply(predict(fit,'det'),head)
+#marginal occupancy
+head(predict(fit,'state',species=2))
+head(predict(fit,'state',species='bear'))
+head(predict(fit,'det',species='coyote'))
+#probability of co-occurrence of two or more species
+head(predict(fit, 'state', species=c('coyote','tiger')))
+#conditional occupancy
+head(predict(fit,'state',species=2,cond=3)) #tiger | bear present
+head(predict(fit,'state',species='tiger',cond='bear')) #tiger | bear present
+head(predict(fit,'state',species='tiger',cond='-bear')) #bear absent
+head(predict(fit,'state',species='tiger',cond=c('coyote','-bear')))
+#residuals (by species)
+lapply(residuals(fit),head)
+#ranef (by species)
+ranef(fit, species='coyote')
+#parametric bootstrap
+bt <- parboot(fit,nsim=30)
+#update model
+occFormulas <- c('~occ_cov1','~occ_cov2','~occ_cov2+occ_cov3','~1','~1','~1','~1')
+fit2 <- update(fit,stateformulas=occFormulas)
+#List of fitted models
+fl <- fitList(fit,fit2)
+coef(fl)
+#Model selection
+modSel(fl)
+#Fit model while forcing some natural parameters to be 0
+#For example: fit model with no species interactions
+occFormulas <- c('~occ_cov1','~occ_cov2','~occ_cov2+occ_cov3','0','0','0','0')
+fit3 <- occuMulti(detFormulas,occFormulas,data)
+#Alternatively, you can force all interaction parameters above a certain order to be zero with maxOrder. This will be faster.
+occFormulas <- c('~occ_cov1','~occ_cov2','~occ_cov2+occ_cov3')
+fit4 <- occuMulti(detFormulas,occFormulas,data,maxOrder=1)
+## End(Not run)
+```
+
+
+## unmarkedFrameOccuMulti
+```{r}
+unmarkedFrameOccuMulti(y, siteCovs=NULL, obsCovs=NULL,
+maxOrder, mapInfo)
+
+```
+arguments:
+y     A list (optionally a named list) of length S where each element is an MxJ matrix of the detection, non-detection data for one species, where M is the number of sites, J is the maximum number of sampling periods per site, and S is the number of species in the analysis. 
+#this corresponds to our detection histories
+
+siteCovs     A data.frame of covariates that vary at the site level. This should have M rows and one column per covariate 
+#cool, this is the psi and p covariate sheets, not sure how you tell it which one is for occupancy vs detection probabilities (unless it's only the occupancy-related covariates, and there's another way of incorporating the detection ones?)
+
+obsCovs     Either a named list of data.frames of covariates that vary within sites, or a data.frame with MxJ rows in site-major order. 
+#no idea. what type of covariate would vary within a site? I think this would be NULL for our data. Unless these are the detection covariates? some hint of that, maybe, above
+
+maxOrder     Optional; specify maximum interaction order. Defaults to number of species (all possible interactions). Reducing this value may speed up creation of unmarked frame if you aren’t interested in higher-order interactions.
+#comment above 
+
+mapInfo     Currently ignored
+
+#example code for unmarkedFramOccuMulti
+```{r }
+# Fake data
+S <- 3 # number of species
+M <- 4 # number of sites
+J <- 3 # number of visits
+
+#is the below code just creating a matrix for use?
+y <- list(matrix(rbinom(M*J,1,0.5),M,J), # species 1
+matrix(rbinom(M*J,1,0.5),M,J), # species 2
+matrix(rbinom(M*J,1,0.2),M,J)) # species 3
+site.covs <- data.frame(x1=1:4, x2=factor(c('A','B','A','B')))
+site.covs
+umf <- unmarkedFrameOccuMulti(y=y, siteCovs=site.covs,
+obsCovs=NULL) # organize data
+umf # look at data
+summary(umf) # summarize
+plot(umf) # visualize
+#fm <- occu(~1 ~1, umf) # fit a model
+
+```
