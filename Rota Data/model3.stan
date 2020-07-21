@@ -45,6 +45,7 @@ parameters{
   // K: number of occupancy covariates
 }
 
+// start of model portion of code
 model{
   // S: species combinations; N: number of sites
   vector[S] psi[N];   // probability of each combination of 1s and 0s
@@ -65,6 +66,7 @@ model{
   a3 ~ logistic(0, 1);
   a4 ~ logistic(0, 1);
   
+  // start of for loop
   for(i in 1:N){
 
     // Stan does not support ragged indexing.  This section accommodates 
@@ -181,8 +183,8 @@ model{
     // likelihood not included in Stan; this allows specification of
     // non-standard likelihoods
     increment_log_prob(sum(z[i]));
-  }
-}
+  } // end of for loop
+} // end of model portion of code
 
 generated quantities{
   vector[S] psi[N];   // probability of each combination of 1s and 0s
