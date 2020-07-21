@@ -1,3 +1,4 @@
+// another example of using this model: http://people.stat.sfu.ca/~cschwarz/Stat-Occupancy/OccupancyCourse/CourseNotes/OccupancySampleData/MultiSpeciesSingleSeason/Bears/Paper/R%20code/model_GBBB8.stan
 // these data were defined in the Formatting Data.R code
 data{
   int K;   // the number of occupancy parameters
@@ -71,8 +72,8 @@ model{
 
     // elements of the detection model design matrix
     vector[obs[i]] one;
-    matrix[obs[i], 2] w2;
-    matrix[obs[i], L] w;
+    matrix[obs[i], 2] w2; // matrix with rows for every day per camera and 2 columns
+    matrix[obs[i], L] w; // matrix with rows for every day per camera and L (number of detection covariates) columns
  
     // detection probability at each replicate survey
     // would need to change the number of lines here based on how many species
@@ -89,14 +90,22 @@ model{
     vector[obs[i]] y4;
 
     // would need to change the number of lines here based on how many species
+    // the segment function is taking only the relevant days from each vector (I think)
+    // but isn't each vector already only as long as the number of observations?
     y1 <- segment(Y1, start[i], obs[i]);
     y2 <- segment(Y2, start[i], obs[i]);
     y3 <- segment(Y3, start[i], obs[i]);
     y4 <- segment(Y4, start[i], obs[i]);
-
-    one <- rep_vector(1, obs[i]);
+    
+    // rep_vector(x,m) returns the size m (column) vector consisting of copies of x
+    one <- rep_vector(1, obs[i]); // so this is just a column of 1s?
+    // append_col() combines vectors by columns
+    // vector segment(vector v, int i, int n) returns the vector of the n elements of v starting at i
     w2 <- append_col(one, segment(trl, start[i], obs[i]));
     w <- append_col(w2, segment(dd, start[i], obs[i]));
+    // I think the end result here is a matrix with a column of 1s,
+    // a column for the trail covariate and a column for the detection distance covariate
+    
   
     // would need to change the number of lines here based on how many species
     lp1 <- exp(w * a1) ./ (1 + exp(w * a1));
