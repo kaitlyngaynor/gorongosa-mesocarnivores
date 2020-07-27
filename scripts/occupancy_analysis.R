@@ -120,7 +120,7 @@ cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_rast
 
 # make psi covariates table (environmental)
 # need to add lion covariate when we decide
-GNP_psi_covariates <- select(cam_meta, urema_dist, tree_hansen, termite.large.count.100m)
+GNP_psi_covariates <- select(cam_meta, urema_dist, tree_hansen, termite.large.count.100m, lion_camera)
 
 write_csv(GNP_psi_covariates, "data/gorongosa-cameras/GNP psi covariates.csv", col_names = T)
 
