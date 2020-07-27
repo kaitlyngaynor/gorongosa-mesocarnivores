@@ -159,7 +159,7 @@ Now we specify the effects we would like to consider on the occupancy and detect
 * $f_{12} = \log(\psi_{00}\psi_{11} / \psi_{10}\psi_{01})$, 
 
 that is:
-
+## inverse logit (what Rota has in Table 1 for conditional probabilities) is exp(x)/(1+exp(x)), which looks an awful lot like what's happening here...
 * $\psi_{11} = \exp(f_1+f_2+f_{12})/\mbox{den}$;
 * $\psi_{10} = \exp(f_1)/\mbox{den}$;
 * $\psi_{01} = \exp(f_2)/\mbox{den}$,
