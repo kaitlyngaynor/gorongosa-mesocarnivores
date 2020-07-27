@@ -116,6 +116,7 @@ ps <- c(0.5,0.9)
 ```
 
 Then we generate the detection and non-detections for each species, which we store in a list: 
+## these are just the detection histories for each spp
 ```{r}
 y <- list()
 for (i in 1:S){
@@ -183,6 +184,7 @@ fit
 ```
 
 Get the natural parameter and detection estimates:
+# I'm still working on understanding what's going into the model and how, so I haven't spent as much time trying to understand what comes out of it
 ```{r}
 mle <- fit@opt$par
 names(mle) <- c('f1','f2','f12','lp1','lp2')
