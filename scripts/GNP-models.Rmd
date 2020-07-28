@@ -15,7 +15,7 @@ library(dplyr)
 #use unmarkedFrameOccuMulti to create the data object
 ```{r}
 # load in detection histories
-genet_dh <-read_csv("data/gorongosa-cameras/genet.csv")
+genet_dh <-read_csv("data/gorongosa-cameras/genet.csv", col_names = FALSE) %>% as.matrix()
 y <- list()
 
 ```
