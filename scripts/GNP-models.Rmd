@@ -66,7 +66,7 @@ occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion
 #Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
 detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
 
-fit <- occuMulti(detFormulas,occFormulas,data)
+fit <- occuMulti(detFormulas, occFormulas, data, maxOrder = 2)
 
 ```
 
