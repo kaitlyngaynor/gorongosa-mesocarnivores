@@ -5,7 +5,18 @@ date: "7/28/2020"
 output: html_document
 ---
 Here we go!
+#install packages 
 ```{r}
+library("unmarked") #install.packages("unmarked")
+library(camtrapR) #install.packages("camtrapR")
+library(tidyverse)
+library(dplyr)
+```
+#use unmarkedFrameOccuMulti to create the data object
+```{r}
+# load in detection histories
+genet_dh <-read_csv("gorongosa-mesocarnivores/data/gorongosa-cameras/genet.csv")
+y <- list()
 
 ```
 
