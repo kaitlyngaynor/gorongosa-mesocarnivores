@@ -3,6 +3,8 @@ title: "GNP Models"
 author: "Katie Grabowski"
 date: "7/28/2020"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 Here we go!
 #install packages 
@@ -12,11 +14,26 @@ library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
 ```
+
 #use unmarkedFrameOccuMulti to create the data object
 ```{r}
 # load in detection histories
 genet_dh <-read_csv("data/gorongosa-cameras/genet.csv", col_names = FALSE) %>% as.matrix()
-y <- list()
+
+civet_dh <-read_csv("data/gorongosa-cameras/civet.csv", col_names = FALSE) %>% as.matrix()
+
+honeybadger_dh <-read_csv("data/gorongosa-cameras/honey_badger.csv", col_names = FALSE) %>% as.matrix()
+
+marshmongoose_dh <-read_csv("data/gorongosa-cameras/marsh_mongoose.csv", col_names = FALSE) %>% as.matrix()
+
+#load occupancy covariates
+#leaving the column names in for now
+occ_covs <- read_csv("data/gorongosa-cameras/GNP psi covariates.csv", col_names = TRUE) %>% as.data.frame()
+
+#load detection covariates
+det_covs <- read_csv("data/gorongosa-cameras/GNP p covariates.csv", col_names = TRUE) %>% as.data.frame()
+
+unmarkedFrameOccuMulti(y = list(genet_dh, civet_dh, honeybadger_dh, marshmongoose_dh), siteCovs = occ_covs, obsCovs = det_covs, maxOrder = 2)
 
 ```
 
