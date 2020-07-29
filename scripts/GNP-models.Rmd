@@ -34,7 +34,7 @@ names(y) <- c('genet','civet','honey badger', 'marsh mongoose')
 #leaving the column names in for now
 occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
-data <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, maxOrder = 2)
+data <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs)
 
 #look at data
 summary(data)
