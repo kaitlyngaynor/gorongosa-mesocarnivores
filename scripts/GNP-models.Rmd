@@ -83,6 +83,8 @@ fit@estimates[2]
 
 unclass(fit) 
 attr(fit, "estimates") 
+as.data.frame(coef(fit))
+
 
 ```
 
