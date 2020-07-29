@@ -20,6 +20,17 @@ library(dplyr)
 # load in detection histories
 genet_dh <-read_csv("data/gorongosa-cameras/genet.csv", col_names = FALSE) %>% as.matrix()
 
+#Katie trying to address the ragged indexing, but not correct as is:
+#total number of days active per camera
+#cday <- apply(genet_dh, 1, function(x) sum(is.na(x) == F))
+
+# Stan does not support ragged indexing.  This is a work-around
+#I think this would need 
+#start <- 1
+#for(i in 2:nrow(genet_dh)){
+#  start <- c(start, sum(cday[1:(i - 1)]) + 1)
+#}
+
 civet_dh <-read_csv("data/gorongosa-cameras/civet.csv", col_names = FALSE) %>% as.matrix()
 
 honeybadger_dh <-read_csv("data/gorongosa-cameras/honey_badger.csv", col_names = FALSE) %>% as.matrix()
@@ -66,7 +77,12 @@ occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion
 #Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
 detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
 
-fit <- occuMulti(detFormulas, occFormulas, data, maxOrder = 2)
+fit <- occuMulti(detFormulas, stateformulas = occFormulas, data, maxOrder = 2)
+
+#Look at output
+fit
+
+plot(fit)
 
 ```
 
