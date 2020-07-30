@@ -86,8 +86,6 @@ fit@estimates[1]
 # detection only
 fit@estimates[2]
 
-# but how do we get these into data frames that we can then plot?? having trouble with S4 object conversion... as.data.frame, as_tibble, tidy, as.matrix don't work
-
 unclass(fit) 
 attr(fit, "estimates") 
 as.data.frame(coef(fit))
