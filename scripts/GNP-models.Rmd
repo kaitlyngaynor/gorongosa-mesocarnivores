@@ -9,7 +9,7 @@ editor_options:
 Here we go!
 #install packages 
 ```{r}
-library("unmarked") #install.packages("unmarked")
+library(unmarked) #install.packages("unmarked")
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
@@ -73,6 +73,10 @@ fit <- occuMulti(detFormulas, stateformulas = occFormulas, data)
 ```{r}
 #Look at output
 fit
+
+occ <- summary(fit[1]) 
+
+write_csv(occ, "data/gorongosa-cameras/fit_occ.csv", col_names = T)
 
 #plot(fit)
 
