@@ -94,7 +94,7 @@ lapply(predict(fit,'det'),head)
 
 #marginal occupancy
 head(predict(fit,'state',species=2))
-head(predict(fit,'state',species='genet'))
-head(predict(fit,'det',species='civet'))
+head(predict(fit,'state',species='genet')) # why is this all 1 / 0 / 0?
+head(predict(fit,'det',species='civet')) # why are all of these the same?
 ```
 
