@@ -85,6 +85,13 @@ unclass(fit)
 attr(fit, "estimates") 
 as.data.frame(coef(fit))
 
+#predict method
+lapply(predict(fit,'state'),head)
+lapply(predict(fit,'det'),head)
 
+#marginal occupancy
+head(predict(fit,'state',species=2))
+head(predict(fit,'state',species='genet'))
+head(predict(fit,'det',species='civet'))
 ```
 
