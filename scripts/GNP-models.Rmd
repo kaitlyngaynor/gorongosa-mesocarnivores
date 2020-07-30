@@ -9,7 +9,7 @@ editor_options:
 Here we go!
 #install packages 
 ```{r}
-library(unmarked) #install.packages("unmarked")
+library("unmarked") #install.packages("unmarked")
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
@@ -32,7 +32,23 @@ names(y) <- c('genet','civet','honey badger', 'marsh mongoose')
 
 #load occupancy covariates
 #leaving the column names in for now
-occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+occ_covs <- read_csv("data/gorongosa-cameras/GNP psi covariates.csv", col_names = TRUE) %>% as.data.frame()
+
+#load detection covariates
+det_covs <- read_csv("data/gorongosa-cameras/GNP p covariates.csv", col_names = TRUE) %>% as.data.frame()
+
+#trying to replicate the values to take care of the error I am getting
+detect.obscured <- det_covs[,1] #first column
+#detect.obscured2 <- cbind(detect.obscured, detect.obscured)
+n <- 122 #total number of days
+detect.obscured.n <- do.call("cbind", replicate(n, detect.obscured, simplify = FALSE)) #repeat columns for each day
+
+#detect.obscured.n <- matrix(detect.obscured, length(detect.obscured), 122) #repeat for each day
+
+cover.ground <- det_covs[,2] #second column
+cover.ground.n <- do.call("cbind", replicate(n, cover.ground, simplify = FALSE)) #repeat columns for each day
+
+#cover.ground.n <- matrix(cover.ground, length(cover.ground), 122) #repeat for each day
 
 data <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs)
 
