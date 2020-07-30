@@ -61,12 +61,12 @@ f10: honey badger: marsh mongoose
 # Formulas for state and detection processes
 
 # Length should match number/order of columns in fDesign
-occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion_camera','~1','~1','~1','~1','~1','~1')
+occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion_camera','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
 
 #Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
 detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
 
-fit <- occuMulti(detFormulas, stateformulas = occFormulas, data, maxOrder = 2)
+fit <- occuMulti(detFormulas, stateformulas = occFormulas, data)
 
 #Look at output
 fit
