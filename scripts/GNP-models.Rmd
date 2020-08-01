@@ -109,7 +109,7 @@ fl <- fitList(fit,fit2, fit3)
 coef(fl)
 ```
 
-#starting to think about actual models with ecological background
+#starting to think about actual models with ecological background [type 1, no species interactions]
 ```{r}
 # Length should match number/order of columns in fDesign
 occFormulas1 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','0','0','0','0','0','0', '0', '0', '0', '0', '0')
@@ -132,5 +132,33 @@ detFormulas3 <- c('~detect.obscured', '~detect.obscured', '~detect.obscured', '~
 fit3 <- update(fit2, detFormulas3)
 
 fit3
+```
+
+#starting to think about actual models with ecological background [type 2, no interaction covariates]
+```{r}
+# Length should match number/order of columns in fDesign
+occFormulas11 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+#Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
+detFormulas1 <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
+
+fit11 <- occuMulti(detFormulas1, stateformulas = occFormulas11, data)
+
+
+#why does this not produce anything except estimates?
+fit11
+
+detFormulas2 <- c('~cover.ground', '~cover.ground', '~cover.ground', '~cover.ground')
+
+fit12 <- update(fit11, detFormulas2)
+
+fit12
+
+detFormulas3 <- c('~detect.obscured', '~detect.obscured', '~detect.obscured', '~detect.obscured')
+
+fit3 <- update(fit2, detFormulas3)
+
+fit3
+```
 ```
 
