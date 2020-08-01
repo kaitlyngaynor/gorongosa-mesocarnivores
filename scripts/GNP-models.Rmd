@@ -59,6 +59,7 @@ f10: honey badger: marsh mongoose
 #run occuMulti
 ```{r}
 # Formulas for state and detection processes
+# dummy model
 
 # Length should match number/order of columns in fDesign
 occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion_camera','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
@@ -71,9 +72,10 @@ fit <- occuMulti(detFormulas, stateformulas = occFormulas, data)
 
 # explore model output
 ```{r}
-#Look at output
+#Look at output from dummy model
 fit
 
+#gives a list with one element for the state model
 occ <- summary(fit[1]) 
 
 write_csv(occ, "data/gorongosa-cameras/fit_occ.csv", col_names = T)
@@ -86,6 +88,7 @@ fit@estimates[1]
 # detection only
 fit@estimates[2]
 
+#leaving these in because they're potentially helpful to remember as functions that exist
 unclass(fit) 
 attr(fit, "estimates") 
 as.data.frame(coef(fit))
@@ -95,8 +98,39 @@ lapply(predict(fit,'state'),head)
 lapply(predict(fit,'det'),head)
 
 #marginal occupancy
-head(predict(fit,'state',species=2))
+head(predict(fit,'state',species='civet'))
 head(predict(fit,'state',species='genet')) # why is this all 1 / 0 / 0?
+head(predict(fit,'state',species='honey badger'))
+head(predict(fit,'state',species='marsh mongoose'))
 head(predict(fit,'det',species='civet')) # why are all of these the same?
+
+#used to compare outcomes 
+fl <- fitList(fit,fit2, fit3)
+coef(fl)
+```
+
+#starting to think about actual models with ecological background
+```{r}
+# Length should match number/order of columns in fDesign
+occFormulas1 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','0','0','0','0','0','0', '0', '0', '0', '0', '0')
+
+#Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
+detFormulas1 <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
+
+fit1 <- occuMulti(detFormulas1, stateformulas = occFormulas1, data)
+
+fit1
+
+detFormulas2 <- c('~cover.ground', '~cover.ground', '~cover.ground', '~cover.ground')
+
+fit2 <- update(fit1, detFormulas2)
+
+fit2
+
+detFormulas3 <- c('~detect.obscured', '~detect.obscured', '~detect.obscured', '~detect.obscured')
+
+fit3 <- update(fit2, detFormulas3)
+
+fit3
 ```
 
