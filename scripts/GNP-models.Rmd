@@ -156,9 +156,9 @@ fit12
 
 detFormulas3 <- c('~detect.obscured', '~detect.obscured', '~detect.obscured', '~detect.obscured')
 
-fit3 <- update(fit2, detFormulas3)
+fit13 <- update(fit12, detFormulas3)
 
-fit3
+fit13
 ```
 ```
 
