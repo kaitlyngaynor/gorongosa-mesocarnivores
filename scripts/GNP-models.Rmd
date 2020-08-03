@@ -130,15 +130,29 @@ fit1
 
 detFormulas2 <- c('~cover.ground', '~cover.ground', '~cover.ground', '~cover.ground')
 
-fit2 <- update(fit1, detFormulas2)
+fit2 <- occuMulti(detFormulas2, stateformulas = occFormulas1, data)
 
 fit2
 
 detFormulas3 <- c('~detect.obscured', '~detect.obscured', '~detect.obscured', '~detect.obscured')
 
-fit3 <- update(fit2, detFormulas3)
+fit3 <- occuMulti(detFormulas3, stateformulas = occFormulas1, data)
 
 fit3
+
+occFormulas2 <- c('~urema_dist+tree_hansen','~urema_dist + tree_hansen','~termite.large.count.100m + tree_hansen','~urema_dist + tree_hansen','0','0','0','0','0','0', '0', '0', '0', '0', '0')
+
+fit4 <- occuMulti(detFormulas1, stateformulas = occFormulas2, data)
+
+fit4
+
+fit5 <- occuMulti(detFormulas2, stateformulas = occFormulas2, data)
+
+fit5
+
+fit6 <- occuMulti(detFormulas3, stateformulas = occFormulas2, data)
+
+fit6
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
@@ -157,15 +171,34 @@ fit11
 
 detFormulas2 <- c('~cover.ground', '~cover.ground', '~cover.ground', '~cover.ground')
 
-fit12 <- update(fit11, detFormulas2)
+fit12 <- occuMulti(detFormulas2, stateformulas = occFormulas11, data)
 
 fit12
 
 detFormulas3 <- c('~detect.obscured', '~detect.obscured', '~detect.obscured', '~detect.obscured')
 
-fit13 <- update(fit12, detFormulas3)
+fit13 <- occuMulti(detFormulas3, stateformulas = occFormulas11, data)
 
 fit13
 ```
+
+#starting to think about actual models with ecological background [type 3, includes interaction covariates] 
+
+```{r}
+# Length should match number/order of columns in fDesign
+occFormulas21 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','~lion_camera','~lion_camera','~lion_camera','~lion_camera','~lion_camera','~lion_camera', '0', '0', '0', '0', '0')
+
+fit21 <- occuMulti(detFormulas1, stateformulas = occFormulas21, data)
+
+fit21
+
+fit22 <- occuMulti(detFormulas2, stateformulas = occFormulas21, data)
+
+fit22
+
+fit23 <- occuMulti(detFormulas3, stateformulas = occFormulas21, data)
+
+fit23
 ```
+
 
