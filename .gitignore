@@ -45,3 +45,5 @@ data/
 *.Rproj
 
 *.RData
+
+scripts/alternative-multispecies-model/figures
