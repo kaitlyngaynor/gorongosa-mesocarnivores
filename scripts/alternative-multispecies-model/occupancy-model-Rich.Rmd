@@ -1,0 +1,224 @@
+---
+title: "Gorongosa_occupancy"
+author: "Kaitlyn Gaynor & Lindsey Rich"
+date: "2/28/20"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+Multi-species occupancy modeling
+
+Get set-up. Load libraries, etc.
+```{r setup}
+library(R2jags)
+library(reshape)
+library(reshape2)
+library(plyr)
+library(dplyr)
+library(here)
+library(tidyverse)
+```
+
+Define function for standardizing the covariates. You'll need this later.
+```{r stdev}
+zstd <- function (x)  (x-mean(x,na.rm = T))/sd(x,na.rm = T)  
+```
+
+# Import and manipulate detection/operation histories.
+
+```{r import seasonal detections - rainfall}
+D <- read.csv("scripts/alternative-multispecies-model/detections-dry2016_katie-8_1_16-11_30_16.csv")
+Camop <- read.csv("scripts/alternative-multispecies-model/camoperation-dry2016_katie-8_1_16-11_30_16.csv")
+```
+
+
+# Import the rest of the data (species ID/traits, metadata).
+```{r import other data}
+Spp <- read.csv("~/Documents/github-repos/gorongosa/gorongosa-camera-traps/data/2018spp_kingdon.csv") # Species IDs and traits
+Covariates <- read.csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster.csv")
+
+# Reorganize detection dataframe, so that it has one column for species and one for detections (rather than a column for each species)
+D <- melt(D,vars = c("StudySite"))
+colnames(D)[2:3] = c("SppCode","Detections")
+head(D) # make sure it worked
+
+# Combine detection history with StudySite covariates and species traits
+D <- merge(D, Covariates, by = "StudySite") # joins by StudySite
+D <- merge(D, Camop, by = "StudySite") # joins by StudySite
+D <- merge(D, Spp, by = "SppCode") # joins by SppCode
+head(D)
+
+# filter out only carnivores (but not lions)
+D <- D %>% filter(Order == "Carnivora") %>% filter(SppCode != "PALE")
+
+# drop levels
+D$SppCode <- droplevels(D$SppCode)
+
+# sort to get back in order
+D <- arrange(D, SppCode, StudySite)
+```
+
+Save species names for use later when exporting model results
+```{r save species names}
+# sppnames2 is just missing 'SppCode' line
+sppnames <- c("SppCode", as.character(unique(D$SppCode)))
+sppnames2 <- as.character(unique(D$SppCode))
+```
+
+# Run model
+
+This model includes all six covariates from original analysis.
+```{r dry season both years with covariates}
+# select occupancy covariates
+X = dplyr::select(D, termite.count.100m, urema_dist, tree_hansen)
+# normalize them
+X = apply(X,2,zstd)
+
+## select detection covariates
+dX = dplyr::select(D, detect.obscured, cover.ground)
+
+# normalize them
+dX = apply(dX,2,zstd)
+
+# Define data and parameters. Load all the data including the detection array, number of sampling occasions, individual species sampled, total number of sampled species, and covariate information.
+data <- list(D = D$Detections, # number of detections
+             N = ceiling(D[,"Operation"]), # number of trap-nights for each StudySite
+             Species = as.numeric(as.factor(D$SppCode)), # species
+             n = nrow(D), 
+             nspp = max(as.numeric(as.factor(D$SppCode))),
+             X = X, 
+             dX = dX)
+
+# specify the initial values
+inits = function() {list(Z = as.numeric(data$D>0))}
+
+# specify the parameters to be monitored
+params = c("rho","pbeta","spbeta","sigpbeta","mbeta","sigbeta","sbeta","psi.mean","sigma.occ","p.mean","sigma.p","alpha","Z","P")
+
+nc = 3       # number of chains
+ni = 60000   # number of iterations
+nb = 10000  # burn-in period
+nthin = 50   # thinning rate
+
+
+# Run occupancy model. The model file must be in the correct folder (see script AllMammals_pcov.txt)
+out3 <- jags(data = data, 
+             inits = inits, 
+             parameters.to.save = params, 
+             model.file ="scripts/alternative-multispecies-model/AllMammals_pcov_nogroup.txt", 
+             n.chains = nc, 
+             n.iter = ni,
+             n.burnin = nb, 
+             n.thin = nthin)
+
+out3.sum <- out3$BUGSoutput$summary
+```
+
+# Export the results
+
+### Occupancy and detection probabilities
+```{r}
+write.table(x=out3.sum,file="scripts/alternative-multispecies-model/results/mesocarnivore.csv",sep=",", row.names=F) # save output
+
+#Name this output alpha and P.
+alpha <- out3$BUGSoutput$sims.list$alpha
+p <- out3$BUGSoutput$sims.list$P
+
+# we are log transforming alphas b/c they are on logit scale.
+expit <- function(x)  1/(1+exp(-x))
+logit.alpha <- expit(alpha)
+logit.p <- expit(p)
+
+# Columns represent species, so we take the mean of each column to get the mean psi and p value (when covariates are at their mean values) for each species.
+
+psimeans <- colMeans(logit.alpha)
+names(psimeans) <- sppnames2
+psimeans <- as.data.frame(psimeans)
+write.table(x = psimeans, file = "scripts/alternative-multispecies-model/results/mesocarnivore_alphaspsi()p().csv", sep = ",")
+
+pmeans <- colMeans(logit.p)
+names(pmeans) <- sppnames2
+write.table(x = pmeans, file = "scripts/alternative-multispecies-model/results/mesocarnivore_detection.csv", sep=",")
+
+# Get the quantiles and 95% confidence intervals for psi and p.
+
+apply(logit.alpha, 2, function(x) sort(x)[])
+psiCI <- apply(logit.alpha, 2, function(x) quantile(x,probs = c(0.025,0.1,0.5,0.9,0.975)))
+colnames(psiCI) <- sppnames2
+write.table(x=psiCI, file="scripts/alternative-multispecies-model/results/mesocarnivore_alphaCI.psi()p().csv",sep=",")
+
+apply(logit.p, 2, function(x) sort(x)[])
+pCI <- apply(logit.p, 2, function(x) quantile(x,probs = c(0.025,0.1,0.5,0.9,0.975)))
+colnames(pCI) <- sppnames2
+write.table(x = pCI, file="scripts/alternative-multispecies-model/results/mesocarnivore_pCI.psi()p().csv", sep = ",")
+```
+
+### Occupancy covariate effects
+```{r}
+# Define the occupancy covariate effects where mbeta is the community-level hyperparameter and sbeta is the species-specific parameter.
+mbeta <- out3$BUGSoutput$sims.list$mbeta
+sbeta <- out3$BUGSoutput$sims.list$sbeta
+
+# Define the species
+spec <- unique(D$SppCode)
+
+# Define the occupancy covariates
+covs <- colnames(X)
+
+# Create a data frame where the number of rows is equal to the number of covariates * the number of species
+species <- data.frame(expand.grid(covs,spec), matrix(NA,length(covs)*length(spec),4))
+colnames(species) <- c("Factor","Species","Mean","SD","LCI","UCI")
+
+# Create a loop that will estimate species-specific values for each of the covariates
+for (a in 1:length(covs)){
+  for (b in 1:length(spec)){
+    sims <- mbeta[,a] + sbeta[,b,a]
+    species[(ncol(X)*(b-1)+a),3:6] <- c(mean(sims),sd(sims),quantile(sims,c(0.025,0.975)))
+  }
+}
+
+# export the table
+write.table(x=species,file="scripts/alternative-multispecies-model/results/mesocarnivore_species.csv",sep=",", row.names=F) 
+
+# calculate distributions for community hyperparameters
+comm_param <- as.data.frame(mbeta)
+names(comm_param) <- covs
+head(comm_param)
+comm_param_long <- comm_param %>% 
+  pivot_longer(cols = everything(), names_to = "Factor", values_to = "Value")
+write.csv(comm_param_long, "scripts/alternative-multispecies-model/results/mesocarnivore_communityposteriors.csv", row.names = F)
+```
+
+## Species richness
+```{r}
+# Species richness for each site
+
+# Define the z matrix
+z = out3$BUGSoutput$sims.list$Z
+
+# Sort the data frame based on species, study site
+d <- sort_df(merge(data.frame(ID = 1:nrow(D),D[,1:2]),data.frame(SppCode = spec)),"ID")[,c(1,3)]
+
+# Create a new data frame
+dz <- data.frame(d,t(z))
+
+# Melt the data frame for easy casting
+m.dz <- melt(dz,id.vars = c("SppCode","StudySite"))
+
+# Aggregate the data by summing the values in the z matrix for each camera station during each iteration
+z.all <- acast(m.dz,StudySite ~ variable, fun.aggregate = sum)
+
+write.table(x=z.all,file="scripts/alternative-multispecies-model/results/mesocarnivore_rawrichnessdistribution.csv",sep=",")
+
+# Use the aggregated values to create probability distributions and estimate mean, sd, and 95% credible interval values for camera-station specific species richness
+z.all <- t(apply(z.all,1,function(x) c(mean(x),sd(x),quantile(x,c(0.025,0.975)))))
+names <- rownames(z.all)
+rownames(z.all) <- NULL
+z.all <- cbind(names,z.all)
+colnames(z.all) = c("StudySite", "Mean","SD","LCI","UCI")
+# not working anymore, hmm, skipping for now
+
+# Export estimates of species richness as a table
+write.table(x=z.all,file="scripts/alternative-multispecies-model/results/mesocarnivore_spprich.csv",sep=",", row.names=F)
+```
