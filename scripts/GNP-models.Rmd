@@ -38,7 +38,7 @@ occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TR
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
 occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
 occ_covs$termite.large.count.100m = scale(occ_covs$termite.large.count.100m)
-occ_covs$lion_camera = scale(occ_covs$lion_camera)
+occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
 
 data <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs)
@@ -199,6 +199,11 @@ fit22
 fit23 <- occuMulti(detFormulas3, stateformulas = occFormulas21, data)
 
 fit23
+
+#null model
+fit44 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
+
+fit44
 ```
 
 
