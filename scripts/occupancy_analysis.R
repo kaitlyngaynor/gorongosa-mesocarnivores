@@ -130,6 +130,6 @@ GNP_p_covariates <- select(cam_meta, detect.obscured, cover.ground)
 write_csv(GNP_p_covariates, "data/gorongosa-cameras/GNP p covariates.csv", col_names = T)
 
 #make table with all covariates (environmental and detection)
-GNP_covariates <- select(cam_meta, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, detect.obscured, cover.ground)
+GNP_covariates <- select(cam_meta, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground)
 
 write_csv(GNP_covariates, "data/gorongosa-cameras/GNP covariates.csv", col_names = T)
