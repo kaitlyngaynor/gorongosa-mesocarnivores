@@ -20,16 +20,6 @@ termite <- ggplot(site.richness, aes(x = termite.count.100m, y = Mean)) +
     ylab("Mesocarnivore Richness") + 
     theme_bw() 
 
-# plot species richness vs road distance
-road <- ggplot(site.richness, aes(x = road_major_dist/1000, y = Mean)) + 
-    geom_errorbar(aes(ymin=LCI, ymax=UCI), width=0, colour = "lightgrey") +
-    geom_point() + 
-    geom_smooth(method = lm, se = F, col = "black", linetype = "dashed", size = 0.5) +
-    xlab("Proximity to Road (km)") +
-    ylab("Mesocarnivore Richness") + 
-    theme_bw() +
-    scale_x_reverse() 
-
 # plot species richness vs Urema distance
 lake <- ggplot(site.richness, aes(x = urema_dist/1000, y = Mean)) + 
     geom_errorbar(aes(ymin=LCI, ymax=UCI), width=0, colour = "lightgrey") +
@@ -50,5 +40,5 @@ tree <- ggplot(site.richness, aes(x = tree_hansen, y = Mean)) +
     theme_bw()
 
 pdf("scripts/alternative-multispecies-model/figures/richness-covariates.pdf", width = 10, height = 6, useDingbats = FALSE)
-ggarrange(tree, lake, termite, road)
+ggarrange(tree, lake, termite)
 dev.off()
