@@ -13,6 +13,8 @@ occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
 occ_covs$termite.large.count.100m = scale(occ_covs$termite.large.count.100m)
 occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
+occ_covs$fire_frequency = scale(occ_covs$fire_frequency)
+occ_covs$pans_100m = scale(occ_covs$pans_100m)
 
 genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 
@@ -35,3 +37,9 @@ genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 (genet_fit9 <- occu(~cover.ground+detect.obscured ~termite.large.count.100m+lion_latedry, genet_data))
 
 (genet_fit10 <- occu(~cover.ground+detect.obscured ~tree_hansen+lion_latedry, genet_data))
+
+(genet_fit11 <- occu(~cover.ground+detect.obscured ~fire_frequency, genet_data))
+
+(genet_fit12 <- occu(~cover.ground+detect.obscured ~pans_100m, genet_data))
+
+(genet_fit12 <- occu(~cover.ground+detect.obscured ~urema_dist+fire_frequency, genet_data))
