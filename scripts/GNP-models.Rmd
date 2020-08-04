@@ -199,6 +199,11 @@ fit22
 fit23 <- occuMulti(detFormulas3, stateformulas = occFormulas21, data)
 
 fit23
+
+#null model
+fit44 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
+
+fit44
 ```
 
 
