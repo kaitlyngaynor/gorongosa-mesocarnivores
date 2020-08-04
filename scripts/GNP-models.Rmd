@@ -69,7 +69,7 @@ f10: honey badger: marsh mongoose
 # dummy model
 
 # Length should match number/order of columns in fDesign
-occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion_camera','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion_latedry','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
 
 #Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
 detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
@@ -118,92 +118,109 @@ coef(fl)
 
 #starting to think about actual models with ecological background [type 1, no species interactions]
 ```{r}
+#null model for both occ and det
+fit0 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','0','0','0','0','0','0','0','0','0','0','0'), data)
+
+fit0
+
+#null model for only occ
+fit00 <- occuMulti(detformulas = c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground'), stateformulas = c('~1', '~1', '~1', '~1','0','0','0','0','0','0','0','0','0','0','0'), data)
+
+fit00
+
 # Length should match number/order of columns in fDesign
 occFormulas1 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','0','0','0','0','0','0', '0', '0', '0', '0', '0')
 
 #Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
-detFormulas1 <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
+detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
 
-fit1 <- occuMulti(detFormulas1, stateformulas = occFormulas1, data)
+fit1 <- occuMulti(detFormulas, stateformulas = occFormulas1, data)
 
 fit1
 
-detFormulas2 <- c('~cover.ground', '~cover.ground', '~cover.ground', '~cover.ground')
+occFormulas2 <- c('~urema_dist+tree_hansen','~urema_dist + tree_hansen','~termite.large.count.100m + tree_hansen','~urema_dist + tree_hansen','0','0','0','0','0','0', '0', '0', '0', '0', '0')
 
-fit2 <- occuMulti(detFormulas2, stateformulas = occFormulas1, data)
+fit2 <- occuMulti(detFormulas, stateformulas = occFormulas2, data)
 
 fit2
 
-detFormulas3 <- c('~detect.obscured', '~detect.obscured', '~detect.obscured', '~detect.obscured')
+#trying a model based on results from single species explorations
+occFormulas3 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','0','0','0','0','0','0', '0', '0', '0', '0', '0')
 
-fit3 <- occuMulti(detFormulas3, stateformulas = occFormulas1, data)
+fit3 <- occuMulti(detFormulas, stateformulas = occFormulas3, data)
 
 fit3
-
-occFormulas2 <- c('~urema_dist+tree_hansen','~urema_dist + tree_hansen','~termite.large.count.100m + tree_hansen','~urema_dist + tree_hansen','0','0','0','0','0','0', '0', '0', '0', '0', '0')
-
-fit4 <- occuMulti(detFormulas1, stateformulas = occFormulas2, data)
-
-fit4
-
-fit5 <- occuMulti(detFormulas2, stateformulas = occFormulas2, data)
-
-fit5
-
-fit6 <- occuMulti(detFormulas3, stateformulas = occFormulas2, data)
-
-fit6
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
 ```{r}
+#null model
+fit01 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
+
+fit01
+
+#null model
+fit001 <- occuMulti(detformulas = c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
+
+fit001
+
 # Length should match number/order of columns in fDesign
+#single 'best' occ covariate from reading
 occFormulas11 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
 
 #Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
-detFormulas1 <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
+detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
 
-fit11 <- occuMulti(detFormulas1, stateformulas = occFormulas11, data)
-
+fit11 <- occuMulti(detFormulas, stateformulas = occFormulas11, data)
 
 #why does this not produce anything except estimates?
 fit11
 
-detFormulas2 <- c('~cover.ground', '~cover.ground', '~cover.ground', '~cover.ground')
+#top two occ covariates from reading
+occFormulas12 <- c('~urema_dist+tree_hansen','~urema_dist + tree_hansen','~termite.large.count.100m + tree_hansen','~urema_dist + tree_hansen','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
 
-fit12 <- occuMulti(detFormulas2, stateformulas = occFormulas11, data)
+fit12 <- occuMulti(detFormulas, stateformulas = occFormulas12, data)
 
 fit12
 
-detFormulas3 <- c('~detect.obscured', '~detect.obscured', '~detect.obscured', '~detect.obscured')
+#best occ covariates from single species exploration
+occFormulas13 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
 
-fit13 <- occuMulti(detFormulas3, stateformulas = occFormulas11, data)
+fit13 <- occuMulti(detFormulas, stateformulas = occFormulas13, data)
 
 fit13
+
 ```
 
 #starting to think about actual models with ecological background [type 3, includes interaction covariates] 
 
 ```{r}
 # Length should match number/order of columns in fDesign
-occFormulas21 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','~lion_camera','~lion_camera','~lion_camera','~lion_camera','~lion_camera','~lion_camera', '0', '0', '0', '0', '0')
+occFormulas21 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry', '0', '0', '0', '0', '0')
 
-fit21 <- occuMulti(detFormulas1, stateformulas = occFormulas21, data)
+fit21 <- occuMulti(detFormulas, stateformulas = occFormulas21, data)
 
 fit21
 
-fit22 <- occuMulti(detFormulas2, stateformulas = occFormulas21, data)
+#top two occ covariates from reading
+occFormulas22 <- c('~urema_dist+tree_hansen','~urema_dist + tree_hansen','~termite.large.count.100m + tree_hansen','~urema_dist + tree_hansen','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry', '0', '0', '0', '0', '0')
+
+fit22 <- occuMulti(detFormulas, stateformulas = occFormulas22, data)
 
 fit22
 
-fit23 <- occuMulti(detFormulas3, stateformulas = occFormulas21, data)
+#best occ covariates from single species exploration
+occFormulas23 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry', '0', '0', '0', '0', '0')
+
+fit23 <- occuMulti(detFormulas, stateformulas = occFormulas23, data)
 
 fit23
+```
 
 #null model
-fit44 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
+```{r}
 
-fit44
+
 ```
 
 
