@@ -217,10 +217,32 @@ fit23 <- occuMulti(detFormulas, stateformulas = occFormulas23, data)
 fit23
 ```
 
-#null model
+#model comparisons
 ```{r}
+#List of fitted models
+fl <- fitList(fit0, fit00, fit1, fit2, fit3, fit01, fit001, fit11, fit12, fit13, fit21, fit22, fit23)
+coef(fl)
 
+#Model selection
+modsel <- modSel(fl)
+modSel(fl)
+summary(modsel)
+
+ms <- modSel(fl, nullmod="fit0")
+ms
+ 
+coef(ms)                            # Estimates only
+SE(ms)                              # Standard errors only
+(toExport <- as(ms, "data.frame"))  # Everything as a data frame
 
 ```
 
+```{r}
+#conditional occupancy
+head(predict(fit,'state',species=2,cond=3)) #tiger | bear present
+head(predict(fit,'state',species='tiger',cond='bear')) #tiger | bear present
+head(predict(fit,'state',species='tiger',cond='-bear')) #bear absent
+head(predict(fit,'state',species='tiger',cond=c('coyote','-bear')))
+
+```
 
