@@ -105,11 +105,11 @@ lapply(predict(fit,'state'),head)
 lapply(predict(fit,'det'),head)
 
 #marginal occupancy
-head(predict(fit,'state',species='civet'))
-head(predict(fit,'state',species='genet')) # why is this all 1 / 0 / 0?
-head(predict(fit,'state',species='honey badger'))
-head(predict(fit,'state',species='marsh mongoose'))
-head(predict(fit,'det',species='civet')) # why are all of these the same?
+predict(fit,'state',species='civet'))
+predict(fit,'state',species='genet')) # why is this all 1 / 0 / 0?
+predict(fit,'state',species='honey badger'))
+predict(fit,'state',species='marsh mongoose'))
+predict(fit,'det',  species='civet')) # why are all of these the same?
 
 #used to compare outcomes 
 fl <- fitList(fit,fit2, fit3)
