@@ -150,6 +150,17 @@ occFormulas3 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema
 fit3 <- occuMulti(detFormulas, stateformulas = occFormulas3, data)
 
 fit3
+
+#gives a list with one element for the state model
+occ3 <- summary(fit3[1]) 
+det3 <- summary(fit3[2])
+
+write_csv(occ3, "data/gorongosa-cameras/occ3.csv", col_names = T)
+
+#never writes row names
+write_csv(det3, "data/gorongosa-cameras/det3.csv", col_names = T)
+
+fit3
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
