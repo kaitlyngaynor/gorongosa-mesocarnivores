@@ -195,6 +195,7 @@ civet_urema_predict <- cbind(civet_urema_predict, dummy_urema)
 ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
+    ylim(0,1) +
     theme_bw()
 
 # GENET & LAKE UREMA
