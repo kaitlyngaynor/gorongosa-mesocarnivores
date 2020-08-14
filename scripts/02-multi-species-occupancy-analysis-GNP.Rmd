@@ -239,7 +239,7 @@ SE(ms)                              # Standard errors only
 
 ```{r}
 #conditional occupancy
-head(predict(fit,'state',species=2,cond=3)) #tiger | bear present
+head(predict(fit3,'state',species='civet',cond='genet')) #civet | genet present
 head(predict(fit,'state',species='tiger',cond='bear')) #tiger | bear present
 head(predict(fit,'state',species='tiger',cond='-bear')) #bear absent
 head(predict(fit,'state',species='tiger',cond=c('coyote','-bear')))
