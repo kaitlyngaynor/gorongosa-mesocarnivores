@@ -261,6 +261,44 @@ occFormulas35 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urem
 fit35 <- occuMulti(detFormulas, stateformulas = occFormulas35, data)
 
 fit35
+
+occFormulas36 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
+
+fit36 <- occuMulti(detFormulas, stateformulas = occFormulas36, data)
+
+fit36
+
+occFormulas37 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit37 <- occuMulti(detFormulas, stateformulas = occFormulas37, data)
+
+fit37
+
+occFormulas38 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit38 <- occuMulti(detFormulas, stateformulas = occFormulas38, data)
+
+fit38
+
+occFormulas39 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
+
+fit39 <- occuMulti(detFormulas, stateformulas = occFormulas39, data)
+
+fit39
+
+occFormulas40 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
+
+fit40 <- occuMulti(detFormulas, stateformulas = occFormulas40, data)
+
+fit40
+
+occFormulas41 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
+
+fit41 <- occuMulti(detFormulas, stateformulas = occFormulas41, data)
+
+fit41
+
+
 ```
 #model comparisons
 ```{r}
