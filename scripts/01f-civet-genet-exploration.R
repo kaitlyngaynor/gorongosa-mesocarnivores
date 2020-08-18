@@ -40,9 +40,21 @@ data@ylist
 #f2: civet
 #f3: genet-civet
 
-occFormulas61 <- c('~urema_dist','~urema_dist + termite.large.count.100m', '~1')
+occFormulas61 <- c('~urema_dist','~urema_dist + termite.large.count.100m', '0')
 detFormulas61 <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
 
-fit61 <- occuMulti(detFormulas61, stateformulas = occFormulas61, data)
+fit61 <- occuMulti(detFormulas61, stateformulas = occFormulas61, data = data61)
 
 fit61
+
+occFormulas62 <- c('~urema_dist','~urema_dist + termite.large.count.100m', '~1')
+
+fit62 <- occuMulti(detFormulas61, stateformulas = occFormulas62, data = data61)
+
+fit62
+
+occFormulas63 <- c('~urema_dist','~urema_dist + termite.large.count.100m', '~lion_latedry')
+
+fit63 <- occuMulti(detFormulas61, stateformulas = occFormulas63, data = data61)
+
+fit63
