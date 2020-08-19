@@ -28,7 +28,7 @@ marshmongoose_dh <-read_csv("data/gorongosa-cameras/marsh_mongoose.csv", col_nam
 
 #I know I could have done this in the function, but separating it made more sense for me
 y <- list(genet_dh, civet_dh, honeybadger_dh, marshmongoose_dh)
-names(y) <- c('genet','civet','honey badger', 'marsh mongoose')
+names(y) <- c('genet','civet','honey_badger', 'marsh_mongoose')
 
 #load occupancy covariates
 #leaving the column names in for now
@@ -105,11 +105,11 @@ lapply(predict(fit,'state'),head)
 lapply(predict(fit,'det'),head)
 
 #marginal occupancy
-predict(fit,'state',species='civet'))
-predict(fit,'state',species='genet')) # why is this all 1 / 0 / 0?
-predict(fit,'state',species='honey badger'))
-predict(fit,'state',species='marsh mongoose'))
-predict(fit,'det',  species='civet')) # why are all of these the same?
+predict(fit,'state',species='civet')
+predict(fit,'state',species='genet') # why is this all 1 / 0 / 0?
+predict(fit,'state',species='honey_badger')
+predict(fit,'state',species='marsh_mongoose')
+predict(fit,'det',  species='civet') # why are all of these the same?
 
 #used to compare outcomes 
 fl <- fitList(fit,fit2, fit3)
@@ -161,6 +161,58 @@ write_csv(occ3, "data/gorongosa-cameras/occ3.csv", col_names = T)
 write_csv(det3, "data/gorongosa-cameras/det3.csv", col_names = T)
 
 fit3
+```
+
+#Try to predict model output
+```{r}
+# explore "predict" function
+predictions <- predict(fit3, type = "state") # predicts based on the covariates at the 60 cameras
+head(predictions$Predicted) # each row corresponds to camera, each column corresponds to a given state
+rowSums(predictions$Predicted) # should sum to 1 (they do)
+predictions$Predicted
+predict(fit3, type = "state", species = "civet")
+# MAKE DUMMY DATA
+# lake urema
+urema_dist_scalelist <- list(scale = attr(occ_covs$urema_dist, "scaled:scale"),
+                      center = attr(occ_covs$urema_dist, "scaled:center"))
+dummy_urema <- data.frame(urema_dist = seq(min(occ_covs$urema_dist, na.rm=T), max(occ_covs$urema_dist, na.rm=T), by = 0.001)) %>%
+  mutate(termite.large.count.100m = 0,
+         tree_hansen = 0,
+         detect.obscured = 0,
+         cover.ground = 0,
+         urema_unscaled = (urema_dist * urema_dist_scalelist$scale + urema_dist_scalelist$center)/1000)
+# CIVET & LAKE UREMA
+civet_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="civet")
+civet_urema_predict <- cbind(civet_urema_predict, dummy_urema)
+ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
+    geom_line() +
+    ylim(0,1) +
+    theme_bw()
+# GENET & LAKE UREMA
+genet_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="genet")
+genet_urema_predict <- cbind(genet_urema_predict, dummy_urema)
+ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
+    geom_line() +
+    ylim(0,1) +
+    theme_bw()
+# HONEY BADGER & LAKE UREMA
+honey_badger_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="honey_badger")
+honey_badger_urema_predict <- cbind(honey_badger_urema_predict, dummy_urema)
+ggplot(data = honey_badger_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
+    geom_line() +
+    ylim(0,1) +
+    theme_bw()
+# MARSH MONGOOSE & LAKE UREMA
+marsh_mongoose_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="marsh_mongoose")
+marsh_mongoose_urema_predict <- cbind(marsh_mongoose_urema_predict, dummy_urema)
+ggplot(data = marsh_mongoose_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
+    geom_line() +
+    ylim(0,1) +
+    theme_bw()
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
