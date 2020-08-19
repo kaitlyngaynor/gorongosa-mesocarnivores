@@ -9,7 +9,7 @@ editor_options:
 Here we go!
 #install packages 
 ```{r}
-library("unmarked") #install.packages("unmarked")
+library("unmarked") #install.packages("unmarked") 
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
@@ -161,6 +161,7 @@ write_csv(occ3, "data/gorongosa-cameras/occ3.csv", col_names = T)
 write_csv(det3, "data/gorongosa-cameras/det3.csv", col_names = T)
 
 fit3
+
 ```
 
 #Try to predict model output
