@@ -172,6 +172,7 @@ head(predictions$Predicted) # each row corresponds to camera, each column corres
 rowSums(predictions$Predicted) # should sum to 1 (they do)
 predictions$Predicted
 predict(fit3, type = "state", species = "civet")
+
 # MAKE DUMMY DATA
 # lake urema
 urema_dist_scalelist <- list(scale = attr(occ_covs$urema_dist, "scaled:scale"),
@@ -182,6 +183,7 @@ dummy_urema <- data.frame(urema_dist = seq(min(occ_covs$urema_dist, na.rm=T), ma
          detect.obscured = 0,
          cover.ground = 0,
          urema_unscaled = (urema_dist * urema_dist_scalelist$scale + urema_dist_scalelist$center)/1000)
+
 # CIVET & LAKE UREMA
 civet_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="civet")
 civet_urema_predict <- cbind(civet_urema_predict, dummy_urema)
