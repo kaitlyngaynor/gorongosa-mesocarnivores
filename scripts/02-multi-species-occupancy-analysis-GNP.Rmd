@@ -9,7 +9,7 @@ editor_options:
 Here we go!
 #install packages 
 ```{r}
-library("unmarked") #install.packages("unmarked") 
+library("unmarked")  #install.packages("unmarked") 
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
@@ -41,7 +41,19 @@ occ_covs$termite.large.count.100m = scale(occ_covs$termite.large.count.100m)
 occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
 
-data <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs)
+# load in GNP cam metadata
+cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
+
+# make p covariates table (detection)
+GNP_p_covariates <- select(cam_meta, detect.obscured, cover.ground)
+
+write_csv(GNP_p_covariates, "data/gorongosa-cameras/GNP p covariates.csv", col_names = T)
+
+#this is a workaround because there's a bug in the package that doesn't allow me to put the detection covariates into siteCovs
+#so this repeats each site-level detection covariate for every sample day
+det_covs <- GNP_p_covariates[rep(seq_len(nrow(GNP_p_covariates)), each = 122), ]
+
+data <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, obsCovs = det_covs)
 
 #look at data
 summary(data)
