@@ -14,7 +14,7 @@ library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
 library(patchwork) #install.packages("patchwork")
-library(ggarrange) #install.packages("ggarrange")
+library(ggpubr)  #install.packages("ggpubr")
 ```
 
 #use unmarkedFrameOccuMulti to create the data object
@@ -227,7 +227,7 @@ civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Pre
     geom_line() +
     ylim(0,1) +
     theme_bw() +
-    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema (km)") 
+    labs(x = "Distance to Lake Urema (km)") 
 
 pdf("scripts/figures//civet_lake.pdf", width = 6, height = 5)
 civet_lake
@@ -241,7 +241,7 @@ genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Pre
     geom_line() +
     ylim(0,1) +
     theme_bw() +
-    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema (km)") 
+    labs(x = "Distance to Lake Urema (km)") 
 
 # HONEY BADGER & LAKE UREMA
 honey_badger_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="honey_badger")
@@ -251,7 +251,7 @@ honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_uns
     geom_line() +
     ylim(0,1) +
     theme_bw()+
-    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema (km)") 
+    labs(x = "Distance to Lake Urema (km)") 
 
 # MARSH MONGOOSE & LAKE UREMA
 marsh_mongoose_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="marsh_mongoose")
@@ -261,7 +261,7 @@ marsh_mongoose_lake <- ggplot(data = marsh_mongoose_urema_predict, aes(x = urema
     geom_line() +
     ylim(0,1) +
     theme_bw() +
-    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema (km)") 
+    labs( x = "Distance to Lake Urema (km)") 
 
 #CIVET & TERMITE
 civet_termite_predict <- predict(fit3, type = 'state', newdata = dummy_termite, species="civet")
@@ -271,7 +271,7 @@ civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled, 
     geom_line() +
     ylim(0,1) +
     theme_bw() +
-    labs(y = "Probability of Occupancy", x = "Number of Termite Mounds within 100m") 
+    labs(x = "Number of Termite Mounds within 100m") 
 
 #MARSH MONGOOSE & TERMITE
 marsh_mongoose_termite_predict <- predict(fit3, type = 'state', newdata = dummy_termite, species="marsh_mongoose")
@@ -281,7 +281,7 @@ marsh_mongoose_termite <- ggplot(data = marsh_mongoose_termite_predict, aes(x = 
     geom_line() +
     ylim(0,1) +
     theme_bw() +
-    labs(y = "Probability of Occupancy", x = "Number of Termite Mounds within 100m") 
+    labs( x = "Number of Termite Mounds within 100m") 
 
 #HONEY BADGER & TREE
 honey_badger_tree_predict <- predict(fit3, type = 'state', newdata = dummy_tree, species="honey_badger")
@@ -291,16 +291,19 @@ honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unsca
     geom_line() +
     ylim(0,1) +
     theme_bw() +
-    labs(y = "Probability of Occupancy", x = "Percent Tree Cover") 
-
+    labs( x = "Percent Tree Cover") 
+#
 # now put everything together with patchwork!
-grid <- (civet_lake + genet_lake + honey_badger_lake) /
-        (civet_termite + marsh_mongoose_termite + plot_spacer()) /
-        (honey_badger_tree + plot_spacer()) + plot_spacer()
+grid <- (civet_lake + civet_termite) /
+        (honey_badger_lake + honey_badger_tree) /
+        (genet_lake + marsh_mongoose_termite)
   # add plot labels
  plot_annotation(title = "Marginal Occupancies", tag_suffix = ")")
 
-grid
+#grid
+
+#also trying with ggarrange
+ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, ncol = 2, nrow = 3, labels = c("civet", "", "honey badger", "", "genet", "marsh mongoose"))
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
