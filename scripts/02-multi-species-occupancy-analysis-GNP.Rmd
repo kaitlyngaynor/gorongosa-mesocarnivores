@@ -14,6 +14,7 @@ library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
 library(patchwork) #install.packages("patchwork")
+library(ggarrange) #install.packages("ggarrange")
 ```
 
 #use unmarkedFrameOccuMulti to create the data object
@@ -292,7 +293,14 @@ honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unsca
     theme_bw() +
     labs(y = "Probability of Occupancy", x = "Percent Tree Cover") 
 
-patchwork(civet_lake, genet_lake)
+# now put everything together with patchwork!
+grid <- (civet_lake + genet_lake + honey_badger_lake) /
+        (civet_termite + marsh_mongoose_termite + plot_spacer()) /
+        (honey_badger_tree + plot_spacer()) + plot_spacer()
+  # add plot labels
+ plot_annotation(title = "Marginal Occupancies", tag_suffix = ")")
+
+grid
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
