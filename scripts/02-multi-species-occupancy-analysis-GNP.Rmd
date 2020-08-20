@@ -13,6 +13,7 @@ library("unmarked")  #install.packages("unmarked")
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
+library(patchwork) #install.packages("patchwork")
 ```
 
 #use unmarkedFrameOccuMulti to create the data object
@@ -220,66 +221,78 @@ dummy_termite <- data.frame(termite.large.count.100m = seq(min(occ_covs$termite.
 # CIVET & LAKE UREMA
 civet_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="civet")
 civet_urema_predict <- cbind(civet_urema_predict, dummy_urema)
-ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
     theme_bw() +
-    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema") 
+    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema (km)") 
+
+pdf("scripts/figures//civet_lake.pdf", width = 6, height = 5)
+civet_lake
+dev.off()
 
 # GENET & LAKE UREMA
 genet_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="genet")
 genet_urema_predict <- cbind(genet_urema_predict, dummy_urema)
-ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
-    theme_bw()
+    theme_bw() +
+    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema (km)") 
 
 # HONEY BADGER & LAKE UREMA
 honey_badger_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="honey_badger")
 honey_badger_urema_predict <- cbind(honey_badger_urema_predict, dummy_urema)
-ggplot(data = honey_badger_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
-    theme_bw()
+    theme_bw()+
+    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema (km)") 
 
 # MARSH MONGOOSE & LAKE UREMA
 marsh_mongoose_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="marsh_mongoose")
 marsh_mongoose_urema_predict <- cbind(marsh_mongoose_urema_predict, dummy_urema)
-ggplot(data = marsh_mongoose_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+marsh_mongoose_lake <- ggplot(data = marsh_mongoose_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
-    theme_bw()
+    theme_bw() +
+    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema (km)") 
 
 #CIVET & TERMITE
 civet_termite_predict <- predict(fit3, type = 'state', newdata = dummy_termite, species="civet")
 civet_termite_predict <- cbind(civet_termite_predict, dummy_termite)
-ggplot(data = civet_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
+civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
-    theme_bw()
+    theme_bw() +
+    labs(y = "Probability of Occupancy", x = "Number of Termite Mounds within 100m") 
 
 #MARSH MONGOOSE & TERMITE
 marsh_mongoose_termite_predict <- predict(fit3, type = 'state', newdata = dummy_termite, species="marsh_mongoose")
 marsh_mongoose_termite_predict <- cbind(marsh_mongoose_termite_predict, dummy_termite)
-ggplot(data = marsh_mongoose_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
+marsh_mongoose_termite <- ggplot(data = marsh_mongoose_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
-    theme_bw()
+    theme_bw() +
+    labs(y = "Probability of Occupancy", x = "Number of Termite Mounds within 100m") 
 
 #HONEY BADGER & TREE
 honey_badger_tree_predict <- predict(fit3, type = 'state', newdata = dummy_tree, species="honey_badger")
 honey_badger_tree_predict <- cbind(honey_badger_tree_predict, dummy_tree)
-ggplot(data = honey_badger_tree_predict, aes(x = tree_unscaled, y = Predicted)) +
+honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
-    theme_bw()
+    theme_bw() +
+    labs(y = "Probability of Occupancy", x = "Percent Tree Cover") 
+
+patchwork(civet_lake, genet_lake)
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
