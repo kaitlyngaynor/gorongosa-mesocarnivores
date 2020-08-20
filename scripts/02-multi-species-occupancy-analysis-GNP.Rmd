@@ -196,6 +196,27 @@ dummy_urema <- data.frame(urema_dist = seq(min(occ_covs$urema_dist, na.rm=T), ma
          cover.ground = 0,
          urema_unscaled = (urema_dist * urema_dist_scalelist$scale + urema_dist_scalelist$center)/1000)
 
+#tree_hansen
+tree_hansen_scalelist <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"),
+                      center = attr(occ_covs$tree_hansen, "scaled:center"))
+dummy_tree <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.001)) %>%
+  mutate(termite.large.count.100m = 0,
+         urema_dist = 0,
+         detect.obscured = 0,
+         cover.ground = 0,
+         tree_unscaled = (tree_hansen * tree_hansen_scalelist$scale + tree_hansen_scalelist$center))
+
+
+#termite mound
+termite_scalelist <- list(scale = attr(occ_covs$termite.large.count.100m, "scaled:scale"),
+                      center = attr(occ_covs$termite.large.count.100m, "scaled:center"))
+dummy_termite <- data.frame(termite.large.count.100m = seq(min(occ_covs$termite.large.count.100m, na.rm=T), max(occ_covs$termite.large.count.100m, na.rm=T), by = 0.001)) %>%
+  mutate(tree_hansen = 0,
+         urema_dist = 0,
+         detect.obscured = 0,
+         cover.ground = 0,
+         termite_unscaled = (termite.large.count.100m * termite_scalelist$scale + termite_scalelist$center))
+
 # CIVET & LAKE UREMA
 civet_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="civet")
 civet_urema_predict <- cbind(civet_urema_predict, dummy_urema)
@@ -203,7 +224,9 @@ ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
-    theme_bw()
+    theme_bw() +
+    labs(y = "Probability of Occupancy", x = "Distance to Lake Urema") 
+
 # GENET & LAKE UREMA
 genet_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="genet")
 genet_urema_predict <- cbind(genet_urema_predict, dummy_urema)
@@ -212,6 +235,7 @@ ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
     geom_line() +
     ylim(0,1) +
     theme_bw()
+
 # HONEY BADGER & LAKE UREMA
 honey_badger_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="honey_badger")
 honey_badger_urema_predict <- cbind(honey_badger_urema_predict, dummy_urema)
@@ -220,10 +244,38 @@ ggplot(data = honey_badger_urema_predict, aes(x = urema_unscaled, y = Predicted)
     geom_line() +
     ylim(0,1) +
     theme_bw()
+
 # MARSH MONGOOSE & LAKE UREMA
 marsh_mongoose_urema_predict <- predict(fit3, type = 'state', newdata = dummy_urema, species="marsh_mongoose")
 marsh_mongoose_urema_predict <- cbind(marsh_mongoose_urema_predict, dummy_urema)
 ggplot(data = marsh_mongoose_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
+    geom_line() +
+    ylim(0,1) +
+    theme_bw()
+
+#CIVET & TERMITE
+civet_termite_predict <- predict(fit3, type = 'state', newdata = dummy_termite, species="civet")
+civet_termite_predict <- cbind(civet_termite_predict, dummy_termite)
+ggplot(data = civet_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
+    geom_line() +
+    ylim(0,1) +
+    theme_bw()
+
+#MARSH MONGOOSE & TERMITE
+marsh_mongoose_termite_predict <- predict(fit3, type = 'state', newdata = dummy_termite, species="marsh_mongoose")
+marsh_mongoose_termite_predict <- cbind(marsh_mongoose_termite_predict, dummy_termite)
+ggplot(data = marsh_mongoose_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
+    geom_line() +
+    ylim(0,1) +
+    theme_bw()
+
+#HONEY BADGER & TREE
+honey_badger_tree_predict <- predict(fit3, type = 'state', newdata = dummy_tree, species="honey_badger")
+honey_badger_tree_predict <- cbind(honey_badger_tree_predict, dummy_tree)
+ggplot(data = honey_badger_tree_predict, aes(x = tree_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
     geom_line() +
     ylim(0,1) +
