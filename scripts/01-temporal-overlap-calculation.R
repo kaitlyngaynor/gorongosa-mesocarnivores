@@ -7,7 +7,8 @@
 library(overlap) #install.packages("overlap")
 library(tidyverse)
 library(circular) #install.packages("circular")
-
+library(ggplot2)
+library(ggpubr)
 
 # load in Gorongosa record table (note: if you use read_csv from tidyverse instead of read.csv, it will automatically format date)
 record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
@@ -71,13 +72,46 @@ timeplot2(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
 timeplot2_overlap(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
-timeplot2_overlap_katie(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(2, 10))
+#only shades overlap polygon, not all banded areas
+timeplot2_overlap_katie(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5,5))
+
+#from noon to noon, rather than midnight to midnight
+honey_badger_marsh_mongoose_plot <- timeplot2_overlap_noon(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
 
 timeplot3(civets$Time.Sun, genets$Time.Sun, honey_badgers$Time.Sun)
 
 timeplot4(civets$Time.Sun, genets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
 #making one for each pair
+
+#genet:civet
+genet_civet_plot <- timeplot2_overlap_noon(genets$Time.Sun, civets$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Genet", "Civet"), lty= c(1,2), col=c("black", "blue"), bg="white")
+
+#genet:honey badger
+genet_honey_badger_plot <- timeplot2_overlap_noon(genets$Time.Sun, honey_badgers$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Genet", "Honey Badger"), lty= c(1,2), col=c("black", "blue"), bg="white")
+
+#genet:marsh mongoose
+genet_marsh_mongoose_plot <- timeplot2_overlap_noon(genets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Genet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
+
+#civet: honey badger
+civet_honey_badger_plot <- timeplot2_overlap_noon(civets$Time.Sun, honey_badgers$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Civet", "Honey Badger"), lty= c(1,2), col=c("black", "blue"), bg="white")
+
+#civet: marsh mongoose
+civet_marsh_mongoose_plot <- timeplot2_overlap_noon(civets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Civet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
+
+#honey badger: marsh mongoose
+honey_badger_marsh_mongoose_plot <- timeplot2_overlap_noon(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
+
+#arrange the plots
+ggarrange(genet_civet_plot, genet_honey_badger_plot, genet_marsh_mongoose_plot, civet_honey_badger_plot, civet_marsh_mongoose_plot, 
+          honey_badger_marsh_mongoose_plot, ncol = 2, nrow = 3)
 
 # Compare distributions with Watson test ----------------------------------
 
