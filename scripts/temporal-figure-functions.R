@@ -183,6 +183,47 @@ timeplot2_overlap_katie <-function (A, B, xscale = 24, linetype = c(1, 1), linec
   return(invisible(list(x = xx, densityA = densA, densityB = densB)))
 }
 
+# Function for plotting 2 species with  overlap (from noon to noon)----------------------------
+
+timeplot2_overlap_noon <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("black", 
+                                                                                       "black"), linewidth = c(2,2),
+                                    olapcol = "lightgrey", n.grid = 128, kmax = 3, adjust = 1, 
+                                    ...) 
+{
+  bwA <- getBandWidth(A, kmax = kmax)/adjust
+  bwB <- getBandWidth(B, kmax = kmax)/adjust
+  if (is.na(bwA) || is.na(bwB)) 
+    stop("Bandwidth estimation failed.")
+  xsc <- if (is.na(xscale))
+    1
+  else xscale/(2 * pi)
+  xxRad <- seq(pi, 3 * pi, length = n.grid)
+  xx <- xxRad * xsc
+  densA <- densityFit(A, xxRad, bwA)/xsc
+  densB <- densityFit(B, xxRad, bwB)/xsc
+  densOL <- pmin(densA, densB)
+  ylim <- c(0, max(densA, densB))
+  plot(0, 0, type = "n", ylim = ylim, xlim = range(xx), xlab = "Time of Day", 
+       ylab = "Density of Activity", xaxt = "n", ...)
+  if (is.na(xscale)) {
+    axis(1, at = c(pi, 3 * pi/2, 2* pi, 5 * pi/2, 3 * pi), labels = c(expression(pi), 
+                                                              expression(3 * pi/2), expression(2 * pi), expression(5 * 
+                                                                                                             pi/2), expression(3 * pi)))
+  }
+  else if (xscale == 24) {
+    axis(1, at = c(12, 18, 24, 30, 36), labels = c("Noon", 
+                                                 "Sunset", "Midnight", "Sunrise", "Noon"))
+  }
+  else {
+    axis(1)
+  }
+  polygon(c(c(2 * pi, 0), xx,24), c(0, 0, densOL,0), border = NA, 
+          col = olapcol)
+  lines(xx, densA, lty = linetype[1], col = linecol[1])
+  lines(xx, densB, lty = linetype[2], col = linecol[2])
+  return(invisible(list(x = xx, densityA = densA, densityB = densB)))
+}
+
 # Function for plotting 3 species ------------------------------------------
 
 timeplot3 <-function (A, B, C, xscale = 24, linecol = c("#e41a1c","#377eb8","#4daf4a"), 
