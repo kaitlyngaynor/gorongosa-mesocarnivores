@@ -63,7 +63,17 @@ honey_badger_marsh_mongoose <- overlapPlot(honey_badgers$Time.Sun, marsh_mongoos
 
 # Make overlap plots using Kaitlyn's functions --------------------------------
 source("scripts/temporal-figure-functions.R")
+
+#seeing what they all create
 timeplot1(honey_badgers$Time.Sun)
+
+timeplot2(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
+
+timeplot2_overlap(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
+
+timeplot3(civets$Time.Sun, genets$Time.Sun, honey_badgers$Time.Sun)
+
+timeplot4(civets$Time.Sun, genets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
 # Compare distributions with Watson test ----------------------------------
 
