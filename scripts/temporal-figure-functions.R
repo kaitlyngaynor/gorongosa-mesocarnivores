@@ -23,7 +23,7 @@ timeplot1 <-function (A, n.grid = 128, kmax = 3, polygoncol = "lightgrey", ...)
 }
 
 
-# Function for plotting 2 species with overlap polygon -----------------------------
+# Function for plotting 2 species without overlap polygon -----------------------------
 timeplot2<-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("#F8766D", "#00BFC4"),  linewidth = c(2, 2),
                          n.grid = 128, kmax = 3, adjust = 1, 
                         ...) 
@@ -60,10 +60,11 @@ timeplot2<-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("#F8766D
   return(invisible(list(x = xx, densityA = densA, densityB = densB)))
 }
 
-# Function for plotting 2 species with no overlap ----------------------------
+# Function for plotting 2 species with  overlap ----------------------------
 
-timeplot2_overlap <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("#4575b4", 
-                                                                           "red"), n.grid = 128, kmax = 3, adjust = 1, 
+timeplot2_overlap <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("black", 
+                                                                           "black"), 
+                        olapcol = "#8D5A82", polygoncol = c("#4575b4", "#d53e4f"), n.grid = 128, kmax = 3, adjust = 1, 
                         ...) 
 {
   bwA <- getBandWidth(A, kmax = kmax)/adjust
@@ -93,6 +94,12 @@ timeplot2_overlap <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c
   else {
     axis(1)
   }
+  polygon(c(c(2 * pi, 0), xx,24), c(0, 0, densA,0), border = NA, 
+          col = polygoncol[1])
+  polygon(c(c(2 * pi, 0), xx,24), c(0, 0, densB,0), border = NA, 
+          col = polygoncol[2])
+  polygon(c(c(2 * pi, 0), xx,24), c(0, 0, densOL,0), border = NA, 
+          col = olapcol)
   lines(xx, densA, lty = linetype[1], col = linecol[1])
   lines(xx, densB, lty = linetype[2], col = linecol[2])
   return(invisible(list(x = xx, densityA = densA, densityB = densB)))
