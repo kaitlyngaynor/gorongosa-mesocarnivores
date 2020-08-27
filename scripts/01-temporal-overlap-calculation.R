@@ -34,21 +34,26 @@ genets <- record_table_subset %>%
 honey_badgers <- record_table_subset %>%
     filter(Species == "Honey_badger")
 
+#just extract the data for marsh mongooses for the dates of interest
+marsh_mongoose <-  record_table_subset %>%
+  filter(Species == "Mongoose_marsh")
+
 # Make overlap plots ------------------------------------------------------
 
-overlapPlot(civets$Time.Sun, genets$Time.Sun)
+#genet:civet
+genet_civet <- overlapPlot(genets$Time.Sun, civets$Time.Sun)
 # shades the area corresponding to the coefficient of overlap
 # I have code for making these prettier when the time comes
 
 # Compare distributions with Watson test ----------------------------------
 
-watson.two.test(civets$Time.Sun, genets$Time.Sun)
+watson.two.test(genets$Time.Sun, civets$Time.Sun)
 # will compare means of two distributions - p value < 0.05 indicates that they are significantly different
 # you'll get a warning message to tell you that it's assuming these are radians
 
 # Calculate overlap coefficient -------------------------------------------
 
-overlapEst(civets$Time.Sun, genets$Time.Sun)
+overlapEst(genets$Time.Sun, civets$Time.Sun)
 # Dhat4 is what we want (they are just different ways to calculate; dhat4 is for sample sizes > 50)
 # this ranges from 0 (no overlap) to 1 (complete overlap)
 # it's the area of the grey polygon under the curves (area under each curve is 1)
