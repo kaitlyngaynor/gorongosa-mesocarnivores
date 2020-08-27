@@ -105,6 +105,83 @@ timeplot2_overlap <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c
   return(invisible(list(x = xx, densityA = densA, densityB = densB)))
 }
 
+# Function for plotting 2 species without overlap polygon -----------------------------
+timeplot2<-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("#F8766D", "#00BFC4"),  linewidth = c(2, 2),
+                     n.grid = 128, kmax = 3, adjust = 1, 
+                     ...) 
+{
+  bwA <- getBandWidth(A, kmax = kmax)/adjust
+  bwB <- getBandWidth(B, kmax = kmax)/adjust
+  if (is.na(bwA) || is.na(bwB)) 
+    stop("Bandwidth estimation failed.")
+  xsc <- if (is.na(xscale))
+    1
+  else xscale/(2 * pi)
+  xxRad <- seq(0, 2 * pi, length = n.grid)
+  xx <- xxRad * xsc
+  densA <- densityFit(A, xxRad, bwA)/xsc
+  densB <- densityFit(B, xxRad, bwB)/xsc
+  densOL <- pmin(densA, densB)
+  ylim <- c(0, max(densA, densB))
+  plot(0, 0, type = "n", ylim = ylim, xlim = range(xx), xlab = "Time", 
+       ylab = "Density", xaxt = "n", ...)
+  if (is.na(xscale)) {
+    axis(1, at = c(0, pi/2, pi, 3 * pi/2, 2 * pi), labels = c("0", 
+                                                              expression(pi/2), expression(pi), expression(3 * 
+                                                                                                             pi/2), expression(2 * pi)))
+  }
+  else if (xscale == 24) {
+    axis(1, at = c(0, 6, 12, 18, 24), labels = c("Midnight", 
+                                                 "Sunrise", "Noon", "Sunset", "Midnight"))
+  }
+  else {
+    axis(1)
+  }
+  lines(xx, densA, lty = linetype[1], col = linecol[1], lwd = linewidth[[1]])
+  lines(xx, densB, lty = linetype[2], col = linecol[2], lwd = linewidth[[2]])
+  return(invisible(list(x = xx, densityA = densA, densityB = densB)))
+}
+
+# Function for plotting 2 species with  overlap (Katie's edits for only filling in the overlap polygon)----------------------------
+
+timeplot2_overlap_katie <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("black", 
+                                                                                 "black"), linewidth = c(2,2),
+                              olapcol = "lightgrey", n.grid = 128, kmax = 3, adjust = 1, 
+                              ...) 
+{
+  bwA <- getBandWidth(A, kmax = kmax)/adjust
+  bwB <- getBandWidth(B, kmax = kmax)/adjust
+  if (is.na(bwA) || is.na(bwB)) 
+    stop("Bandwidth estimation failed.")
+  xsc <- if (is.na(xscale))
+    1
+  else xscale/(2 * pi)
+  xxRad <- seq(0, 2 * pi, length = n.grid)
+  xx <- xxRad * xsc
+  densA <- densityFit(A, xxRad, bwA)/xsc
+  densB <- densityFit(B, xxRad, bwB)/xsc
+  densOL <- pmin(densA, densB)
+  ylim <- c(0, max(densA, densB))
+  plot(0, 0, type = "n", ylim = ylim, xlim = range(xx), xlab = "Time of Day", 
+       ylab = "Density of Activity", xaxt = "n", ...)
+  if (is.na(xscale)) {
+    axis(1, at = c(0, pi/2, pi, 3 * pi/2, 2 * pi), labels = c("0", 
+                                                              expression(pi/2), expression(pi), expression(3 * 
+                                                                                                             pi/2), expression(2 * pi)))
+  }
+  else if (xscale == 24) {
+    axis(1, at = c(0, 6, 12, 18, 24), labels = c("Midnight", 
+                                                 "Sunrise", "Noon", "Sunset", "Midnight"))
+  }
+  else {
+    axis(1)
+  }
+  polygon(c(c(2 * pi, 0), xx,24), c(0, 0, densOL,0), border = NA, 
+          col = olapcol)
+  lines(xx, densA, lty = linetype[1], col = linecol[1])
+  lines(xx, densB, lty = linetype[2], col = linecol[2])
+  return(invisible(list(x = xx, densityA = densA, densityB = densB)))
+}
 
 # Function for plotting 3 species ------------------------------------------
 
