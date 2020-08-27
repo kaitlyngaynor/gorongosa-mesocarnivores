@@ -71,9 +71,13 @@ timeplot2(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
 timeplot2_overlap(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
+timeplot2_overlap_katie(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(2, 10))
+
 timeplot3(civets$Time.Sun, genets$Time.Sun, honey_badgers$Time.Sun)
 
 timeplot4(civets$Time.Sun, genets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
+
+#making one for each pair
 
 # Compare distributions with Watson test ----------------------------------
 
