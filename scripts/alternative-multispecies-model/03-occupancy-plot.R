@@ -13,7 +13,7 @@ alpha <- cbind(alpha, alpha.ci) %>% rownames_to_column(var = "SppCode") # merge 
 names(alpha) <- c("SppCode", "alpha_occupancy", "alpha_025", "alpha_10", "alpha_50", "alpha_90", "alpha_975") # change names to match code
 
 # bring in species (for full common names)
-Spp <- read.csv("~/Documents/github-repos/gorongosa/gorongosa-camera-traps/data/2018spp_kingdon.csv") # Species IDs and traits
+Spp <- read.csv("data/gorongosa-cameras/2018spp_kingdon.csv") # Species IDs and traits
 
 # combine and reorder factors
 data_to_plot <- alpha %>% 
