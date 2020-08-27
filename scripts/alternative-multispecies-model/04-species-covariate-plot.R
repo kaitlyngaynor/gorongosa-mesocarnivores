@@ -1,6 +1,7 @@
 library(tidyverse)
 library(here)
 library(patchwork)
+library(ggpubr)
 
 # PREP DATA
 
@@ -8,7 +9,7 @@ library(patchwork)
 sppcov <- read.csv(here::here("scripts/alternative-multispecies-model/results/mesocarnivore_species.csv"))
 
 # bring in species (for full common names and groups)
-Spp <- read.csv("~/Documents/github-repos/gorongosa/gorongosa-camera-traps/data/2018spp_kingdon.csv") # Species IDs and traits
+Spp <- read.csv("data/gorongosa-cameras/2018spp_kingdon.csv") # Species IDs and traits
 
 # make keys for changing factor levels and names (not sure if a better way...)
 factor_key <- data.frame(Levels_Factor = 1:3,
@@ -99,3 +100,8 @@ dev.off()
 pdf("scripts/alternative-multispecies-model/figures//sppcov-lake.pdf", width = 6, height = 5)
 lake
 dev.off()
+
+#trying to plot them together
+ggarrange(tree, lake, termite, ncol = 2, nrow = 2)
+ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, 
+          ncol = 2, nrow = 3, labels = c("civet", "", "honey badger", "", "genet", "marsh mongoose"))
