@@ -9,6 +9,10 @@ library(tidyverse)
 library(circular) #install.packages("circular")
 library(ggplot2)
 library(ggpubr)
+library("grid") #install.packages("grid") 
+library("ggplotify") #install.packages("ggplotify") 
+library(tidyverse)
+library(dplyr)
 
 # load in Gorongosa record table (note: if you use read_csv from tidyverse instead of read.csv, it will automatically format date)
 record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
@@ -109,28 +113,70 @@ legend("topleft", c("Civet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), b
 honey_badger_marsh_mongoose_plot <- timeplot2_overlap_noon(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
 legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
 
-#arrange the plots
+#arrange the plots [currently not working]
 ggarrange(genet_civet_plot, genet_honey_badger_plot, genet_marsh_mongoose_plot, civet_honey_badger_plot, civet_marsh_mongoose_plot, 
           honey_badger_marsh_mongoose_plot, ncol = 2, nrow = 3)
 
 # Compare distributions with Watson test ----------------------------------
 
+#genet:civet
 watson.two.test(genets$Time.Sun, civets$Time.Sun)
 # will compare means of two distributions - p value < 0.05 indicates that they are significantly different
 # you'll get a warning message to tell you that it's assuming these are radians
 
+#genet:honey badger
+watson.two.test(genets$Time.Sun, honey_badgers$Time.Sun)
+
+#genet:marsh mongoose
+watson.two.test(genets$Time.Sun, marsh_mongoose$Time.Sun)
+
+#civet:honey badger
+watson.two.test(civets$Time.Sun, honey_badgers$Time.Sun)
+
+#civet:marsh mongoose
+watson.two.test(civets$Time.Sun, marsh_mongoose$Time.Sun)
+
+#honey badger:marsh mongoose
+watson.two.test(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
+
 # Calculate overlap coefficient -------------------------------------------
 
+#genet:civet
 overlapEst(genets$Time.Sun, civets$Time.Sun)
 # Dhat4 is what we want (they are just different ways to calculate; dhat4 is for sample sizes > 50)
 # this ranges from 0 (no overlap) to 1 (complete overlap)
 # it's the area of the grey polygon under the curves (area under each curve is 1)
 
+#genet:honey badger
+overlapEst(genets$Time.Sun, honey_badgers$Time.Sun)
+
+#genet:marsh mongoose
+overlapEst(genets$Time.Sun, marsh_mongoose$Time.Sun)
+
+#civet:honey badger
+overlapEst(civets$Time.Sun, honey_badgers$Time.Sun)
+
+#civet:marsh mongoose
+overlapEst(civets$Time.Sun, marsh_mongoose$Time.Sun)
+
+#honey badger:marsh mongoose
+overlapEst(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
+
 # if you want a confidence interval, you have to get it by bootstrapping (takes a LONG time, be warned)
-Dhats_inout <- overlapEst(civets$Time.Sun, genets$Time.Sun)
+#genet:civet
+Dhats_inout <- overlapEst(genets$Time.Sun, civets$Time.Sun)
 bs_civets <- resample(civets$Time.Sun, 10000)
 bs_genets <- resample(genets$Time.Sun, 10000)
-bsOut <- bootEst(bs_civets, bs_genets)
+bsOut <- bootEst(bs_genets, bs_civets)
 colMeans(bsOut) ## dhat bootstrapped
 bs <- as.vector(bsOut[,2])
 (bsCI_inout <- bootCI(Dhats_inout[2], bs)) ## use basic
+
+#genet:honey badger; added "gh" to avoid running the same thing as above accidentally?
+Dhats_inout_gh <- overlapEst(genets$Time.Sun, honey_badgers$Time.Sun)
+bs_genets <- resample(genets$Time.Sun, 10000)
+bs_honey_badgers <- resample(honey_badgers$Time.Sun, 10000)
+bsOut_gh <- bootEst(bs_genets, bs_honey_badgers)
+colMeans(bsOut_gh) ## dhat bootstrapped
+bs_gh <- as.vector(bsOut_gh[,2])
+(bsCI_inout_gh <- bootCI(Dhats_inout_gh[2], bs_gh)) ## use basic
