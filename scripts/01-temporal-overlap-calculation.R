@@ -113,9 +113,25 @@ legend("topleft", c("Civet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), b
 honey_badger_marsh_mongoose_plot <- timeplot2_overlap_noon(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
 legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
 
-#arrange the plots [currently not working]
+#arrange the plots [currently not working] - will not work if not ggplot!
 ggarrange(genet_civet_plot, genet_honey_badger_plot, genet_marsh_mongoose_plot, civet_honey_badger_plot, civet_marsh_mongoose_plot, 
           honey_badger_marsh_mongoose_plot, ncol = 2, nrow = 3)
+
+# here's a workaround
+par(mfrow=c(2,3))
+timeplot2_overlap_noon(genets$Time.Sun, civets$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Genet", "Civet"), lty= c(1,2), col=c("black", "blue"), bg="white")
+genet_honey_badger_plot <- timeplot2_overlap_noon(genets$Time.Sun, honey_badgers$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Genet", "Honey Badger"), lty= c(1,2), col=c("black", "blue"), bg="white")
+timeplot2_overlap_noon(genets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Genet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
+timeplot2_overlap_noon(civets$Time.Sun, honey_badgers$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Civet", "Honey Badger"), lty= c(1,2), col=c("black", "blue"), bg="white")
+timeplot2_overlap_noon(civets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Civet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
+timeplot2_overlap_noon(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
+legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
+
 
 # Compare distributions with Watson test ----------------------------------
 
