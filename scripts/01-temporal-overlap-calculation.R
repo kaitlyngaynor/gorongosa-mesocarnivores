@@ -131,7 +131,10 @@ timeplot2_overlap_noon(civets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1,
 legend("topleft", c("Civet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
 timeplot2_overlap_noon(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
 legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
+# you then need to clear the plot if you want normal plots in here afterward
 
+# or just use the 4 line version
+timeplot4(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
 # Compare distributions with Watson test ----------------------------------
 
