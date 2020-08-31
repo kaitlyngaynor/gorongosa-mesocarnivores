@@ -118,25 +118,29 @@ ggarrange(genet_civet_plot, genet_honey_badger_plot, genet_marsh_mongoose_plot, 
           honey_badger_marsh_mongoose_plot, ncol = 2, nrow = 3)
 
 # here's a workaround
+#genet: black, 1
+#civet: blue, 2
+#honey badger: red, 3
+#marsh mongoose: darkgreen, 4
 par(mfrow=c(2,3))
 timeplot2_overlap_noon(genets$Time.Sun, civets$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
 legend("topleft", c("Genet", "Civet"), lty= c(1,2), col=c("black", "blue"), bg="white")
-genet_honey_badger_plot <- timeplot2_overlap_noon(genets$Time.Sun, honey_badgers$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
-legend("topleft", c("Genet", "Honey Badger"), lty= c(1,2), col=c("black", "blue"), bg="white")
-timeplot2_overlap_noon(genets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
-legend("topleft", c("Genet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
-timeplot2_overlap_noon(civets$Time.Sun, honey_badgers$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
-legend("topleft", c("Civet", "Honey Badger"), lty= c(1,2), col=c("black", "blue"), bg="white")
-timeplot2_overlap_noon(civets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
-legend("topleft", c("Civet", "Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
-timeplot2_overlap_noon(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 2), linecol = c("black", "blue"),linewidth = c(5, 5))
-legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(1,2), col=c("black", "blue"), bg="white")
+genet_honey_badger_plot <- timeplot2_overlap_noon(genets$Time.Sun, honey_badgers$Time.Sun, linetype = c(1, 3), linecol = c("black", "red"),linewidth = c(5, 5))
+legend("topleft", c("Genet", "Honey Badger"), lty= c(1,3), col=c("black", "red"), bg="white")
+timeplot2_overlap_noon(genets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(1, 4), linecol = c("black", "darkgreen"),linewidth = c(5, 5))
+legend("topleft", c("Genet", "Mongoose"), lty= c(1,4), col=c("black", "darkgreen"), bg="white")
+timeplot2_overlap_noon(civets$Time.Sun, honey_badgers$Time.Sun, linetype = c(2, 3), linecol = c("blue", "red"),linewidth = c(5, 5))
+legend("topleft", c("Civet", "Honey Badger"), lty= c(2,3), col=c("blue", "red"), bg="white")
+timeplot2_overlap_noon(civets$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(2, 4), linecol = c("blue", "darkgreen"),linewidth = c(5, 5))
+legend("topleft", c("Civet", "Mongoose"), lty= c(2,4), col=c("blue", "darkgreen"), bg="white")
+timeplot2_overlap_noon(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linetype = c(3,4), linecol = c("red", "darkgreen"),linewidth = c(5, 5))
+legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(3,4), col=c("red", "darkgreen"), bg="white")
 # you then need to clear the plot if you want normal plots in here afterward
 
 # or just use the 4 line version
-timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("black", "blue", "red", "orange"),
+timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("black", "blue", "red", "darkgreen"),
                linetype = c(1,2,3,4))
-legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("black", "blue", "red", "orange"),
+legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("black", "blue", "red", "darkgreen"),
        bg="white")
 
 # Compare distributions with Watson test ----------------------------------
