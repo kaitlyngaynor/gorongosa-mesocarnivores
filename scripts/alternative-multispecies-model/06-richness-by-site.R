@@ -45,7 +45,7 @@ record <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_species
 # YYYY-MM-DDThh:mm:ssTZD (eg 1997-07-16T19:20:30+01:00)
 
 record_filtered <- record %>% select(Species, Date)  %>% #filter for species and date columns
-  filter(Date >= as.Date("2016-08-01T00:00:00+02:00") & Date <= as.Date("2016-11-30T23:59:59+02:00")) %>% #filter for late dry dates (Beira time)
+  filter(Date >= as.Date("2016-08-01T00:00:00+02:00") & Date <= as.Date("2016-12-01T00:00:00+02:00")) %>% #filter for late dry dates (Beira time)
   dplyr::count(Species)
 
 #checking to see how this code actually works
