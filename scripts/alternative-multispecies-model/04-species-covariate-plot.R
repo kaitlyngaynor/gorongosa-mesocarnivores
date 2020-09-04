@@ -15,6 +15,9 @@ Spp <- read.csv("data/gorongosa-cameras/2018spp_kingdon.csv") # Species IDs and 
 factor_key <- data.frame(Levels_Factor = 1:3,
                          Factor = c("urema.distance", "tree.hansen", "termite.count.100m"),
                          Factor_Full = c("Lake Proximity", "Tree Cover", "Termite Mound Density"))
+color_key <- data.frame(color_group = c("col1", "col2", "col3", "col4", "col5", "col5", "col5", 
+                                        "col5", "col5", "col5"), Species = unique(originaldataframe$Species))
+
 
 data_to_plot <- sppcov %>% 
     rename(SppCode = Species) %>% 
@@ -32,6 +35,10 @@ for(i in 1:nrow(data_to_plot)) {
 }
 
 # PLOT
+#genet: darkorange, 1
+#civet: blue, 2
+#honey badger: red, 3
+#marsh mongoose: darkgreen, 4
 
 # Make theme
 sppcov_theme <-     theme(axis.title.y = element_blank(),
