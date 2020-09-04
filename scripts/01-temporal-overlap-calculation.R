@@ -118,7 +118,7 @@ ggarrange(genet_civet_plot, genet_honey_badger_plot, genet_marsh_mongoose_plot, 
           honey_badger_marsh_mongoose_plot, ncol = 2, nrow = 3)
 
 # here's a workaround
-#genet: black, 1
+#genet: darkorange, 1 [HAS NOT BEEN FULLY IMPLEMENTED THROUGHOUT, PAY ATTENTION]
 #civet: blue, 2
 #honey badger: red, 3
 #marsh mongoose: darkgreen, 4
@@ -138,9 +138,9 @@ legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(3,4), col=c("red",
 # you then need to clear the plot if you want normal plots in here afterward
 
 # or just use the 4 line version
-timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("black", "blue", "red", "darkgreen"),
+timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("darkorange", "blue", "red", "darkgreen"),
                linetype = c(1,2,3,4))
-legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("black", "blue", "red", "darkgreen"),
+legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("darkorange", "blue", "red", "darkgreen"),
        bg="white")
 
 # Compare distributions with Watson test ----------------------------------
