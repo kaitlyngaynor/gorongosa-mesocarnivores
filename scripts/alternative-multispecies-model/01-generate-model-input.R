@@ -1,7 +1,7 @@
 # The goal here is to be able to easily generate summarized occupancy records for different time periods in the necessary format for analysis using Lindsey's code.
 
 library(tidyverse)
-library(sjmisc)
+library(sjmisc) #install.packages("sjmisc") 
 
 # read in master matrix from master folder (locally on Kaitlyn's computer)
 matrix.all <- read.csv("~/Documents/github-repos/gorongosa/gorongosa-camera-traps/data/raw-data/All_species_by_date_year1and2_082919.csv", header=T) %>% dplyr::rename(StudySite = Camera)
