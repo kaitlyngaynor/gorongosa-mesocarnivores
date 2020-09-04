@@ -314,7 +314,7 @@ grid <- (civet_lake + civet_termite) /
 #grid
 
 #also trying with ggarrange
-ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, ncol = 2, nrow = 3, labels = c("civet", "", "honey badger", "", "genet", "marsh mongoose"))
+ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, labels = c("civet", "", "honey badger", "", "genet", "marsh mongoose"), ncol = 2, nrow = 3)
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
