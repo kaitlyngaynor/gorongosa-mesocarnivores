@@ -15,14 +15,17 @@ Spp <- read.csv("data/gorongosa-cameras/2018spp_kingdon.csv") # Species IDs and 
 factor_key <- data.frame(Levels_Factor = 1:3,
                          Factor = c("urema.distance", "tree.hansen", "termite.count.100m"),
                          Factor_Full = c("Lake Proximity", "Tree Cover", "Termite Mound Density"))
-color_key <- data.frame(color_group = c("col1", "col2", "col3", "col4", "col5", "col5", "col5", 
-                                        "col5", "col5", "col5"), Species = unique(originaldataframe$Species))
+color_key <- data.frame(color_group = c("darkgreen", "black", "blue", "black", "darkorange", "black", "black", 
+                                        "black", "black", "blue", "black"), Species = unique(sppcov$Species))
 
+#order:  ATPA BDCR CICI GASA GEGE HEIC HEPA ICAL LESE MECA MUMU
+# marsh mongoose, bushy-tailed, civet, slender, genet, large grey, dwarf, white-tailed, serval, honey badger, banded
 
 data_to_plot <- sppcov %>% 
     rename(SppCode = Species) %>% 
     left_join(Spp) %>% 
     left_join(factor_key) %>% 
+    left_join(color_key) %>%
     mutate(Factor_Full = fct_reorder(Factor_Full, Levels_Factor)) 
 
 # make the distance values negative so that they can be 'proximity' values
