@@ -206,3 +206,18 @@ bsOut_gh <- bootEst(bs_genets, bs_honey_badgers)
 colMeans(bsOut_gh) ## dhat bootstrapped
 bs_gh <- as.vector(bsOut_gh[,2])
 (bsCI_inout_gh <- bootCI(Dhats_inout_gh[2], bs_gh)) ## use basic
+
+#genet: marsh mongoose
+Dhats_inout_gm <- overlapEst(genets$Time.Sun, marsh_mongoose$Time.Sun)
+bs_genets <- resample(genets$Time.Sun, 10000)
+bs_marsh_mongoose <- resample(marsh_mongoose$Time.Sun, 10000)
+bsOut_gm <- bootEst(bs_genets, bs_marsh_mongoose)
+colMeans(bsOut_gm) ## dhat bootstrapped
+bs_gm <- as.vector(bsOut_gm[,2])
+(bsCI_inout_gm <- bootCI(Dhats_inout_gm[2], bs_gm)) ## use basic
+
+#civet: honey badger
+
+#civert: marsh mongoose
+
+#honey badger: marsh mongoose
