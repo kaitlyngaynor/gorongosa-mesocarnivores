@@ -84,7 +84,7 @@ lake <-
     geom_point(position = position_dodge(width = 1), size = 2, colour = col) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
-    labs(y = "Beta Coefficient - Lake Proximity") 
+    labs(y = "Beta Coefficient - Lake Distance") 
     
 # Termite --------------------------------------------------------------------
 
