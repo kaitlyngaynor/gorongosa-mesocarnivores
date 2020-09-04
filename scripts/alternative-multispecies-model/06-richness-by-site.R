@@ -48,6 +48,11 @@ record_filtered <- record %>% select(Species, Date)  %>% #filter for species and
   filter(Date >= as.Date("2016-08-01T00:00:00+02:00") & Date <= as.Date("2016-11-30T23:59:59+02:00")) %>% #filter for late dry dates (Beira time)
   dplyr::count(Species)
 
+#checking to see how this code actually works
+record_test <- record %>% select(Species, Date)  %>% #filter for species and date columns
+  filter(Date >= as.Date("2016-11-30T00:00:00+02:00") & Date <= as.Date("2016-12-05T00:00:00+02:00")) %>% #filter to include November 30-Dec 4 (Beira time)
+  dplyr::count(Species)
+
 #source("scripts/alternative-multispecies-model/01-generate-model-input.R")
 
 # Run for dry season that matches Katie
