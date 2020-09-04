@@ -15,8 +15,6 @@ Spp <- read.csv("data/gorongosa-cameras/2018spp_kingdon.csv") # Species IDs and 
 factor_key <- data.frame(Levels_Factor = 1:3,
                          Factor = c("urema.distance", "tree.hansen", "termite.count.100m"),
                          Factor_Full = c("Lake Proximity", "Tree Cover", "Termite Mound Density"))
-color_key <- data.frame(color_group = c("darkgreen", "black", "blue", "black", "darkorange", "black", "black", 
-                                        "black", "black", "blue", "black"), SppCode = unique(sppcov$Species))
 
 #order:  ATPA BDCR CICI GASA GEGE HEIC HEPA ICAL LESE MECA MUMU
 # marsh mongoose, bushy-tailed, civet, slender, genet, large grey, dwarf, white-tailed, serval, honey badger, banded
@@ -25,8 +23,11 @@ data_to_plot <- sppcov %>%
     dplyr::rename(SppCode = Species) %>% 
     left_join(Spp) %>% 
     left_join(factor_key) %>% 
-    left_join(color_key) %>%
-    mutate(Factor_Full = fct_reorder(Factor_Full, Levels_Factor)) 
+    mutate(Factor_Full = fct_reorder(Factor_Full, Levels_Factor))
+
+#assigning a color to each species
+col <- c("darkgreen", "black", "blue", "black", "darkorange", "black", "black", 
+                                           "black", "black", "red", "black")
 
 # make the distance values negative so that they can be 'proximity' values
 for(i in 1:nrow(data_to_plot)) {
@@ -65,10 +66,11 @@ tree <-
     ggplot(aes(x = CommName_Full, y = Mean)) + 
     geom_hline(aes(yintercept = 0), linetype="dashed", size = 0.5, color = "darkgrey") +
     geom_errorbar(aes(ymin = LCI, ymax = UCI), width=0, position = position_dodge(width = 1), alpha=.75) +
-    geom_point(position = position_dodge(width = 1), size = 2) +
+    geom_point(position = position_dodge(width = 1), size = 2, colour = col) +
+    scale_color_manual(values=col) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
-    labs(y = "Beta Coefficient - Tree Density") 
+    labs(y = "Beta Coefficient - Tree Cover") 
 
 # Lake -------------------------------------------------------------------
 
@@ -79,7 +81,7 @@ lake <-
     ggplot(aes(x = CommName_Full, y = Mean)) + 
     geom_hline(aes(yintercept = 0), linetype="dashed", size = 0.5, color = "darkgrey") +
     geom_errorbar(aes(ymin = LCI, ymax = UCI), width=0, position = position_dodge(width = 1), alpha=.75) +
-    geom_point(position = position_dodge(width = 1), size = 2) +
+    geom_point(position = position_dodge(width = 1), size = 2, colour = col) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
     labs(y = "Beta Coefficient - Lake Proximity") 
@@ -93,7 +95,7 @@ termite <-
     ggplot(aes(x = CommName_Full, y = Mean)) + 
     geom_hline(aes(yintercept = 0), linetype="dashed", size = 0.5, color = "darkgrey") +
     geom_errorbar(aes(ymin = LCI, ymax = UCI), width=0, position = position_dodge(width = 1), alpha=.75) +
-    geom_point(position = position_dodge(width = 1), size = 2) +
+    geom_point(position = position_dodge(width = 1), size = 2, colour = col) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
     labs(y = "Beta Coefficient - Termite Mound Density") 
@@ -112,6 +114,6 @@ lake
 dev.off()
 
 #trying to plot them together
-ggarrange(tree, lake, termite, ncol = 2, nrow = 2)
-ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, 
-          ncol = 2, nrow = 3, labels = c("civet", "", "honey badger", "", "genet", "marsh mongoose"))
+ggarrange(tree, lake, termite, ncol = 1, nrow = 3)
+#ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, 
+#          ncol = 2, nrow = 3, labels = c("civet", "", "honey badger", "", "genet", "marsh mongoose"))
