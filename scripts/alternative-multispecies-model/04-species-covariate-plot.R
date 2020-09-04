@@ -16,13 +16,13 @@ factor_key <- data.frame(Levels_Factor = 1:3,
                          Factor = c("urema.distance", "tree.hansen", "termite.count.100m"),
                          Factor_Full = c("Lake Proximity", "Tree Cover", "Termite Mound Density"))
 color_key <- data.frame(color_group = c("darkgreen", "black", "blue", "black", "darkorange", "black", "black", 
-                                        "black", "black", "blue", "black"), Species = unique(sppcov$Species))
+                                        "black", "black", "blue", "black"), SppCode = unique(sppcov$Species))
 
 #order:  ATPA BDCR CICI GASA GEGE HEIC HEPA ICAL LESE MECA MUMU
 # marsh mongoose, bushy-tailed, civet, slender, genet, large grey, dwarf, white-tailed, serval, honey badger, banded
 
 data_to_plot <- sppcov %>% 
-    rename(SppCode = Species) %>% 
+    dplyr::rename(SppCode = Species) %>% 
     left_join(Spp) %>% 
     left_join(factor_key) %>% 
     left_join(color_key) %>%
