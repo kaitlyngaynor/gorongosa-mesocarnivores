@@ -44,14 +44,21 @@ record <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_species
 #  Complete date plus hours, minutes and seconds:
 # YYYY-MM-DDThh:mm:ssTZD (eg 1997-07-16T19:20:30+01:00)
 
-record_filtered <- record %>% select(Species, Date)  %>% #filter for species and date columns
-  filter(Date >= as.Date("2016-08-01T00:00:00+02:00") & Date <= as.Date("2016-12-01T00:00:00+02:00")) %>% #filter for late dry dates (Beira time)
+record_filtered <- record %>% select(Species, DateTimeOriginal)  %>% #filter for species and datetime columns
+  mutate(Date = as.Date(DateTimeOriginal, format = "%m/%d/%y")) %>%
+  filter(Date >= as.Date("2016-08-01") & Date <= as.Date("2016-11-30")) %>% #filter for late dry dates (Beira time)
   dplyr::count(Species)
 
-#checking to see how this code actually works
-record_test <- record %>% select(Species, Date)  %>% #filter for species and date columns
-  filter(Date >= as.Date("2016-11-30T00:00:00+02:00") & Date <= as.Date("2016-12-05T00:00:00+02:00")) %>% #filter to include November 30-Dec 4 (Beira time)
+record_test <- record %>% select(Species, DateTimeOriginal)  %>% #filter for species and datetime columns
+  mutate(Date = as.Date(DateTimeOriginal, format = "%m/%d/%y")) %>% #pull only date out of datetime column
+  filter(Date >= as.Date("2016-06-23") & Date <= as.Date("2016-06-28")) %>% #filter for June 23-28
   dplyr::count(Species)
+
+#checking to see how this code actually works/what dates it includes
+#leaving this to show how time was formatted, if I need to return
+#record_test <- record %>% select(Species, Date)  %>% #filter for species and date columns
+#  filter(Date >= as.Date("2016-11-30T00:00:00+02:00") & Date <= as.Date("2016-12-05T00:00:00+02:00")) %>% #filter to include November 30-Dec 4 (Beira time)
+#  dplyr::count(Species)
 
 #source("scripts/alternative-multispecies-model/01-generate-model-input.R")
 
