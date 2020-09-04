@@ -248,8 +248,8 @@ civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Pre
 genet_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="genet")
 genet_urema_predict <- cbind(genet_urema_predict, dummy_urema)
 genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
-    geom_line() +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "navajowhite") +
+    geom_line(colour = "darkorange") +
     ylim(0,1) +
     theme_bw() +
     labs(x = "Distance to Lake Urema (km)") 
