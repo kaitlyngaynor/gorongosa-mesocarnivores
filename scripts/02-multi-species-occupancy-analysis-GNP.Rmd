@@ -225,12 +225,17 @@ dummy_termite <- data.frame(termite.large.count.100m = seq(min(occ_covs$termite.
          cover.ground = 0,
          termite_unscaled = (termite.large.count.100m * termite_scalelist$scale + termite_scalelist$center))
 
-# CIVET & LAKE UREMA
+#genet: black, 1
+#civet: blue, 2
+#honey badger: red, 3
+#marsh mongoose: darkgreen, 4
+
+# CIVET & LAKE UREMA 
 civet_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="civet")
 civet_urema_predict <- cbind(civet_urema_predict, dummy_urema)
 civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
-    geom_line() +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "skyblue1") +
+    geom_line(colour = "blue") +
     ylim(0,1) +
     theme_bw() +
     labs(x = "Distance to Lake Urema (km)") 
@@ -239,7 +244,7 @@ civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Pre
 #civet_lake
 #dev.off()
 
-# GENET & LAKE UREMA
+# GENET & LAKE UREMA (stays black/grey)
 genet_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="genet")
 genet_urema_predict <- cbind(genet_urema_predict, dummy_urema)
 genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
@@ -253,8 +258,8 @@ genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Pre
 honey_badger_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="honey_badger")
 honey_badger_urema_predict <- cbind(honey_badger_urema_predict, dummy_urema)
 honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
-    geom_line() +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "pink") +
+    geom_line(colour = "red") +
     ylim(0,1) +
     theme_bw()+
     labs(x = "Distance to Lake Urema (km)") 
@@ -263,8 +268,8 @@ honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_uns
 marsh_mongoose_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="marsh_mongoose")
 marsh_mongoose_urema_predict <- cbind(marsh_mongoose_urema_predict, dummy_urema)
 marsh_mongoose_lake <- ggplot(data = marsh_mongoose_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
-    geom_line() +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "darkseagreen2") +
+    geom_line(colour = "darkgreen") +
     ylim(0,1) +
     theme_bw() +
     labs( x = "Distance to Lake Urema (km)") 
@@ -273,8 +278,8 @@ marsh_mongoose_lake <- ggplot(data = marsh_mongoose_urema_predict, aes(x = urema
 civet_termite_predict <- predict(fit3_predict, type = 'state', newdata = dummy_termite, species="civet")
 civet_termite_predict <- cbind(civet_termite_predict, dummy_termite)
 civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
-    geom_line() +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "skyblue1") +
+    geom_line(colour = "blue") +
     ylim(0,1) +
     theme_bw() +
     labs(x = "Number of Termite Mounds within 100m") 
@@ -283,8 +288,8 @@ civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled, 
 marsh_mongoose_termite_predict <- predict(fit3_predict, type = 'state', newdata = dummy_termite, species="marsh_mongoose")
 marsh_mongoose_termite_predict <- cbind(marsh_mongoose_termite_predict, dummy_termite)
 marsh_mongoose_termite <- ggplot(data = marsh_mongoose_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
-    geom_line() +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "darkseagreen2") +
+    geom_line(colour = "darkgreen") +
     ylim(0,1) +
     theme_bw() +
     labs( x = "Number of Termite Mounds within 100m") 
@@ -293,8 +298,8 @@ marsh_mongoose_termite <- ggplot(data = marsh_mongoose_termite_predict, aes(x = 
 honey_badger_tree_predict <- predict(fit3_predict, type = 'state', newdata = dummy_tree, species="honey_badger")
 honey_badger_tree_predict <- cbind(honey_badger_tree_predict, dummy_tree)
 honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "grey70") +
-    geom_line() +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "pink") +
+    geom_line(colour = "red") +
     ylim(0,1) +
     theme_bw() +
     labs( x = "Percent Tree Cover") 
