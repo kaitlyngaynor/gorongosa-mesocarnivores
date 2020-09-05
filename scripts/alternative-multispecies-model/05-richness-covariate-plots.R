@@ -25,10 +25,10 @@ lake <- ggplot(site.richness, aes(x = urema_dist/1000, y = Mean)) +
     geom_errorbar(aes(ymin=LCI, ymax=UCI), width=0, colour = "lightgrey") +
     geom_point() + 
     geom_smooth(method = lm, se = F, col = "black", linetype = "dashed", size = 0.5) +
-    xlab("Proximity to Lake Urema (km)") +
+    xlab("Distance to Lake Urema (km)") +
     ylab("Mesocarnivore Richness") + 
-    theme_bw() +
-    scale_x_reverse() 
+    theme_bw() 
+    #scale_x_reverse() #don't forget a "+" if I want to bring this back in 
 
 # plot species richness vs tree cover
 tree <- ggplot(site.richness, aes(x = tree_hansen, y = Mean)) +
@@ -40,5 +40,5 @@ tree <- ggplot(site.richness, aes(x = tree_hansen, y = Mean)) +
     theme_bw()
 
 pdf("scripts/alternative-multispecies-model/figures/richness-covariates.pdf", width = 10, height = 6, useDingbats = FALSE)
-ggarrange(tree, lake, termite)
+ggarrange(tree, lake, termite, ncol = 1, nrow = 3)
 dev.off()
