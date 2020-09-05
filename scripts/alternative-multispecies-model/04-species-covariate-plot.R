@@ -26,8 +26,12 @@ data_to_plot <- sppcov %>%
     mutate(Factor_Full = fct_reorder(Factor_Full, Levels_Factor))
 
 #assigning a color to each species
-col <- c("darkgreen", "black", "blue", "black", "darkorange", "black", "black", 
-                                           "black", "black", "red", "black")
+colkey <- data.frame(color_code = c("A", "B", "C", "B", "D", "B", "B", 
+                                           "B", "B", "E", "B"),
+                     SppCode = unique(data_to_plot$SppCode))
+data_to_plot <- left_join(data_to_plot, colkey)
+
+color_codes <- c("darkgreen", "black", "blue", "darkorange", "red")
 
 # make the distance values negative so that they can be 'proximity' values
 for(i in 1:nrow(data_to_plot)) {
@@ -46,7 +50,7 @@ for(i in 1:nrow(data_to_plot)) {
 
 # Make theme
 sppcov_theme <-     theme(axis.title.y = element_blank(),
-                     #     legend.title = element_blank(),
+                          legend.position = "none",
                           legend.key = element_rect(fill = alpha("white", 0.0)),
                           strip.background = element_blank(),
                           strip.text = element_blank(),
@@ -63,11 +67,11 @@ tree <-
     data_to_plot %>% 
     subset(Factor == "tree_hansen") %>% 
     mutate(CommName_Full = fct_reorder(CommName_Full, Mean)) %>% 
-    ggplot(aes(x = CommName_Full, y = Mean)) + 
+    ggplot(aes(x = CommName_Full, y = Mean, colour = color_code)) + 
     geom_hline(aes(yintercept = 0), linetype="dashed", size = 0.5, color = "darkgrey") +
     geom_errorbar(aes(ymin = LCI, ymax = UCI), width=0, position = position_dodge(width = 1), alpha=.75) +
-    geom_point(position = position_dodge(width = 1), size = 2, colour = col) +
-    scale_color_manual(values=col) +
+    geom_point(position = position_dodge(width = 1), size = 3) +
+    scale_color_manual(values=color_codes) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
     labs(y = "Beta Coefficient - Tree Cover") 
@@ -78,10 +82,11 @@ lake <-
     data_to_plot %>% 
     subset(Factor == "urema_dist") %>% 
     mutate(CommName_Full = fct_reorder(CommName_Full, Mean)) %>% 
-    ggplot(aes(x = CommName_Full, y = Mean)) + 
+    ggplot(aes(x = CommName_Full, y = Mean, colour = color_code)) + 
     geom_hline(aes(yintercept = 0), linetype="dashed", size = 0.5, color = "darkgrey") +
     geom_errorbar(aes(ymin = LCI, ymax = UCI), width=0, position = position_dodge(width = 1), alpha=.75) +
-    geom_point(position = position_dodge(width = 1), size = 2, colour = col) +
+    geom_point(position = position_dodge(width = 1), size = 3) +
+    scale_color_manual(values=color_codes) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
     labs(y = "Beta Coefficient - Lake Distance") 
@@ -92,10 +97,11 @@ termite <-
     data_to_plot %>% 
     subset(Factor == "termite.count.100m") %>% 
     mutate(CommName_Full = fct_reorder(CommName_Full, Mean)) %>% 
-    ggplot(aes(x = CommName_Full, y = Mean)) + 
+    ggplot(aes(x = CommName_Full, y = Mean, colour = color_code)) + 
     geom_hline(aes(yintercept = 0), linetype="dashed", size = 0.5, color = "darkgrey") +
     geom_errorbar(aes(ymin = LCI, ymax = UCI), width=0, position = position_dodge(width = 1), alpha=.75) +
-    geom_point(position = position_dodge(width = 1), size = 2, colour = col) +
+    geom_point(position = position_dodge(width = 1), size = 3) +
+    scale_color_manual(values=color_codes) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
     labs(y = "Beta Coefficient - Termite Mound Density") 
