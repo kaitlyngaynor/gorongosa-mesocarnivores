@@ -197,7 +197,7 @@ predict(fit3_predict, type = "state", species = "civet")
 # lake urema
 urema_dist_scalelist <- list(scale = attr(occ_covs$urema_dist, "scaled:scale"),
                       center = attr(occ_covs$urema_dist, "scaled:center"))
-dummy_urema <- data.frame(urema_dist = seq(min(occ_covs$urema_dist, na.rm=T), max(occ_covs$urema_dist, na.rm=T), by = 0.001)) %>%
+dummy_urema <- data.frame(urema_dist = seq(min(occ_covs$urema_dist, na.rm=T), max(occ_covs$urema_dist, na.rm=T), by = 0.0001)) %>%
   mutate(termite.large.count.100m = 0,
          tree_hansen = 0,
          detect.obscured = 0,
@@ -207,7 +207,7 @@ dummy_urema <- data.frame(urema_dist = seq(min(occ_covs$urema_dist, na.rm=T), ma
 #tree_hansen
 tree_hansen_scalelist <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"),
                       center = attr(occ_covs$tree_hansen, "scaled:center"))
-dummy_tree <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.001)) %>%
+dummy_tree <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.0001)) %>%
   mutate(termite.large.count.100m = 0,
          urema_dist = 0,
          detect.obscured = 0,
@@ -218,7 +218,7 @@ dummy_tree <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), m
 #termite mound
 termite_scalelist <- list(scale = attr(occ_covs$termite.large.count.100m, "scaled:scale"),
                       center = attr(occ_covs$termite.large.count.100m, "scaled:center"))
-dummy_termite <- data.frame(termite.large.count.100m = seq(min(occ_covs$termite.large.count.100m, na.rm=T), max(occ_covs$termite.large.count.100m, na.rm=T), by = 0.001)) %>%
+dummy_termite <- data.frame(termite.large.count.100m = seq(min(occ_covs$termite.large.count.100m, na.rm=T), max(occ_covs$termite.large.count.100m, na.rm=T), by = 0.0001)) %>%
   mutate(tree_hansen = 0,
          urema_dist = 0,
          detect.obscured = 0,
@@ -238,7 +238,7 @@ civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Pre
     geom_line(colour = "blue") +
     ylim(0,1) +
     theme_bw() +
-    labs(x = "Distance to Lake Urema (km)") +
+    labs(x = "Distance to Lake (km)") +
     ggtitle("Civet")
 
 #pdf("scripts/figures//civet_lake.pdf", width = 6, height = 5)
@@ -253,7 +253,7 @@ genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Pre
     geom_line(colour = "darkorange") +
     ylim(0,1) +
     theme_bw() +
-    labs(x = "Distance to Lake Urema (km)") +
+    labs(x = "Distance to Lake (km)") +
     ggtitle("Genet")
 
 # HONEY BADGER & LAKE UREMA
@@ -264,7 +264,7 @@ honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_uns
     geom_line(colour = "red") +
     ylim(0,1) +
     theme_bw()+
-    labs(x = "Distance to Lake Urema (km)") +
+    labs(x = "Distance to Lake (km)") +
     ggtitle("Honey Badger")
 
 # MARSH MONGOOSE & LAKE UREMA
@@ -275,7 +275,7 @@ marsh_mongoose_lake <- ggplot(data = marsh_mongoose_urema_predict, aes(x = urema
     geom_line(colour = "darkgreen") +
     ylim(0,1) +
     theme_bw() +
-    labs( x = "Distance to Lake Urema (km)") +
+    labs( x = "Distance to Lake (km)") +
     ggtitle("Marsh Mongoose")
 
 #CIVET & TERMITE
@@ -286,7 +286,7 @@ civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled, 
     geom_line(colour = "blue") +
     ylim(0,1) +
     theme_bw() +
-    labs(x = "Number of Termite Mounds within 100m") +
+    labs(x = "Termite Mound Density") +
     ggtitle("")
 
 #MARSH MONGOOSE & TERMITE
@@ -297,7 +297,7 @@ marsh_mongoose_termite <- ggplot(data = marsh_mongoose_termite_predict, aes(x = 
     geom_line(colour = "darkgreen") +
     ylim(0,1) +
     theme_bw() +
-    labs( x = "Number of Termite Mounds within 100m") +
+    labs( x = "Termite Mound Density") +
     ggtitle("Marsh Mongoose")
 
 #HONEY BADGER & TREE
@@ -308,7 +308,7 @@ honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unsca
     geom_line(colour = "red") +
     ylim(0,1) +
     theme_bw() +
-    labs( x = "Percent Tree Cover") +
+    labs( x = "Tree Cover (%)") +
     ggtitle("")
 #
 # now put everything together with patchwork!

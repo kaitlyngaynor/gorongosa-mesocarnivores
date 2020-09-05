@@ -83,7 +83,7 @@ lake <-
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
     labs(y = "Beta Coefficient") +
-    ggtitle("Lake Distance") +
+    ggtitle("Distance to Lake") +
     theme(plot.title = element_text(hjust = 0.5))
     
 # Termite --------------------------------------------------------------------

@@ -16,7 +16,7 @@ termite <- ggplot(site.richness, aes(x = termite.count.100m, y = Mean)) +
     geom_errorbar(aes(ymin=LCI, ymax=UCI), width=0, colour = "lightgrey") +
     geom_point() + 
     geom_smooth(method = lm, se = F, col = "black", linetype = "dashed", size = 0.5) +
-    xlab("Termite Mound Density (mounds w/in 100m)") +
+    xlab("Termite Mound Density") +
     ylab("Mesocarnivore Richness") + 
     theme_bw() 
 
@@ -25,7 +25,7 @@ lake <- ggplot(site.richness, aes(x = urema_dist/1000, y = Mean)) +
     geom_errorbar(aes(ymin=LCI, ymax=UCI), width=0, colour = "lightgrey") +
     geom_point() + 
     geom_smooth(method = lm, se = F, col = "black", linetype = "dashed", size = 0.5) +
-    xlab("Distance to Lake Urema (km)") +
+    xlab("Distance to Lake (km)") +
     ylab("Mesocarnivore Richness") + 
     theme_bw() 
     #scale_x_reverse() #don't forget a "+" if I want to bring this back in 
