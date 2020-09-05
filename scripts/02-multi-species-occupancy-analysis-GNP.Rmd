@@ -238,7 +238,8 @@ civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Pre
     geom_line(colour = "blue") +
     ylim(0,1) +
     theme_bw() +
-    labs(x = "Distance to Lake Urema (km)") 
+    labs(x = "Distance to Lake Urema (km)") +
+    ggtitle("Civet")
 
 #pdf("scripts/figures//civet_lake.pdf", width = 6, height = 5)
 #civet_lake
@@ -252,7 +253,8 @@ genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Pre
     geom_line(colour = "darkorange") +
     ylim(0,1) +
     theme_bw() +
-    labs(x = "Distance to Lake Urema (km)") 
+    labs(x = "Distance to Lake Urema (km)") +
+    ggtitle("Genet")
 
 # HONEY BADGER & LAKE UREMA
 honey_badger_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="honey_badger")
@@ -262,7 +264,8 @@ honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_uns
     geom_line(colour = "red") +
     ylim(0,1) +
     theme_bw()+
-    labs(x = "Distance to Lake Urema (km)") 
+    labs(x = "Distance to Lake Urema (km)") +
+    ggtitle("Honey Badger")
 
 # MARSH MONGOOSE & LAKE UREMA
 marsh_mongoose_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="marsh_mongoose")
@@ -272,7 +275,8 @@ marsh_mongoose_lake <- ggplot(data = marsh_mongoose_urema_predict, aes(x = urema
     geom_line(colour = "darkgreen") +
     ylim(0,1) +
     theme_bw() +
-    labs( x = "Distance to Lake Urema (km)") 
+    labs( x = "Distance to Lake Urema (km)") +
+    ggtitle("Marsh Mongoose")
 
 #CIVET & TERMITE
 civet_termite_predict <- predict(fit3_predict, type = 'state', newdata = dummy_termite, species="civet")
@@ -282,7 +286,8 @@ civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled, 
     geom_line(colour = "blue") +
     ylim(0,1) +
     theme_bw() +
-    labs(x = "Number of Termite Mounds within 100m") 
+    labs(x = "Number of Termite Mounds within 100m") +
+    ggtitle("")
 
 #MARSH MONGOOSE & TERMITE
 marsh_mongoose_termite_predict <- predict(fit3_predict, type = 'state', newdata = dummy_termite, species="marsh_mongoose")
@@ -292,7 +297,8 @@ marsh_mongoose_termite <- ggplot(data = marsh_mongoose_termite_predict, aes(x = 
     geom_line(colour = "darkgreen") +
     ylim(0,1) +
     theme_bw() +
-    labs( x = "Number of Termite Mounds within 100m") 
+    labs( x = "Number of Termite Mounds within 100m") +
+    ggtitle("Marsh Mongoose")
 
 #HONEY BADGER & TREE
 honey_badger_tree_predict <- predict(fit3_predict, type = 'state', newdata = dummy_tree, species="honey_badger")
@@ -302,7 +308,8 @@ honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unsca
     geom_line(colour = "red") +
     ylim(0,1) +
     theme_bw() +
-    labs( x = "Percent Tree Cover") 
+    labs( x = "Percent Tree Cover") +
+    ggtitle("")
 #
 # now put everything together with patchwork!
 grid <- (civet_lake + civet_termite) /
@@ -314,7 +321,7 @@ grid <- (civet_lake + civet_termite) /
 #grid
 
 #also trying with ggarrange
-ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, labels = c("civet", "", "honey badger", "", "genet", "marsh mongoose"), ncol = 2, nrow = 3)
+ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, ncol = 2, nrow = 3)
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
