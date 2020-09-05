@@ -116,7 +116,7 @@ pdf("scripts/alternative-multispecies-model/figures//sppcov-lake.pdf", width = 6
 lake
 dev.off()
 
-#trying to plot them together
+#plot together and save
+pdf("scripts/alternative-multispecies-model/figures/sppcov-all.pdf", width = 4, height = 7)
 ggarrange(tree, lake, termite, ncol = 1, nrow = 3)
-#ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, 
-#          ncol = 2, nrow = 3, labels = c("civet", "", "honey badger", "", "genet", "marsh mongoose"))
+dev.off()

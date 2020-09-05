@@ -39,6 +39,6 @@ tree <- ggplot(site.richness, aes(x = tree_hansen, y = Mean)) +
     ylab("Mesocarnivore Richness") + 
     theme_bw()
 
-pdf("scripts/alternative-multispecies-model/figures/richness-covariates.pdf", width = 10, height = 6, useDingbats = FALSE)
+pdf("scripts/alternative-multispecies-model/figures/richness-covariates.pdf", width = 5, height = 8, useDingbats = FALSE)
 ggarrange(tree, lake, termite, ncol = 1, nrow = 3)
 dev.off()

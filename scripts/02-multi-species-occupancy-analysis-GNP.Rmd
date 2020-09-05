@@ -310,18 +310,19 @@ honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unsca
     theme_bw() +
     labs( x = "Tree Cover (%)") +
     ggtitle("")
-#
+
+
 # now put everything together with patchwork!
-grid <- (civet_lake + civet_termite) /
-        (honey_badger_lake + honey_badger_tree) /
-        (genet_lake + marsh_mongoose_termite)
+#grid <- (civet_lake + civet_termite) /
+#        (honey_badger_lake + honey_badger_tree) /
+#        (genet_lake + marsh_mongoose_termite)
   # add plot labels
- plot_annotation(title = "Marginal Occupancies", tag_suffix = ")")
+# plot_annotation(title = "Marginal Occupancies", tag_suffix = ")")
 
-#grid
-
-#also trying with ggarrange
+#create and save figure with all components
+pdf("scripts/figures/best_interaction_model_predict.pdf", width = 6, height = 5)
 ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, ncol = 2, nrow = 3)
+dev.off()
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
