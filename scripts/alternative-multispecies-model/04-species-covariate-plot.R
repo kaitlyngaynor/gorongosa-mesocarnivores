@@ -33,15 +33,6 @@ data_to_plot <- left_join(data_to_plot, colkey)
 
 color_codes <- c("darkgreen", "black", "blue", "darkorange", "red")
 
-# make the distance values negative so that they can be 'proximity' values
-for(i in 1:nrow(data_to_plot)) {
-    if(data_to_plot[i,1] %in% c("urema.distance")) {
-        data_to_plot[i,3] <- data_to_plot[i,3] * -1
-        data_to_plot[i,5] <- data_to_plot[i,5] * -1
-        data_to_plot[i,6] <- data_to_plot[i,6] * -1
-    }
-}
-
 # PLOT
 #genet: darkorange, 1
 #civet: blue, 2
