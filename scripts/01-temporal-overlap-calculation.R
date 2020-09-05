@@ -217,7 +217,23 @@ bs_gm <- as.vector(bsOut_gm[,2])
 (bsCI_inout_gm <- bootCI(Dhats_inout_gm[2], bs_gm)) ## use basic
 
 #civet: honey badger
+Dhats_inout_ch <- overlapEst(civets$Time.Sun, honey_badgers$Time.Sun)
+bsOut_ch <- bootEst(bs_civets, bs_honey_badgers)
+colMeans(bsOut_ch) ## dhat bootstrapped
+bs_ch <- as.vector(bsOut_ch[,2])
+(bsCI_inout_ch <- bootCI(Dhats_inout_ch[2], bs_ch)) ## use basic
 
 #civert: marsh mongoose
+Dhats_inout_cm <- overlapEst(civets$Time.Sun, marsh_mongoose$Time.Sun)
+bsOut_cm <- bootEst(bs_civets, bs_marsh_mongoose)
+colMeans(bsOut_cm) ## dhat bootstrapped
+bs_cm <- as.vector(bsOut_cm[,2])
+(bsCI_inout_cm <- bootCI(Dhats_inout_cm[2], bs_cm)) ## use basic
 
 #honey badger: marsh mongoose
+Dhats_inout_hm <- overlapEst(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
+bsOut_hm <- bootEst(bs_honey_badgers, bs_marsh_mongoose)
+colMeans(bsOut_hm) ## dhat bootstrapped
+bs_hm <- as.vector(bsOut_hm[,2])
+(bsCI_inout_hm <- bootCI(Dhats_inout_hm[2], bs_hm)) ## use basic
+
