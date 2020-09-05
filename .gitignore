@@ -47,3 +47,5 @@ data/
 *.RData
 
 scripts/alternative-multispecies-model/figures
+
+scripts/figures
