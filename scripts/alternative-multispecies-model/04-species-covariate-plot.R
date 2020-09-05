@@ -65,7 +65,9 @@ tree <-
     scale_color_manual(values=color_codes) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
-    labs(y = "Beta Coefficient - Tree Cover") 
+    labs(y = "Beta Coefficient") +
+    ggtitle("Tree Cover") +
+    theme(plot.title = element_text(hjust = 0.5))
 
 # Lake -------------------------------------------------------------------
 
@@ -80,7 +82,9 @@ lake <-
     scale_color_manual(values=color_codes) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
-    labs(y = "Beta Coefficient - Lake Distance") 
+    labs(y = "Beta Coefficient") +
+    ggtitle("Lake Distance") +
+    theme(plot.title = element_text(hjust = 0.5))
     
 # Termite --------------------------------------------------------------------
 
@@ -95,7 +99,9 @@ termite <-
     scale_color_manual(values=color_codes) +
     sppcov_theme +
     coord_flip() + # switch x and y coordinates
-    labs(y = "Beta Coefficient - Termite Mound Density") 
+    labs(y = "Beta Coefficient") + 
+    ggtitle("Termite Mound Density") +
+    theme(plot.title = element_text(hjust = 0.5))
 
 
 pdf("scripts/alternative-multispecies-model/figures//sppcov-termite.pdf", width = 6, height = 5)
