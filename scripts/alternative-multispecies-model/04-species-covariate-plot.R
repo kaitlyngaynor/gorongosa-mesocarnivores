@@ -54,7 +54,7 @@ sppcov_theme <-     theme(axis.title.y = element_blank(),
 
 # Tree --------------------------------------------------------------------
 
-tree <-
+tree_occ <-
     data_to_plot %>% 
     subset(Factor == "tree_hansen") %>% 
     mutate(CommName_Full = fct_reorder(CommName_Full, Mean)) %>% 
@@ -71,7 +71,7 @@ tree <-
 
 # Lake -------------------------------------------------------------------
 
-lake <-
+lake_occ <-
     data_to_plot %>% 
     subset(Factor == "urema_dist") %>% 
     mutate(CommName_Full = fct_reorder(CommName_Full, Mean)) %>% 
@@ -88,7 +88,7 @@ lake <-
     
 # Termite --------------------------------------------------------------------
 
-termite <-
+termite_occ <-
     data_to_plot %>% 
     subset(Factor == "termite.count.100m") %>% 
     mutate(CommName_Full = fct_reorder(CommName_Full, Mean)) %>% 
@@ -105,18 +105,18 @@ termite <-
 
 
 pdf("scripts/alternative-multispecies-model/figures//sppcov-termite.pdf", width = 6, height = 5)
-termite
+termite_occ
 dev.off()
 
 pdf("scripts/alternative-multispecies-model/figures//sppcov-tree.pdf", width = 6, height = 5)
-tree
+tree_occ
 dev.off()
 
 pdf("scripts/alternative-multispecies-model/figures//sppcov-lake.pdf", width = 6, height = 5)
-lake
+lake_occ
 dev.off()
 
 #plot together and save
 pdf("scripts/alternative-multispecies-model/figures/sppcov-all.pdf", width = 4, height = 7)
-ggarrange(tree, lake, termite, ncol = 1, nrow = 3)
+ggarrange(tree_occ, lake_occ, termite_occ, ncol = 1, nrow = 3)
 dev.off()
