@@ -20,16 +20,24 @@ data_to_plot <- alpha %>%
     left_join(Spp) %>% 
     mutate(CommName_Full = fct_reorder(CommName_Full, alpha_occupancy))
 
+#assigning a color to each species
+colkey <- data.frame(color_code = c("A", "B", "C", "B", "D", "B", "B", 
+                                    "B", "B", "E", "B"),
+                     SppCode = unique(data_to_plot$SppCode))
+data_to_plot <- left_join(data_to_plot, colkey)
+
+color_codes <- c("darkgreen", "black", "blue", "darkorange", "red")
+
 # NOT facet-wrapped
 pdf("scripts/alternative-multispecies-model/figures/occupancy-by-species.pdf", width = 6, height = 5)
-ggplot(data_to_plot, aes(x = CommName_Full, y = alpha_occupancy)) + 
+ggplot(data_to_plot, aes(x = CommName_Full, y = alpha_occupancy, colour = color_code)) + 
     geom_errorbar(aes(ymin=alpha_025, ymax=alpha_975, width=.1)) +
     geom_line() +
     geom_point(size = 2) +
     ylab("Occupancy Probability") +
     theme(axis.title.y = element_blank(),
-          legend.title = element_blank(),
-          legend.key = element_rect(fill = alpha("white", 0.0)),
+          #legend.title = element_blank(),
+          #legend.key = element_rect(fill = alpha("white", 0.0)),
           strip.background = element_blank(),
           strip.text = element_text(size = rel(1)),
           panel.grid.major = element_blank(),
@@ -37,11 +45,12 @@ ggplot(data_to_plot, aes(x = CommName_Full, y = alpha_occupancy)) +
           axis.ticks.y = element_blank(),
           axis.text.y = element_text(size=rel(1.25)),
           panel.border = element_rect(color = "black", fill = NA, size = .5),
-          legend.text=element_text(size=rel(1)),
-          legend.position = c(.7, .15),
-          legend.box.background = element_rect(color="black", size=.5)
-          
+          #legend.text=element_text(size=rel(1)),
+          #legend.position = c(.7, .15),
+          #legend.box.background = element_rect(color="black", size=.5)
     ) +
-    coord_flip() +
-    scale_color_manual(values = c("#ea3633", "#f27229", "#f8be1d","#99a82b","#1e9b56")) 
+    theme(legend.position="none") +
+    scale_color_manual(values=color_codes) +
+    coord_flip() 
+    #scale_color_manual(values = c("#ea3633", "#f27229", "#f8be1d","#99a82b","#1e9b56")) 
 dev.off()
