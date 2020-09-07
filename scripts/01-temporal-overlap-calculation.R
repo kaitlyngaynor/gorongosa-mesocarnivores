@@ -138,10 +138,12 @@ legend("topleft", c("Honey Badger", "Marsh Mongoose"), lty= c(3,4), col=c("red",
 # you then need to clear the plot if you want normal plots in here afterward
 
 # or just use the 4 line version
+pdf("scripts/figures/activity-patterns-all.pdf", width = 8, height = 5)
 timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("darkorange", "blue", "red", "darkgreen"),
                linetype = c(1,2,3,4))
 legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("darkorange", "blue", "red", "darkgreen"),
        bg="white")
+dev.off()
 
 # Compare distributions with Watson test ----------------------------------
 
