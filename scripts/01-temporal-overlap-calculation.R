@@ -142,7 +142,7 @@ pdf("scripts/figures/activity-patterns-all.pdf", width = 8, height = 5)
 timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("darkorange", "blue", "red", "darkgreen"),
                linetype = c(1,2,3,4))
 legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("darkorange", "blue", "red", "darkgreen"),
-       bg="white")
+       bg="white", cex = 0.8)
 dev.off()
 
 # Compare distributions with Watson test ----------------------------------
