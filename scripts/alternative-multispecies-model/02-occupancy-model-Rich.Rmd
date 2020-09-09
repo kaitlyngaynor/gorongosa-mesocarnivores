@@ -119,7 +119,7 @@ out3.sum <- out3$BUGSoutput$summary
 
 ### Occupancy and detection probabilities
 ```{r}
-write.table(x=out3.sum,file="scripts/alternative-multispecies-model/results/mesocarnivore.csv",sep=",", row.names=F) # save output
+write.table(x=out3.sum,file="scripts/alternative-multispecies-model/results/mesocarnivore.csv",sep=",") # save output
 
 #Name this output alpha and P.
 alpha <- out3$BUGSoutput$sims.list$alpha
