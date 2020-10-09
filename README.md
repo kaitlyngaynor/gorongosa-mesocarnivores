@@ -15,3 +15,5 @@ Species-specific scripts for mesocarnivores (for example, 01a-civet-exploration.
 ## 3. Temporal analysis
 
 01-temporal-overlap-calculation Calculates pairwise temporal (24-hr) overlap between all pairs of species, using overlap package.
+
+02-temporal-figure-functions plots the temporal analysis results for 1-4 species. 
