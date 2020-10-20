@@ -11,7 +11,7 @@
 
 **05-richness-covariate-plots.R** generates plots of modeled mesocarnivore richness with 95% CI intervals at camera trap sites relative to tree cover, distance to lake, and termite mound density.
 
-**06-richness-bysite.R** counts total records of each species during a specific time period (currently includes many lines of scrap code and needs to be cleaned up).
+**06-richness-bysite.R** counts total detections of each species during a specific time period (currently includes many lines of scrap code and needs to be cleaned up).
 
 ## Species interaction model
 ### 1. Data prep
