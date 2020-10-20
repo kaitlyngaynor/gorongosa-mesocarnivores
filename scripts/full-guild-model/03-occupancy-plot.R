@@ -7,8 +7,8 @@ library(here)
 library(paletteer)
 
 # bring in and format occupancy values and CIs
-alpha <- read.csv(here::here("scripts/alternative-multispecies-model/results/mesocarnivore_alphaspsi()p().csv"))
-alpha.ci <- read.csv(here::here("scripts/alternative-multispecies-model/results/mesocarnivore_alphaCI.psi()p().csv")) %>% t() # transpose as it's read in
+alpha <- read.csv(here::here("scripts/full-guild-model/results/mesocarnivore_alphaspsi()p().csv"))
+alpha.ci <- read.csv(here::here("scripts/full-guild-model/results/mesocarnivore_alphaCI.psi()p().csv")) %>% t() # transpose as it's read in
 alpha <- cbind(alpha, alpha.ci) %>% rownames_to_column(var = "SppCode") # merge the alphas with the confidence intervals and change row names into first column
 names(alpha) <- c("SppCode", "alpha_occupancy", "alpha_025", "alpha_10", "alpha_50", "alpha_90", "alpha_975") # change names to match code
 
