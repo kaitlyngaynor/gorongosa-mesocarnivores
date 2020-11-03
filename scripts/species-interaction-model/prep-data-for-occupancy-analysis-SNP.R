@@ -28,7 +28,8 @@ camop_SNP <- cameraOperation(CTtable      = camtraps_SNP,
 # subset to dates of interest
 camop_subset_SNP <- camop_SNP %>% 
   as.data.frame %>% # first need to convert matrix to data frame
-  select(start.date_SNP:end.date_SNP) %>% # select columns of interest
+  select(all_of(start.date_SNP):all_of(end.date_SNP)) %>% # select columns of interest; not sure why I had to add "all_of"?
+  filter_all(any_vars(!is.na(.))) %>% #filters out cameras that weren't operating during the defined season
   as.matrix() # get it back into matrix form for calculating detection history
 
 # load in Serengeti record table
@@ -42,12 +43,12 @@ record_table_subset_SNP <- record_table_SNP %>%
   filter(Date >= as.Date(start.date_SNP) & Date <= as.Date(end.date_SNP))
 
 # make detection history for SNP genets (without trapping effort)
-DetHist_genet_SNP <- detectionHistory(recordTable     = record_table_subset,
-                                      camOp                = camop_subset,
-                                      stationCol           = "Camera",
+DetHist_genet_SNP <- detectionHistory(recordTable          = record_table_subset_SNP,
+                                      camOp                = camop_subset_SNP,
+                                      stationCol           = "SiteID",
                                       speciesCol           = "Species",
-                                      recordDateTimeCol    = "DateTimeOriginal",
-                                      recordDateTimeFormat = "%m/%d/%y %H:%M",
+                                      recordDateTimeCol    = "DateTime",
+                                      recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
                                       timeZone             = "Africa/Maputo",
                                       species              = "Genet",
                                       occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
@@ -56,9 +57,9 @@ DetHist_genet_SNP <- detectionHistory(recordTable     = record_table_subset,
                                       occasionStartTime    = 12  #start at noon b/c nocturnal animals
 )
 
-DetHist_genet <- as.data.frame(DetHist_genet)
+DetHist_genet_SNP <- as.data.frame(DetHist_genet_SNP)
 
-write_csv(DetHist_genet, "data/gorongosa-cameras/genet.csv", col_names = F)
+write_csv(DetHist_genet_SNP, "data/serengeti-cameras/derived/genet_SNP.csv", col_names = F)
 
 # make detection history for civets (without trapping effort)
 DetHist_civet <- detectionHistory(recordTable          = record_table_subset,
