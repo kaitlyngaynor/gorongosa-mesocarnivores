@@ -62,45 +62,46 @@ DetHist_genet_SNP <- as.data.frame(DetHist_genet_SNP)
 write_csv(DetHist_genet_SNP, "data/serengeti-cameras/derived/genet_SNP.csv", col_names = F)
 
 # make detection history for civets (without trapping effort)
-DetHist_civet <- detectionHistory(recordTable          = record_table_subset,
-                                  camOp                = camop_subset,
-                                  stationCol           = "Camera",
-                                  speciesCol           = "Species",
-                                  recordDateTimeCol    = "DateTimeOriginal",
-                                  recordDateTimeFormat = "%m/%d/%y %H:%M",
-                                  timeZone             = "Africa/Maputo",
-                                  species              = "Civet",
-                                  occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
-                                  day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                  includeEffort        = FALSE,
-                                  occasionStartTime    = 12  #start at noon b/c nocturnal animals
+DetHist_civet_SNP <- detectionHistory(recordTable          = record_table_subset_SNP,
+                                      camOp                = camop_subset_SNP,
+                                      stationCol           = "SiteID",
+                                      speciesCol           = "Species",
+                                      recordDateTimeCol    = "DateTime",
+                                      recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                                      timeZone             = "Africa/Maputo",
+                                      species              = "Civet",
+                                      occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                                      day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                                      includeEffort        = FALSE,
+                                      occasionStartTime    = 12  #start at noon b/c nocturnal animals
 )
 
-DetHist_civet <- as.data.frame(DetHist_civet)
+DetHist_civet_SNP <- as.data.frame(DetHist_civet_SNP)
 
-write_csv(DetHist_civet, "data/gorongosa-cameras/civet.csv", col_names = F)
+write_csv(DetHist_civet_SNP, "data/serengeti-cameras/derived/civet_SNP.csv", col_names = F)
 
 # make detection history for honey badgers (without trapping effort)
-DetHist_honeybadger <- detectionHistory(recordTable    = record_table_subset,
-                                        camOp                = camop_subset,
-                                        stationCol           = "Camera",
-                                        speciesCol           = "Species",
-                                        recordDateTimeCol    = "DateTimeOriginal",
-                                        recordDateTimeFormat = "%m/%d/%y %H:%M",
-                                        timeZone             = "Africa/Maputo",
-                                        species              = "Honey_badger",
-                                        occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
-                                        day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                        includeEffort        = FALSE,
-                                        occasionStartTime    = 12  #start at noon b/c nocturnal animals
+# NO HONEY BADGERS RECORDED DURING THIS PERIOD (I think)
+DetHist_honey_badger_SNP <- detectionHistory(recordTable          = record_table_subset_SNP,
+                                      camOp                = camop_subset_SNP,
+                                      stationCol           = "SiteID",
+                                      speciesCol           = "Species",
+                                      recordDateTimeCol    = "DateTime",
+                                      recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                                      timeZone             = "Africa/Maputo",
+                                      species              = "Honey_badger",
+                                      occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                                      day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                                      includeEffort        = FALSE,
+                                      occasionStartTime    = 12  #start at noon b/c nocturnal animals
 )
 
-DetHist_honeybadger <- as.data.frame(DetHist_honeybadger)
+DetHist_honey_badger_SNP <- as.data.frame(DetHist_honey_badger_SNP)
 
-write_csv(DetHist_honeybadger, "data/gorongosa-cameras/honey_badger.csv", col_names = F)
-
+write_csv(DetHist_honey_badger_SNP, "data/serengeti-cameras/derived/honey_badger_SNP.csv", col_names = F)
 
 # make detection history for marsh mongooses (without trapping effort)
+# NO MARSH MONGOOSES DETECTED AT SNP CAMERAS (I think)
 DetHist_marshmongoose <- detectionHistory(recordTable  = record_table_subset,
                                           camOp                = camop_subset,
                                           stationCol           = "Camera",
