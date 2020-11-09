@@ -6,7 +6,10 @@ library(here)
 library(camtrapR)
 
 # bring in spreadsheet with a column for the link called "URL" and/or partial link info called "URL_Partial" (see below)
-url_info <- read.csv("data/url_info.csv", delim = ",")
+# url_info <- read.csv("data/url_info.csv", delim = ",")
+
+# bring in spreadsheet with a column for the link called "URL" and/or partial link info called "URL_Partial" (see below)
+url_info_mongoose <- read.csv("Image ID/Data/wildcam_3.4_mongoose.csv") # I got an error when I left in the , delim = "," part
 
 # this is needed if the URL is incomplete (ex. with Snapshot Serengeti file names)
 url_info$URL <- paste("https://snapshotserengeti.s3.msi.umn.edu", 
@@ -16,14 +19,18 @@ url_info$URL <- paste("https://snapshotserengeti.s3.msi.umn.edu",
 # if you ONLY have URL, we'll need to do the opposite to generate "URL_Partial" for use in file names
 # ex. use strsplit() to take the URL and split out the first/repeated part so you can use just the unique info in the file name
 
+# need to generate "URL_Partial" for use in file names (I think)
+url_info_mongoose <- url_info_mongoose %>%
+  URL_Partial = strsplit(url_info_mongoose$zooniverse_url_0)
+
 # make sure it worked
-head(url_info)
+head(url_info_mongoose)
 
 # download all images to hard drive. you first need to create the "downloaded-images" file in this R project folder (working directory)
 mapply(download.file, 
-       url_info$URL, 
+       url_info_mongoose$zooniverse_url_0, 
        destfile = here::here("downloaded-images", 
-                             basename(url_info$URL_Partial))) 
+                             basename(url_info_mongoose$))) 
 
 # then sort them into folders manually based on species (if you want; or just put in one dummy species folder) 
 # and come back to this script to generate a csv with the date, time, file name, species, which you can export and populate with other columns 
