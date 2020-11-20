@@ -3,20 +3,25 @@ title: "multi-season sample"
 author: "Katie Grabowski"
 date: "11/20/2020"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+#install packages (starting with these because they seem like a good group)
+```{r}
+library("unmarked")  #install.packages("unmarked") 
+library(camtrapR) #install.packages("camtrapR")
+library(tidyverse)
+library(dplyr)
+library(patchwork) #install.packages("patchwork")
+library(ggpubr)  #install.packages("ggpubr")
 ```
 
-## R Markdown
+## get sample data
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+crossbill_dh <- read_csv(data(crossbill))
+colnames(crossbill)
 ```
 
 ## Including Plots
