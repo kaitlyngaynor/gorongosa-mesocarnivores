@@ -18,18 +18,151 @@ library(ggpubr)  #install.packages("ggpubr")
 ```
 
 ## get sample data
+We have three covariates that vary by site: median elevation of the quadrat (ele, in metres), forest cover of the quadrat (forest, in percent) and the number of surveys per season (i.e., 2 or 3, surveys). These are called site covariates, because they vary by sites only. The 27 columns entitled "det991" to "det073" contain the crossbill detection/nondetection data during all surveys over the 9 years. They contain a 1 when at least one crossbill was recorded during a survey and a 0 otherwise. NAs indicate surveys that did not take place, either because a site is high-elevation and has no third survey or because it failed to be surveyed altogether in a year. The final 27 columns entitled "date991" to "date073" give the Julian date of each survey. They represent a `survey-covariate' or `observation covariate'. We note that the paper by Royle and Kery (2007) used a subset of this data set.
+
+summary: 
+each row corresponds to a site
+each site has 3 site covariates (vary by site only): elevation, forest cover and number of surveys (1, 2 or 3)
+the next 27 columns give detection/non-detection data (0 or 1) for all of the surveys, with NAs if a survey wasn't conducted
+the final 27 columns give the Julian data of each survey; these are a 'survey-covariate' or 'observation-covariate'
+
 
 ```{r}
-crossbill_dh <- read_csv(data(crossbill))
+#get data from unmarked package
+data(crossbill)
 colnames(crossbill)
 ```
 
-## Including Plots
+## Adjusting dates
 
-You can also embed plots, for example:
+unmarked removes missing data in a context specific way. For missing siteCovs, the
+entire row of data must be removed. (so if you don't have a base feature of the site, like elevation or forest cover here, the whole site is scrapped)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+However, for missing yearlySiteCovs or obsCovs, only
+the corresponding observation are removed. 
+
+Thus, if unmarked removes different
+observations from different models, the models cannot be compared using AIC. A way
+around this is to remove the detection data corresponding to missing covariates before
+fitting the models.
+
+Notes: 
+is.na returns FALSE if there's a value and TRUE if NA
+```{r}
+##The crossbill data have missing dates and so we remove the associated detection/non-detection data.
+DATE <- as.matrix(crossbill[,32:58]) #select columns with the Julian date of each survey
+y.cross <- as.matrix(crossbill[,5:31]) #select crossbill detection/nondetection data during all surveys over the 9 years
+y.cross[is.na(DATE) != is.na(y.cross)] <- NA #I think this sets any values where either the date or the detection data is missing equal to NA (if both have data, nothing happens, and if neither has data, it's already NA, I believe)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+In addition, continuous covariates should be transformed in a way that brings their
+values close to zero in order to improve or even enable numerical convergence of the
+maximum-likelihood routine. 
+
+```{r}
+##scale data
+DATE <- scale(DATE)
+```
+
+Format data appropriately
+
+```{r}
+years <- as.character(1999:2007) #I believe this just creates a list with the relevant years?
+years <- matrix(years, nrow(crossbill), 9, byrow=TRUE) #creates a matrix with each of the years across the rows, and a row for each site
+umf <- unmarkedMultFrame(y=y.cross, #creates the actual data object; sets y to y.cross (matrix of observed data)
+siteCovs=crossbill[,2:3], yearlySiteCovs=list(year=years), #assigns siteCovs to the second and third columns of crossbill (elevation and forest); assigns the list of years as the yearlySiteCovs (covariates at the site-year level)
+obsCovs=list(date=DATE), #sets obsCovs (covariates that vary within site-year-observation level) to DATE
+numPrimary=9) #number of primary time periods (in this case, years)
+```
+
+#Model fitting
+We fit a series of models that represent different hypotheses about the
+colonization-extinction dynamics of Swiss crossbills at a spatial scale of 1 km2. We fit year
+effects on colonization and extinction in the means parameterization, but for detection
+probability, we choose an effects parameterization. The latter is more useful for getting
+predictions in the presence of other explanatory variables for that parameter. For model
+fm5 with more complex covariate relationships, we use as starting values for the
+optimization routine the solution from a "neighboring" model with slightly less complexity,
+model fm4. Wise choice of starting values can be decisive for success or failure of maximum
+likelihood estimation.
+
+colext(psiformula= ~1, gammaformula =  ~ 1, epsilonformula = ~ 1,
+    pformula = ~ 1, data, starts, method="BFGS", se=TRUE, ...)
+
+psiformula: right-hand sided formula for the initial probability of occupancy at each site
+gammaformula: right-hand sided formula for colonization probability
+epsilonformula: right-hand sided formula for extinction probability
+pformula: right-hand sided formula for detection probability
+data: unmarkedMultFrame object that supplies the data
+starts: optionally, initial values for parameters in the optimization
+method: optimization method used by optim
+se: logical specifying whether or not to compute standard errors
+
+```{r}
+ # A model with constant parameters
+ fm0 <- colext(~1, ~1, ~1, ~1, umf)
+
+# Look at output
+fm0
+
+ # Like fm0, but with year-dependent detection
+ fm1 <- colext(~1, ~1, ~1, ~year, umf)
+ 
+ # Like fm0, but with year-dependent colonization and extinction
+ fm2 <- colext(~1, ~year-1, ~year-1, ~1, umf)
+ 
+ # A fully time-dependent model
+ fm3 <- colext(~1, ~year-1, ~year-1, ~year, umf)
+ 
+ # Like fm3 with forest-dependence of 1st-year occupancy
+ fm4 <- colext(~forest, ~year-1, ~year-1, ~year, umf)
+ 
+ # Like fm4 with date- and year-dependence of detection
+ fm5 <- colext(~forest, ~year-1, ~year-1, ~year + date + I(date^2),
+umf, starts=c(coef(fm4), 0, 0))
+ 
+ # Same as fm5, but with detection in addition depending on forest cover
+ fm6 <- colext(~forest, ~year-1, ~year-1, ~year + date + I(date^2) +
+forest, umf)
+
+```
+
+#Model selection
+Use AIC to compare models
+
+Model selection and model-averaged prediction in unmarked require that we create a
+list of models using fitList. This function organizes models and conducts a series of tests to
+ensure that the models were fit to the same data.
+
+```{r}
+#Create an unmarkedFitList [this method is unnecessarily complicated]
+#models <- fitList('psi(.)gam(.)eps(.)p(.)' = fm0,
+#'psi(.)gam(.)eps(.)p(Y)' = fm1,
+#'psi(.)gam(Y)eps(Y)p(.)' = fm2,
+#'psi(.)gam(Y)eps(Y)p(Y)' = fm3,
+#'psi(F)gam(Y)eps(Y)p(Y)' = fm4,
+#'psi(F)gam(Y)eps(Y)p(YD2)' = fm5,
+#'psi(F)gam(Y)eps(Y)p(YD2F)' = fm6)
+
+#Model selection results from an unmarkedFitList
+#ms <- modSel(models)
+
+#view output
+#ms
+
+#Why can'tI just do this to create a fitlist? Answer: I can
+fl <- fitList(fm0, fm1, fm2, fm3, fm4, fm5, fm6)
+
+#Model selection results from an unmarkedFitList
+ms <- modSel(fl)
+
+#View output
+ms
+
+coef(ms) # Estimates only
+SE(ms) # Standard errors only
+toExport <- as(ms, "data.frame") # Everything
+```
+
+#Prediction and plotting
+Stopped here until I better understand what's going on until this
