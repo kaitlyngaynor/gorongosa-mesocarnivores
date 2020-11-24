@@ -64,11 +64,17 @@ maximum-likelihood routine.
 DATE <- scale(DATE)
 ```
 
-Format data appropriately
+#Format data appropriately
+
+Notes:
+y.cross has a row for every site and detection/non-detection data for every survey across 9 years 
+
+primary sample period: year or season
+secondary sample period: number of surveys/days/observations per primary sample period
 
 ```{r}
-years <- as.character(1999:2007) #I believe this just creates a list with the relevant years?
-years <- matrix(years, nrow(crossbill), 9, byrow=TRUE) #creates a matrix with each of the years across the rows, and a row for each site
+years <- as.character(1999:2007) #I believe this just creates a list with the relevant years? another example of using colext does the same
+years <- matrix(years, nrow(crossbill), 9, byrow=TRUE) #creates a matrix with each of the years across the rows, and a row for each site (another colext example does the same)
 umf <- unmarkedMultFrame(y=y.cross, #creates the actual data object; sets y to y.cross (matrix of observed data)
 siteCovs=crossbill[,2:3], yearlySiteCovs=list(year=years), #assigns siteCovs to the second and third columns of crossbill (elevation and forest); assigns the list of years as the yearlySiteCovs (covariates at the site-year level)
 obsCovs=list(date=DATE), #sets obsCovs (covariates that vary within site-year-observation level) to DATE
