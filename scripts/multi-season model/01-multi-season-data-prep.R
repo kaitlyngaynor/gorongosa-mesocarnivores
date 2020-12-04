@@ -62,7 +62,7 @@ record_table_subset_17 <- record_table %>%
   filter(Date >= as.Date(start.date.17) & Date <= as.Date(end.date.17))
 
 # make detection history for genets 2016 (without trapping effort)
-#problem: the camera names from camOp don't match "Camera" (which come from record table csv)
+#problem: the camera names from camOp don't match "Camera" (which come from record table csv); NOW SOLVED
 DetHist_genet_16 <- detectionHistory(recordTable     = record_table_subset_16,
                                      camOp                = camop_subset_16,
                                      stationCol           = "Camera",
