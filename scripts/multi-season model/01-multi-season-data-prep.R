@@ -48,10 +48,12 @@ camop_subset_17 <- camop %>%
 record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
 
 # subset to dates of interest 2016
+# also need to cut the cameras we're not using?
 record_table_subset_16 <- record_table %>% 
   mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
                         format = "%m/%d/%y %H:%M")) %>% 
-  filter(Date >= as.Date(start.date.16) & Date <= as.Date(end.date.16))
+  filter(Date >= as.Date(start.date.16) & Date <= as.Date(end.date.16)) %>%
+  filter(!Camera %in% c("A06", "B05", "D09", "E12", "F09", "G10", "G12", "H09", "H11", "H13", "I14","J09","L09","L13","M08")) #this removes all records from cameras that were inoperable in 2017
 
 # subset to dates of interest 2017
 record_table_subset_17 <- record_table %>% 
@@ -60,7 +62,8 @@ record_table_subset_17 <- record_table %>%
   filter(Date >= as.Date(start.date.17) & Date <= as.Date(end.date.17))
 
 # make detection history for genets 2016 (without trapping effort)
-DetHist_genet_17 <- detectionHistory(recordTable     = record_table_subset_16,
+#problem: the camera names from camOp don't match "Camera" (which come from record table csv)
+DetHist_genet_16 <- detectionHistory(recordTable     = record_table_subset_16,
                                      camOp                = camop_subset_16,
                                      stationCol           = "Camera",
                                      speciesCol           = "Species",
@@ -95,4 +98,4 @@ DetHist_genet_17 <- detectionHistory(recordTable     = record_table_subset_17,
 
 DetHist_genet_17 <- as.data.frame(DetHist_genet_17)
 
-write_csv(DetHist_genet_17, "data/gorongosa-cameras/genet.17.csv", col_names = F)
+write_csv(DetHist_genet_17, "data/gorongosa-cameras/genet_17.csv", col_names = F)
