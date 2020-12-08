@@ -3,6 +3,7 @@
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
+library(unmarked)
 
 # define start and end date - these are used to subset both operation matrix and record table
 start.date.16 <- "2016-08-01"
@@ -119,10 +120,46 @@ GNP_DATE_16 <- seq(as.Date("2016-08-01"), as.Date("2016-11-30"), by="days") #cre
 GNP_DATE_17 <- seq(as.Date("2017-08-01"), as.Date("2017-11-30"), by="days") #create sequence of dates for 2017 late dry season
 GNP_DATE_16_17 <- c(GNP_DATE_16,GNP_DATE_17) #combine date sequences together
 GNP_JDATE_16_17 <- julian(GNP_DATE_16_17, origin = as.Date("1970-01-01")) #converts to Julian dates (maybe?)
-GNP_JDATE_16_17 <- as.character(GNP_JDATE_16_17) #convert to characters for making a matrix
 GNP_DATE <- matrix(GNP_JDATE_16_17, nrow(DetHist_genet_16_17), 244, byrow=TRUE) #creates a matrix with repeated rows; 244 is total number of columns/days
 ##^ this is a matrix with the Julian dates of every "survey" (camera trap day)
 
 ##This step is taken from the colext pdf, I still don't fully understand why I need it
 DetHist_genet_16_17[is.na(GNP_DATE) != is.na(DetHist_genet_16_17)] <- NA #I think this sets any values where either the date or the 
 #detection data is missing equal to NA (if both have data, nothing happens, and if neither has data, it's already NA, I believe)
+
+#scale dates
+GNP_DATE <- scale(GNP_DATE)
+
+#create list of years
+yrs <- as.character(2016:2017) #creates a list with the relevant years 
+yrs <- matrix(yrs, nrow(DetHist_genet_16_17), 2, byrow=TRUE) 
+
+#load occupancy covariates
+#leaving the column names in for now
+#includes distance to lake, tree cover, mound density, etc
+occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+
+#scaling all the non-binary covariates to address the NaN warnings
+occ_covs$urema_dist = scale(occ_covs$urema_dist)
+occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
+occ_covs$termite.large.count.100m = scale(occ_covs$termite.large.count.100m)
+occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
+occ_covs$cover.ground = scale(occ_covs$cover.ground)
+
+# load in GNP cam metadata
+cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
+
+#make table with all covariates (environmental and detection)
+GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground)
+
+#remove unused sites
+GNP_covs <- filter(GNP_covs, !StudySite %in% c("A06", "B05", "D09", "E12", "F09", "G10", "G12", "H09", "H11", "H13", "I14","J09","L09","L13","M08")) #this removes all records from cameras that were inoperable in 2017
+
+write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
+
+#create data object
+#I think this successfully creates a umf data object?
+GNP_umf <- unmarkedMultFrame(y=DetHist_genet_16_17, #creates the actual data object; sets y to detection history (matrix of observed data)
+                         siteCovs=GNP_covs[,2:4], yearlySiteCovs=list(year=yrs), #assigns siteCovs to the second three columns of occ_covs (Urema distance, tree hansen, termite); assigns the list of years as the yearlySiteCovs (covariates at the site-year level)
+                         obsCovs=list(date=GNP_DATE), #sets obsCovs (covariates that vary within site-year-observation level) to DATE
+                         numPrimary=2) #number of primary time periods (in this case, years)
