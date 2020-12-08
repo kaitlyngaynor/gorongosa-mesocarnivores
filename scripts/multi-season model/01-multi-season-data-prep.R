@@ -48,7 +48,7 @@ camop_subset_17 <- camop %>%
 record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
 
 # subset to dates of interest 2016
-# also need to cut the cameras we're not using?
+# also need to cut the cameras we're not using (otherwise the function to create the detection history gets cranky)
 record_table_subset_16 <- record_table %>% 
   mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
                         format = "%m/%d/%y %H:%M")) %>% 
@@ -77,9 +77,9 @@ DetHist_genet_16 <- detectionHistory(recordTable     = record_table_subset_16,
                                      occasionStartTime    = 12  #start at noon b/c nocturnal animals
 )
 
-DetHist_genet_16 <- as.data.frame(DetHist_genet_16) #doesn't run due to mis-matched names
+DetHist_genet_16 <- as.data.frame(DetHist_genet_16) 
 
-write_csv(DetHist_genet_16, "data/gorongosa-cameras/genet_16.csv", col_names = F) #n/a yet
+write_csv(DetHist_genet_16, "data/gorongosa-cameras/genet_16.csv", col_names = F) 
 
 # make detection history for genets 2017 (without trapping effort)
 DetHist_genet_17 <- detectionHistory(recordTable     = record_table_subset_17,
@@ -99,3 +99,30 @@ DetHist_genet_17 <- detectionHistory(recordTable     = record_table_subset_17,
 DetHist_genet_17 <- as.data.frame(DetHist_genet_17)
 
 write_csv(DetHist_genet_17, "data/gorongosa-cameras/genet_17.csv", col_names = F)
+
+#will need to repeat for other species, not sure if there's a shortcut other than just copying, changing names and going with that
+
+#need to combine '16 and '17 data frames
+DetHist_genet_16_17 <- merge(DetHist_genet_16, DetHist_genet_17, by = 0) #merges two detection histories by row name
+
+DetHist_genet_16_17$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
+
+write_csv(DetHist_genet_16_17, "data/gorongosa-cameras/genet_16_17.csv", col_names = F)
+#in double season excel sheet, DS starts 2017
+#I *believe* this did what I wanted it to, but I'm also not entirely sure how to check? I checked visually, looking at the
+#excel sheets for 2016, 2017 and then 2016/17 combined, and it looks right, but that also depends on the ones for 2016 and 2017
+#having been created correctly
+
+#need to convert dates to Julian dates (I think)
+#which means creating a data frame with the Julain dates of the dry season for 2016 and 2017 as a row, repeated 45 times (number of sites)
+GNP_DATE_16 <- seq(as.Date("2016-08-01"), as.Date("2016-11-30"), by="days") #create sequence of dates for 2016 late dry season
+GNP_DATE_17 <- seq(as.Date("2017-08-01"), as.Date("2017-11-30"), by="days") #create sequence of dates for 2017 late dry season
+GNP_DATE_16_17 <- c(GNP_DATE_16,GNP_DATE_17) #combine date sequences together
+GNP_JDATE_16_17 <- julian(GNP_DATE_16_17, origin = as.Date("1970-01-01")) #converts to Julian dates (maybe?)
+GNP_JDATE_16_17 <- as.character(GNP_JDATE_16_17) #convert to characters for making a matrix
+GNP_DATE <- matrix(GNP_JDATE_16_17, nrow(DetHist_genet_16_17), 244, byrow=TRUE) #creates a matrix with repeated rows; 244 is total number of columns/days
+##^ this is a matrix with the Julian dates of every "survey" (camera trap day)
+
+##This step is taken from the colext pdf, I still don't fully understand why I need it
+DetHist_genet_16_17[is.na(GNP_DATE) != is.na(DetHist_genet_16_17)] <- NA #I think this sets any values where either the date or the 
+#detection data is missing equal to NA (if both have data, nothing happens, and if neither has data, it's already NA, I believe)
