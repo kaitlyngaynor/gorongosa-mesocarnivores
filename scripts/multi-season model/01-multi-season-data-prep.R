@@ -126,9 +126,16 @@ GNP_DATE <- matrix(GNP_JDATE_16_17, nrow(DetHist_genet_16_17), 244, byrow=TRUE) 
 ##This step is taken from the colext pdf, I still don't fully understand why I need it
 DetHist_genet_16_17[is.na(GNP_DATE) != is.na(DetHist_genet_16_17)] <- NA #I think this sets any values where either the date or the 
 #detection data is missing equal to NA (if both have data, nothing happens, and if neither has data, it's already NA, I believe)
+#do I need this? if my only missing values will be from the detection data frame?
 
 #scale dates
+#scaling is turning them all to NaNs...
+#in the sample, it goes from int to num
+# GNP_DATE <- as.integer(GNP_DATE) #not doing what I want it to
+GNP_DATE <- type.convert(GNP_DATE) #converting to int
 GNP_DATE <- scale(GNP_DATE)
+
+write_csv(GNP_DATE, "data/gorongosa-cameras/GNP_DATE.csv", col_names = T)
 
 #create list of years
 yrs <- as.character(2016:2017) #creates a list with the relevant years 
@@ -139,21 +146,22 @@ yrs <- matrix(yrs, nrow(DetHist_genet_16_17), 2, byrow=TRUE)
 #includes distance to lake, tree cover, mound density, etc
 occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
-#scaling all the non-binary covariates to address the NaN warnings
-occ_covs$urema_dist = scale(occ_covs$urema_dist)
-occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
-occ_covs$termite.large.count.100m = scale(occ_covs$termite.large.count.100m)
-occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
-occ_covs$cover.ground = scale(occ_covs$cover.ground)
-
 # load in GNP cam metadata
 cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
 
 #make table with all covariates (environmental and detection)
+#calling it GNP_covs because I needed to keep study site names
 GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground)
 
 #remove unused sites
 GNP_covs <- filter(GNP_covs, !StudySite %in% c("A06", "B05", "D09", "E12", "F09", "G10", "G12", "H09", "H11", "H13", "I14","J09","L09","L13","M08")) #this removes all records from cameras that were inoperable in 2017
+
+#scaling all the non-binary covariates to address the NaN warnings
+GNP_covs$urema_dist = scale(GNP_covs$urema_dist)
+GNP_covs$tree_hansen = scale(GNP_covs$tree_hansen)
+GNP_covs$termite.large.count.100m = scale(GNP_covs$termite.large.count.100m)
+GNP_covs$lion_latedry = scale(GNP_covs$lion_latedry)
+GNP_covs$cover.ground = scale(GNP_covs$cover.ground)
 
 write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
 
