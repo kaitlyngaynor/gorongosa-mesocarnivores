@@ -24,18 +24,21 @@ camop <- cameraOperation(CTtable      = camtraps,
                          dateFormat   = "mdy"
 )
 
+# make the %notin% operator
+`%notin%` <- negate(`%in%`)
+
 #subset to dates of interest for 2016, need to remove cameras that were inoperable in 2017
 #list of sites to be removed: A06(1), B05(4), D09(12), E12(18), F09(23), G10(29), G12(30), H09(34), H11(35), H13(36), I14(42), J09(46), L09(56), L13(58), M08(59)
 camop_subset_16 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
-  select(start.date.16:end.date.16) #%>% # select columns of interest
-  #camop_subset_16[-c(1,4,12,18,23,29,30,34,35,36,42,46,56,58,59),] %>% #delete cameras that were inoperational during 2017 late dry (all NAs)
-  #as.matrix() # get it back into matrix form for calculating detection history
+  select(start.date.16:end.date.16) %>% # select columns of interest
+  rownames_to_column("Camera") %>% # make row names into column so they can be filtered
+  filter(Camera %notin% c("A06", "B05", "D09", "E12", "F09", "G10", 
+                       "G12", "H09", "H11", "H13", "I14", "J09", 
+                       "L09", "L13", "M08")) %>% #delete cameras that were inoperational during 2017 late dry (all NAs)
+  column_to_rownames("Camera") %>%  # put column back into row names (silly)
+  as.matrix() # get it back into matrix form for calculating detection history
 
-#trying to remove rows from my data frame
-#I couldn't get it to let me do this within the above piping. I also know this is a poorly re-creatable/messy way to do this
-camop_subset_16 <- camop_subset_16[-c(1,4,12,18,23,29,30,34,35,36,42,46,56,58,59),] %>%
-  as.matrix()
 
 # subset to dates of interest 2017 and remove cameras that weren't operating during this period
 # another line to achieve removal of NAs: camop_subset_17[complete.cases(camop_subset_17), ] (only works on data frames)
