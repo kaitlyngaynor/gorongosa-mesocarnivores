@@ -37,9 +37,7 @@ camop_subset_16 <- camop %>%
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.16:end.date.16) %>% # select columns of interest
   rownames_to_column("Camera") %>% # make row names into column so they can be filtered
-  filter(!Camera %in% c("A06", "B05", "D09", "E12", "F09", "G10", 
-                       "G12", "H09", "H11", "H13", "I14", "J09", 
-                       "L09", "L13", "M08")) %>% #delete cameras that were inoperational during 2017 late dry (all NAs)
+  filter(Camera %in% rownames(camop_subset_17)) %>% #selects only the cameras that are in the 2017 data
   column_to_rownames("Camera") %>%  # put column back into row names (silly)
   as.matrix() # get it back into matrix form for calculating detection history
 
@@ -65,9 +63,10 @@ record_table_subset_16 <- record_table %>%
   mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
                         format = "%m/%d/%y %H:%M")) %>% 
   filter(Date >= as.Date(start.date.16) & Date <= as.Date(end.date.16)) %>%
-  filter(!Camera %in% c("A06", "B05", "D09", "E12", "F09", "G10", "G12", "H09", "H11", "H13", "I14","J09","L09","L13","M08")) #this removes all records from cameras that were inoperable in 2017
+  filter(Camera %in% rownames(camop_subset_17))  #selects only the cameras that are in the 2017 data
 
 # subset to dates of interest 2017
+# don't need to worry about cutting inoperable cameras from 2016 because they're already cut with selecting dates
 record_table_subset_17 <- record_table %>% 
   mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
                         format = "%m/%d/%y %H:%M")) %>% 
