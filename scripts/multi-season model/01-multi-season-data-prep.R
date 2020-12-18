@@ -135,19 +135,9 @@ detectionHistory2016and2017(species_name = "Civet")
 #excel sheets for 2016, 2017 and then 2016/17 combined, and it looks right, but that also depends on the ones for 2016 and 2017
 #having been created correctly
 
-
-
-#need to convert dates to Julian dates (I think)
-#which means creating a data frame with the Julain dates of the dry season for 2016 and 2017 as a row, repeated 45 times (number of sites)
-GNP_DATE_16 <- seq(as.Date("2016-08-01"), as.Date("2016-11-30"), by="days") #create sequence of dates for 2016 late dry season
-GNP_DATE_17 <- seq(as.Date("2017-08-01"), as.Date("2017-11-30"), by="days") #create sequence of dates for 2017 late dry season
-GNP_DATE_16_17 <- c(GNP_DATE_16,GNP_DATE_17) #combine date sequences together
-GNP_JDATE_16_17 <- julian(GNP_DATE_16_17, origin = as.Date("1970-01-01")) #converts to Julian dates (maybe?)
-GNP_DATE <- matrix(GNP_JDATE_16_17, nrow(DetHist_genet_16_17), 244, byrow=TRUE) #creates a matrix with repeated rows; 244 is total number of columns/days
-##^ this is a matrix with the Julian dates of every "survey" (camera trap day)
-
 ##This step is taken from the colext pdf, I still don't fully understand why I need it
-DetHist_genet_16_17[is.na(GNP_DATE) != is.na(DetHist_genet_16_17)] <- NA #I think this sets any values where either the date or the 
+#update: may not need it at all? (leaving it in for now)
+#DetHist_genet_16_17[is.na(GNP_DATE) != is.na(DetHist_genet_16_17)] <- NA #I think this sets any values where either the date or the 
 #detection data is missing equal to NA (if both have data, nothing happens, and if neither has data, it's already NA, I believe)
 #do I need this? if my only missing values will be from the detection data frame?
 
