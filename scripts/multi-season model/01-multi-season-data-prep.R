@@ -127,8 +127,8 @@ detectionHistory2016and2017 <- function(species_name) {
 }
 
 # now run the above function for different species
-detectionHistory2016and2017("Genet")
-detectionHistory2016and2017("Civet")
+detectionHistory2016and2017(species_name = "Genet")
+detectionHistory2016and2017(species_name = "Civet")
 
 #in double season excel sheet, DS starts 2017
 #I *believe* this did what I wanted it to, but I'm also not entirely sure how to check? I checked visually, looking at the
