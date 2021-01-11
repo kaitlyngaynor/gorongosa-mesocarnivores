@@ -33,6 +33,7 @@ camop <- cameraOperation(CTtable      = camtraps,
 
 #subset to dates of interest for 2016, need to remove cameras that were inoperable in 2017
 #list of sites to be removed: A06(1), B05(4), D09(12), E12(18), F09(23), G10(29), G12(30), H09(34), H11(35), H13(36), I14(42), J09(46), L09(56), L13(58), M08(59)
+#need to run nex chunk of code first
 camop_subset_16 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.16:end.date.16) %>% # select columns of interest
@@ -129,26 +130,6 @@ detectionHistory2016and2017 <- function(species_name) {
 detectionHistory2016and2017(species_name = "Genet")
 detectionHistory2016and2017(species_name = "Civet")
 
-#in double season excel sheet, DS starts 2017
-#I *believe* this did what I wanted it to, but I'm also not entirely sure how to check? I checked visually, looking at the
-#excel sheets for 2016, 2017 and then 2016/17 combined, and it looks right, but that also depends on the ones for 2016 and 2017
-#having been created correctly
-
-##This step is taken from the colext pdf, I still don't fully understand why I need it
-#update: may not need it at all? (leaving it in for now)
-#DetHist_genet_16_17[is.na(GNP_DATE) != is.na(DetHist_genet_16_17)] <- NA #I think this sets any values where either the date or the 
-#detection data is missing equal to NA (if both have data, nothing happens, and if neither has data, it's already NA, I believe)
-#do I need this? if my only missing values will be from the detection data frame?
-
-#scale dates
-#scaling is turning them all to NaNs...
-#in the sample, it goes from int to num
-# GNP_DATE <- as.integer(GNP_DATE) #not doing what I want it to
-GNP_DATE <- type.convert(GNP_DATE) #converting to int
-GNP_DATE <- scale(GNP_DATE)
-
-write_csv(GNP_DATE, "data/gorongosa-cameras/GNP_DATE.csv", col_names = T)
-
 #create list of years
 yrs <- as.character(2016:2017) #creates a list with the relevant years 
 yrs <- matrix(yrs, nrow(DetHist_genet_16_17), 2, byrow=TRUE) 
@@ -163,10 +144,9 @@ cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_rast
 
 #make table with all covariates (environmental and detection)
 #calling it GNP_covs because I needed to keep study site names
-GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground)
-
-#remove unused sites
-GNP_covs <- filter(GNP_covs, !StudySite %in% c("A06", "B05", "D09", "E12", "F09", "G10", "G12", "H09", "H11", "H13", "I14","J09","L09","L13","M08")) #this removes all records from cameras that were inoperable in 2017
+GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground) %>%
+  rename(Camera = StudySite) %>% # to match column name in camop_subset_17
+  filter(Camera %in% rownames(camop_subset_17))  # remove unused sites
 
 #scaling all the non-binary covariates to address the NaN warnings
 GNP_covs$urema_dist = scale(GNP_covs$urema_dist)
@@ -181,5 +161,4 @@ write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
 #I think this successfully creates a umf data object?
 GNP_umf <- unmarkedMultFrame(y=DetHist_genet_16_17, #creates the actual data object; sets y to detection history (matrix of observed data)
                          siteCovs=GNP_covs[,2:4], yearlySiteCovs=list(year=yrs), #assigns siteCovs to the second three columns of occ_covs (Urema distance, tree hansen, termite); assigns the list of years as the yearlySiteCovs (covariates at the site-year level)
-                         obsCovs=list(date=GNP_DATE), #sets obsCovs (covariates that vary within site-year-observation level) to DATE
                          numPrimary=2) #number of primary time periods (in this case, years)
