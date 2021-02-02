@@ -132,7 +132,7 @@ detectionHistory2016and2017(species_name = "Civet")
 
 #create list of years
 yrs <- as.character(2016:2017) #creates a list with the relevant years 
-yrs <- matrix(yrs, nrow(DetHist_genet_16_17), 2, byrow=TRUE) 
+yrs <- matrix(yrs, nrow(camop_subset_17), 2, byrow=TRUE) #I think we're just making a matrix with a row for every site (so it doesn't matter what object you use to get that number)
 
 #load occupancy covariates
 #leaving the column names in for now
@@ -156,6 +156,8 @@ GNP_covs$lion_latedry = scale(GNP_covs$lion_latedry)
 GNP_covs$cover.ground = scale(GNP_covs$cover.ground)
 
 write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
+
+#I think I need to create a matrix with the Julian dates for the obscovs?
 
 #create data object
 #I think this successfully creates a umf data object?
