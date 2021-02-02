@@ -1,4 +1,5 @@
 #Goal: create umf data object with GNP data (get it in the right format)
+#this repeats a lot of what I already did, so I need to go through and edit better (comment written 2-2-21)
 
 #Install packages (good group to start with)
 library("unmarked")  #install.packages("unmarked") 
