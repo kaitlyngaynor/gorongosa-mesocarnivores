@@ -25,6 +25,7 @@ camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_year1-4.csv")
 # create camera operation matrix, correct for 2016-2019
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
+                         #sessionCol = "session" #I think I need to work with this variable
                          setupCol     = "Start",
                          retrievalCol = "End",
                          hasProblems  = TRUE,
@@ -55,8 +56,8 @@ camop_subset_17 <- camop %>%
 
 # Format record tables ----------------------------------------------------
 
-# load in Gorongosa record table, I think the record table includes 2017 as well
-record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
+# load in Gorongosa record table, updated for 2016-2019
+record_table <- read_csv("data/gorongosa-cameras/wildcam_mesocarnivores.csv")
 
 # subset to dates of interest 2016
 # also need to cut the cameras we're not using (otherwise the function to create the detection history gets cranky)
@@ -75,6 +76,7 @@ record_table_subset_17 <- record_table %>%
 
 
 # Make detection history for species --------------------------------------
+#I *think* that this can be done in a single step? still working on how
 
 detectionHistory2016and2017 <- function(species_name) {
   
