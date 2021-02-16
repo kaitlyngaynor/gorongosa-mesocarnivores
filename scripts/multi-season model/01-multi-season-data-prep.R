@@ -19,10 +19,10 @@ end.date.17 <- "2017-11-30"
 # Format camera operation matrices ----------------------------------------
 
 #load in Gorongosa camera operations data table
-#correct for 2016 and 2017 (as far as I can tell)
-camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1and2.csv")
+#updated for 2016-2019 (THANK YOU KAITLYN AND MEREDITH, YOU ROCK)
+camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_year1-4.csv")
 
-# create camera operation matrix, correct for 2016 and 2017 
+# create camera operation matrix, correct for 2016-2019
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
                          setupCol     = "Start",
