@@ -1,5 +1,5 @@
 ---
-title: "multi-season sample"
+title: "multi-season sample using colext"
 author: "Katie Grabowski"
 date: "11/20/2020"
 output: html_document
