@@ -13,14 +13,18 @@ start.date.16 <- "2016-08-01"
 end.date.16 <- "2016-11-30"
 start.date.17 <- "2017-08-01"
 end.date.17 <- "2017-11-30"
+start.date.18 <- "2018-08-01"
+end.date.18 <- "2018-11-30"
+start.date.19 <- "2019-08-01"
+end.date.19 <- "2019-10-13" #until we have more data
 
 
 
 # Format camera operation matrices ----------------------------------------
 
 #load in Gorongosa camera operations data table
-#updated for 2016-2019 (THANK YOU KAITLYN AND MEREDITH, YOU ROCK)
-camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_year1-4.csv")
+#updated with consolidated data for 2016-2019 (THANK YOU KAITLYN AND MEREDITH, YOU ROCK)
+camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1-4_consolidated.csv")
 
 # create camera operation matrix, correct for 2016-2019
 camop <- cameraOperation(CTtable      = camtraps,
@@ -32,15 +36,18 @@ camop <- cameraOperation(CTtable      = camtraps,
                          dateFormat   = "mdy"
 )
 
+# big picture question is whether I need to do this? (posted to the google group)
+#would this be worth writing into a single function?
+
 #subset to dates of interest for 2016, need to remove cameras that were inoperable in 2017
 #list of sites to be removed: A06(1), B05(4), D09(12), E12(18), F09(23), G10(29), G12(30), H09(34), H11(35), H13(36), I14(42), J09(46), L09(56), L13(58), M08(59)
-#need to run nex chunk of code first
+#need to run nex chunk of code first (NOT TRUE if we use all operational cameras)
 camop_subset_16 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.16:end.date.16) %>% # select columns of interest
-  rownames_to_column("Camera") %>% # make row names into column so they can be filtered
-  filter(Camera %in% rownames(camop_subset_17)) %>% #selects only the cameras that are in the 2017 data
-  column_to_rownames("Camera") %>%  # put column back into row names (silly)
+  #rownames_to_column("Camera") %>% # make row names into column so they can be filtered
+  #filter(Camera %in% rownames(camop_subset_17)) %>% #selects only the cameras that are in the 2017 data
+  #column_to_rownames("Camera") %>%  # put column back into row names (silly)
   as.matrix() # get it back into matrix form for calculating detection history
 
 
@@ -49,7 +56,19 @@ camop_subset_16 <- camop %>%
 camop_subset_17 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.17:end.date.17) %>% # select columns of interest
-  filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs)
+  filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
+  as.matrix() # get it back into matrix form for calculating detection history
+
+camop_subset_18 <- camop %>% 
+  as.data.frame %>% # first need to convert matrix to data frame
+  select(start.date.18:end.date.18) %>% # select columns of interest
+  filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
+  as.matrix() # get it back into matrix form for calculating detection history
+
+camop_subset_19 <- camop %>% 
+  as.data.frame %>% # first need to convert matrix to data frame
+  select(start.date.19:end.date.19) %>% # select columns of interest
+  filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
   as.matrix() # get it back into matrix form for calculating detection history
 
 
@@ -62,32 +81,46 @@ record_table <- read_csv("data/gorongosa-cameras/wildcam_mesocarnivores.csv")
 # subset to dates of interest 2016
 # also need to cut the cameras we're not using (otherwise the function to create the detection history gets cranky)
 record_table_subset_16 <- record_table %>% 
-  mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
-                        format = "%m/%d/%y %H:%M")) %>% 
-  filter(Date >= as.Date(start.date.16) & Date <= as.Date(end.date.16)) %>%
-  filter(Camera %in% rownames(camop_subset_17))  #selects only the cameras that are in the 2017 data
+  mutate(Date = as.Date(datetime, # format date column as date for subsetting (edited for this spreadsheet)
+                        format = "%m/%d/%Y %H:%M:%S")) %>% 
+  filter(Date >= as.Date(start.date.16) & Date <= as.Date(end.date.16)) # %>%
+  #filter(Camera %in% rownames(camop_subset_17))  #selects only the cameras that are in the 2017 data; trying it out with all cameras
 
 # subset to dates of interest 2017
 # don't need to worry about cutting inoperable cameras from 2016 because they're already cut with selecting dates
 record_table_subset_17 <- record_table %>% 
-  mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
-                        format = "%m/%d/%y %H:%M")) %>% 
+  mutate(Date = as.Date(datetime, # format date column as date for subsetting
+                        format = "%m/%d/%Y %H:%M:%S")) %>% 
   filter(Date >= as.Date(start.date.17) & Date <= as.Date(end.date.17))
+
+#2018
+record_table_subset_18 <- record_table %>% 
+  mutate(Date = as.Date(datetime, # format date column as date for subsetting
+                        format = "%m/%d/%Y %H:%M:%S")) %>% 
+  filter(Date >= as.Date(start.date.18) & Date <= as.Date(end.date.18))
+
+#2019
+#might need to cut records from E04 (I think it was actually down during the late dry season this year)
+record_table_subset_19 <- record_table %>% 
+  mutate(Date = as.Date(datetime, # format date column as date for subsetting
+                        format = "%m/%d/%Y %H:%M:%S")) %>% 
+  filter(Date >= as.Date(start.date.19) & Date <= as.Date(end.date.19)) %>%
+  filter(site != "E04") #I believe this cut all records from E04 because they were incorrectly dated
 
 
 # Make detection history for species --------------------------------------
 #I *think* that this can be done in a single step? still working on how
 
-detectionHistory2016and2017 <- function(species_name) {
+detectionHistoryfourseasons <- function(species_name) {
   
   # make detection history for 2016 (without trapping effort)
   #problem: the camera names from camOp don't match "Camera" (which come from record table csv); NOW SOLVED
   DetHist_16 <- detectionHistory(recordTable     = record_table_subset_16,
-                                       camOp                = camop_subset_16,
-                                       stationCol           = "Camera",
-                                       speciesCol           = "Species",
-                                       recordDateTimeCol    = "DateTimeOriginal",
-                                       recordDateTimeFormat = "%m/%d/%y %H:%M",
+                                       camOp                = camop_subset_16, #trying with just general camop
+                                       stationCol           = "site", #also had to edit for new spreadsheet
+                                       speciesCol           = "species", #also edited for new spreadsheet
+                                       recordDateTimeCol    = "datetime", #edited for new spreadsheet
+                                       recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
                                        timeZone             = "Africa/Maputo",
                                        species              = species_name,
                                        occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
@@ -103,10 +136,10 @@ detectionHistory2016and2017 <- function(species_name) {
   # make detection history for 2017 (without trapping effort)
   DetHist_17 <- detectionHistory(recordTable     = record_table_subset_17,
                                        camOp                = camop_subset_17,
-                                       stationCol           = "Camera",
-                                       speciesCol           = "Species",
-                                       recordDateTimeCol    = "DateTimeOriginal",
-                                       recordDateTimeFormat = "%m/%d/%y %H:%M",
+                                       stationCol           = "site",
+                                       speciesCol           = "species",
+                                       recordDateTimeCol    = "datetime",
+                                       recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
                                        timeZone             = "Africa/Maputo",
                                        species              = species_name,
                                        occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
@@ -119,17 +152,78 @@ detectionHistory2016and2017 <- function(species_name) {
   
   write_csv(DetHist_17, paste("data/gorongosa-cameras/", species_name, "_17.csv", sep = ""), col_names = F) 
   
-  #need to combine '16 and '17 data frames
-  DetHist_16_17 <- merge(DetHist_16, DetHist_17, by = 0) #merges two detection histories by row name
+  # make detection history for 2018 (without trapping effort)
+  DetHist_18 <- detectionHistory(recordTable     = record_table_subset_18,
+                                 camOp                = camop_subset_18,
+                                 stationCol           = "site",
+                                 speciesCol           = "species",
+                                 recordDateTimeCol    = "datetime",
+                                 recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                                 timeZone             = "Africa/Maputo",
+                                 species              = species_name,
+                                 occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                                 day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                                 includeEffort        = FALSE,
+                                 occasionStartTime    = 12  #start at noon b/c nocturnal animals
+  )
   
-  DetHist_16_17$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
+  DetHist_18 <- as.data.frame(DetHist_18)
   
-  write_csv(DetHist_16_17, paste("data/gorongosa-cameras/", species_name, "_16_17.csv", sep = ""), col_names = F) 
+  write_csv(DetHist_18, paste("data/gorongosa-cameras/", species_name, "_18.csv", sep = ""), col_names = F) 
+  
+  # make detection history for 2019 (without trapping effort)
+  #for some reason the camop subset for 2019 is missing E04
+  DetHist_19 <- detectionHistory(recordTable     = record_table_subset_19,
+                                 camOp                = camop_subset_19,
+                                 stationCol           = "site",
+                                 speciesCol           = "species",
+                                 recordDateTimeCol    = "datetime",
+                                 recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                                 timeZone             = "Africa/Maputo",
+                                 species              = species_name,
+                                 occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                                 day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                                 includeEffort        = FALSE,
+                                 occasionStartTime    = 12  #start at noon b/c nocturnal animals
+  )
+  
+  DetHist_19 <- as.data.frame(DetHist_19)
+  
+  write_csv(DetHist_19, paste("data/gorongosa-cameras/", species_name, "_19.csv", sep = ""), col_names = F) 
+  
+  #need to combine all data frames
+  DetHist_16_17 <- merge(DetHist_16, DetHist_17, by = 0, all = TRUE)%>% #merges 16 & 17 detection histories by row name, keeps all rows
+    column_to_rownames('Row.names') #puts the camera names as row names again for merging
+  
+  # DetHist_16_17$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need 
+  ##but now this has row names of 1-60, not A02, A04, etc
+  ##which means they don't nicely merge with the others...
+  
+  DetHist_16_17_18 <- merge(DetHist_16_17, DetHist_18, by = 0, all = TRUE)%>% #merges 16&17 with 18 detection histories by row name
+    column_to_rownames('Row.names')
+    # DetHist_16_17_18$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need 
+  
+  DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19
+  DetHist_complete$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
+  
+  write_csv(DetHist_complete, paste("data/gorongosa-cameras/", species_name, "_complete.csv", sep = ""), col_names = F) 
   
 }
 
+##trying to get the merging at the end to work
+#need to combine all data frames
+DetHist_16_17 <- merge(DetHist_16, DetHist_17, by = 0, all = TRUE) %>% #merges 16 & 17 detection histories by row name, keeps all rows
+column_to_rownames('Row.names') #puts the camera names back where they belong to merge again
+
+DetHist_16_17_18 <- merge(DetHist_16_17, DetHist_18, by = 0, all = TRUE) %>% #merges 16&17 with 18 detection histories by row name, keeps all rows
+  column_to_rownames('Row.names') #puts camera names where I need them to merge again
+ 
+
+DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19
+DetHist_complete$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
+
 # now run the above function for different species
-detectionHistory2016and2017(species_name = "Genet")
+detectionHistoryfourseasons(species_name = "genet")
 detectionHistory2016and2017(species_name = "Civet")
 
 #create list of years
