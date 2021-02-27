@@ -294,6 +294,8 @@ write_csv(DetHist_19, "data/gorongosa-cameras/derived/genet_19.csv", col_names =
 #need to combine all data frames
 DetHist_16_17 <- merge(DetHist_16, DetHist_17, by = 0, all = TRUE)%>% #merges 16 & 17 detection histories by row name, keeps all rows
   column_to_rownames('Row.names') #puts the camera names as row names again for merging
+write_csv(DetHist_16_17, "data/gorongosa-cameras/derived/genet_16_17.csv", col_names = F)
+
 
 DetHist_16_17_18 <- merge(DetHist_16_17, DetHist_18, by = 0, all = TRUE)%>% #merges 16&17 with 18 detection histories by row name
   column_to_rownames('Row.names') #puts camera names back as row names to allow for merging
