@@ -302,7 +302,7 @@ DetHist_16_17_18 <- merge(DetHist_16_17, DetHist_18, by = 0, all = TRUE)%>% #mer
 
 DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19; throws a warning
 DetHist_complete$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
-#NEED TO CHECK IF THIS IS RIGHT?!
+#NEED TO CHECK IF THIS IS RIGHT?! check 18/19
 
 #write_csv(DetHist_complete, paste("data/gorongosa-cameras/", species_name, "_complete.csv", sep = ""), col_names = F)
 write_csv(DetHist_complete, "data/gorongosa-cameras/derived/genet_complete.csv", col_names = F)
