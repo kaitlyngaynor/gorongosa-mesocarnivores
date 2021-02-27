@@ -195,35 +195,121 @@ detectionHistoryfourseasons <- function(species_name) {
   DetHist_16_17 <- merge(DetHist_16, DetHist_17, by = 0, all = TRUE)%>% #merges 16 & 17 detection histories by row name, keeps all rows
     column_to_rownames('Row.names') #puts the camera names as row names again for merging
   
-  # DetHist_16_17$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need 
-  ##but now this has row names of 1-60, not A02, A04, etc
-  ##which means they don't nicely merge with the others...
-  
   DetHist_16_17_18 <- merge(DetHist_16_17, DetHist_18, by = 0, all = TRUE)%>% #merges 16&17 with 18 detection histories by row name
-    column_to_rownames('Row.names')
-    # DetHist_16_17_18$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need 
+    column_to_rownames('Row.names') #puts camera names back as row names to allow for merging
   
-  DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19
+  DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19; throws a warning
   DetHist_complete$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
+  #NEED TO CHECK IF THIS IS RIGHT?!
   
   write_csv(DetHist_complete, paste("data/gorongosa-cameras/", species_name, "_complete.csv", sep = ""), col_names = F) 
   
 }
 
-##trying to get the merging at the end to work
+##NEED TO FIGURE OUT WHERE THE BUG IS IN THE DETHIST FUNCTION-----------------------------------------------------------------------------
+
+# make detection history for 2016 (without trapping effort)
+#problem: the camera names from camOp don't match "Camera" (which come from record table csv); NOW SOLVED
+DetHist_16 <- detectionHistory(recordTable     = record_table_subset_16,
+                               camOp                = camop_subset_16, #trying with just general camop
+                               stationCol           = "site", #also had to edit for new spreadsheet
+                               speciesCol           = "species", #also edited for new spreadsheet
+                               recordDateTimeCol    = "datetime", #edited for new spreadsheet
+                               recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                               timeZone             = "Africa/Maputo",
+                               species              = "genet",
+                               occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                               day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                               includeEffort        = FALSE,
+                               occasionStartTime    = 12  #start at noon b/c nocturnal animals
+)
+
+DetHist_16 <- as.data.frame(DetHist_16) 
+
+#write_csv(DetHist_16, paste("data/gorongosa-cameras/", "genet", "_16.csv", sep = ""), col_names = F) #not sure why this isn't working
+
+write_csv(DetHist_16, "data/gorongosa-cameras/derived/genet_16.csv", col_names = F)
+
+# make detection history for 2017 (without trapping effort)
+DetHist_17 <- detectionHistory(recordTable     = record_table_subset_17,
+                               camOp                = camop_subset_17,
+                               stationCol           = "site",
+                               speciesCol           = "species",
+                               recordDateTimeCol    = "datetime",
+                               recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                               timeZone             = "Africa/Maputo",
+                               species              = "genet",
+                               occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                               day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                               includeEffort        = FALSE,
+                               occasionStartTime    = 12  #start at noon b/c nocturnal animals
+)
+
+DetHist_17 <- as.data.frame(DetHist_17)
+
+#write_csv(DetHist_17, paste("data/gorongosa-cameras/", species_name, "_17.csv", sep = ""), col_names = F) 
+write_csv(DetHist_17, "data/gorongosa-cameras/derived/genet_17.csv", col_names = F)
+
+# make detection history for 2018 (without trapping effort)
+DetHist_18 <- detectionHistory(recordTable     = record_table_subset_18,
+                               camOp                = camop_subset_18,
+                               stationCol           = "site",
+                               speciesCol           = "species",
+                               recordDateTimeCol    = "datetime",
+                               recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                               timeZone             = "Africa/Maputo",
+                               species              = "genet",
+                               occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                               day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                               includeEffort        = FALSE,
+                               occasionStartTime    = 12  #start at noon b/c nocturnal animals
+)
+
+DetHist_18 <- as.data.frame(DetHist_18)
+
+#write_csv(DetHist_18, paste("data/gorongosa-cameras/", species_name, "_18.csv", sep = ""), col_names = F) 
+write_csv(DetHist_18, "data/gorongosa-cameras/derived/genet_18.csv", col_names = F)
+
+# make detection history for 2019 (without trapping effort)
+#for some reason the camop subset for 2019 is missing E04
+DetHist_19 <- detectionHistory(recordTable     = record_table_subset_19,
+                               camOp                = camop_subset_19,
+                               stationCol           = "site",
+                               speciesCol           = "species",
+                               recordDateTimeCol    = "datetime",
+                               recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                               timeZone             = "Africa/Maputo",
+                               species              = "genet",
+                               occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                               day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                               includeEffort        = FALSE,
+                               occasionStartTime    = 12  #start at noon b/c nocturnal animals
+)
+
+DetHist_19 <- as.data.frame(DetHist_19)
+
+#write_csv(DetHist_19, paste("data/gorongosa-cameras/", species_name, "_19.csv", sep = ""), col_names = F) 
+write_csv(DetHist_19, "data/gorongosa-cameras/derived/genet_19.csv", col_names = F)
+
 #need to combine all data frames
-DetHist_16_17 <- merge(DetHist_16, DetHist_17, by = 0, all = TRUE) %>% #merges 16 & 17 detection histories by row name, keeps all rows
-column_to_rownames('Row.names') #puts the camera names back where they belong to merge again
+DetHist_16_17 <- merge(DetHist_16, DetHist_17, by = 0, all = TRUE)%>% #merges 16 & 17 detection histories by row name, keeps all rows
+  column_to_rownames('Row.names') #puts the camera names as row names again for merging
 
-DetHist_16_17_18 <- merge(DetHist_16_17, DetHist_18, by = 0, all = TRUE) %>% #merges 16&17 with 18 detection histories by row name, keeps all rows
-  column_to_rownames('Row.names') #puts camera names where I need them to merge again
- 
+DetHist_16_17_18 <- merge(DetHist_16_17, DetHist_18, by = 0, all = TRUE)%>% #merges 16&17 with 18 detection histories by row name
+  column_to_rownames('Row.names') #puts camera names back as row names to allow for merging
 
-DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19
+DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19; throws a warning
 DetHist_complete$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
+#NEED TO CHECK IF THIS IS RIGHT?!
 
+#write_csv(DetHist_complete, paste("data/gorongosa-cameras/", species_name, "_complete.csv", sep = ""), col_names = F)
+write_csv(DetHist_complete, "data/gorongosa-cameras/derived/genet_complete.csv", col_names = F)
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------------
 # now run the above function for different species
-detectionHistoryfourseasons(species_name = "genet")
+detectionHistoryfourseasons(species_name = "genet") #not running currently
 detectionHistory2016and2017(species_name = "Civet")
 
 #create list of years
