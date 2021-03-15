@@ -205,16 +205,18 @@ detectionHistoryfourseasons <- function(species_name) {
   DetHist_complete$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
   write_csv(DetHist_complete, paste("data/gorongosa-cameras/derived", species_name, "_complete.csv", sep = ""), col_names = F)
   
+  options(warning.length = 6000L) #need to extend the warning messages
+  
 }
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 # now run the above function for different species
-detectionHistoryfourseasons(species_name = "genet") #not running currently
-detectionHistory2016and2017(species_name = "Civet")
+detectionHistoryfourseasons(species_name = "genet") 
+detectionHistoryfourseasons(species_name = "civet")
 
 #create list of years
-yrs <- as.character(2016:2017) #creates a list with the relevant years 
-yrs <- matrix(yrs, nrow(camop_subset_17), 2, byrow=TRUE) #I think we're just making a matrix with a row for every site (so it doesn't matter what object you use to get that number)
+yrs <- as.character(2016:2019) #creates a list with the relevant years 
+yrs <- matrix(yrs, nrow(camop), 4, byrow=TRUE) #I think we're just making a matrix with a row for every site (so it doesn't matter what object you use to get that number)
 
 #load occupancy covariates
 #leaving the column names in for now
@@ -227,8 +229,8 @@ cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_rast
 #make table with all covariates (environmental and detection)
 #calling it GNP_covs because I needed to keep study site names
 GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground) %>%
-  rename(Camera = StudySite) %>% # to match column name in camop_subset_17
-  filter(Camera %in% rownames(camop_subset_17))  # remove unused sites
+  rename(Camera = StudySite) #%>% # to match column name in camop_subset_17
+  #filter(Camera %in% rownames(camop_subset_17))  # remove unused sites (USING ALL SITES NOW)
 
 #scaling all the non-binary covariates to address the NaN warnings
 GNP_covs$urema_dist = scale(GNP_covs$urema_dist)
