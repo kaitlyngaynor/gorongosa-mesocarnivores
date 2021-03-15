@@ -131,7 +131,7 @@ detectionHistoryfourseasons <- function(species_name) {
   
   DetHist_16 <- as.data.frame(DetHist_16) 
   
-  write_csv(DetHist_16, paste("data/gorongosa-cameras/derived", species_name, "_16.csv", sep = ""), col_names = F) 
+  write_csv(DetHist_16, paste("data/gorongosa-cameras/derived/", species_name, "_16.csv", sep = ""), col_names = F) 
   
   # make detection history for 2017 (without trapping effort)
   DetHist_17 <- detectionHistory(recordTable     = record_table_subset_17,
@@ -150,7 +150,7 @@ detectionHistoryfourseasons <- function(species_name) {
   
   DetHist_17 <- as.data.frame(DetHist_17)
   
-  write_csv(DetHist_17, paste("data/gorongosa-cameras/derived", species_name, "_17.csv", sep = ""), col_names = F) 
+  write_csv(DetHist_17, paste("data/gorongosa-cameras/derived/", species_name, "_17.csv", sep = ""), col_names = F) 
   
   # make detection history for 2018 (without trapping effort)
   DetHist_18 <- detectionHistory(recordTable     = record_table_subset_18,
@@ -169,7 +169,7 @@ detectionHistoryfourseasons <- function(species_name) {
   
   DetHist_18 <- as.data.frame(DetHist_18)
   
-  write_csv(DetHist_18, paste("data/gorongosa-cameras/derived", species_name, "_18.csv", sep = ""), col_names = F) 
+  write_csv(DetHist_18, paste("data/gorongosa-cameras/derived/", species_name, "_18.csv", sep = ""), col_names = F) 
   
   # make detection history for 2019 (without trapping effort)
   # no records from E04 for 2019
@@ -189,7 +189,7 @@ detectionHistoryfourseasons <- function(species_name) {
   
   DetHist_19 <- as.data.frame(DetHist_19)
   
-  write_csv(DetHist_19, paste("data/gorongosa-cameras/derived", species_name, "_19.csv", sep = ""), col_names = F) 
+  write_csv(DetHist_19, paste("data/gorongosa-cameras/derived/", species_name, "_19.csv", sep = ""), col_names = F) 
   
   #need to combine all data frames
   DetHist_16_17 <- merge(DetHist_16, DetHist_17, by = 0, all = TRUE)%>% #merges 16 & 17 detection histories by row name, keeps all rows
@@ -203,7 +203,7 @@ detectionHistoryfourseasons <- function(species_name) {
   
   DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19; throws a warning
   DetHist_complete$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
-  write_csv(DetHist_complete, paste("data/gorongosa-cameras/derived", species_name, "_complete.csv", sep = ""), col_names = F)
+  write_csv(DetHist_complete, paste("data/gorongosa-cameras/derived/", species_name, "_complete.csv", sep = ""), col_names = F)
   
   options(warning.length = 6000L) #need to extend the warning messages
   
