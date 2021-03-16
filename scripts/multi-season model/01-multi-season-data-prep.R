@@ -212,7 +212,7 @@ detectionHistoryfourseasons <- function(species_name) {
 
 # now run the above function for different species
 detectionHistoryfourseasons(species_name = "genet") 
-DetHist_genet_complete <- read_csv("data/gorongosa-cameras/derived/genet_complete.csv")
+DetHist_genet_complete <- read.csv("data/gorongosa-cameras/derived/genet_complete.csv", header = FALSE)
 
 detectionHistoryfourseasons(species_name = "civet")
 
