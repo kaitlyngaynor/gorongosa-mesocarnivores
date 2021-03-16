@@ -247,6 +247,6 @@ write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
 
 #create data object
 #I think this successfully creates a umf data object?
-GNP_umf <- unmarkedMultFrame(y=DetHist_genet, #creates the actual data object; sets y to detection history (matrix of observed data)
+GNP_umf <- unmarkedMultFrame(y=DetHist_genet_complete, #creates the actual data object; sets y to detection history (matrix of observed data)
                          siteCovs=GNP_covs[,2:4], yearlySiteCovs=list(year=yrs), #assigns siteCovs to the second three columns of occ_covs (Urema distance, tree hansen, termite); assigns the list of years as the yearlySiteCovs (covariates at the site-year level)
-                         numPrimary=2) #number of primary time periods (in this case, years)
+                         numPrimary=4) #number of primary time periods (in this case, years)
