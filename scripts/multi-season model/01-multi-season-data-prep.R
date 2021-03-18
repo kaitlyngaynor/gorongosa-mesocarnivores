@@ -19,7 +19,6 @@ start.date.19 <- "2019-08-01"
 end.date.19 <- "2019-10-13" #until we have more data
 
 
-
 # Format camera operation matrices ----------------------------------------
 
 #load in Gorongosa camera operations data table
@@ -220,17 +219,24 @@ detectionHistoryfourseasons(species_name = "civet")
 yrs <- as.character(2016:2019) #creates a list with the relevant years 
 yrs <- matrix(yrs, nrow(camop), 4, byrow=TRUE) #I think we're just making a matrix with a row for every site (so it doesn't matter what object you use to get that number)
 
+#import yearly site covs (created outside of R)
+yearlysitecovs <- read_csv("data/gorongosa-cameras/yearlysitecovs.csv", col_names = TRUE)
+
+year <- yearlysitecovs[1:60, 2:5] #select columns with years
+dog <- yearlysitecovs[1:60, 7:10] # select columns with rough dog info 
+yearlysitecovs <- list(year = year, dog = dog) 
+
 #load occupancy covariates
 #leaving the column names in for now
 #includes distance to lake, tree cover, mound density, etc
-occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+# occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame() #done below
 
 # load in GNP cam metadata
 cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
 
 #make table with all covariates (environmental and detection)
 #calling it GNP_covs because I needed to keep study site names
-GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground) %>%
+GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground) %>%
   rename(Camera = StudySite) #%>% # to match column name in camop_subset_17
   #filter(Camera %in% rownames(camop_subset_17))  # remove unused sites (USING ALL SITES NOW)
 
@@ -248,5 +254,5 @@ write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
 #create data object
 #I think this successfully creates a umf data object?
 GNP_umf <- unmarkedMultFrame(y=DetHist_genet_complete, #creates the actual data object; sets y to detection history (matrix of observed data)
-                         siteCovs=GNP_covs[,2:4], yearlySiteCovs=list(year=yrs), #assigns siteCovs to the second three columns of occ_covs (Urema distance, tree hansen, termite); assigns the list of years as the yearlySiteCovs (covariates at the site-year level)
+                         siteCovs=GNP_covs[,2:5], yearlySiteCovs=yearlysitecovs, #assigns siteCovs to the second four columns of occ_covs (Urema distance, tree hansen, termite, lion); assigns yearlySiteCovs as created(covariates at the site-year level)
                          numPrimary=4) #number of primary time periods (in this case, years)
