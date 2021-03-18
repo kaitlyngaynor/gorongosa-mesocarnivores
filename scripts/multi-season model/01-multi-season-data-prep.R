@@ -1,6 +1,3 @@
-#Need to create detection histories for each species of interest for each year
-
-
 # Setup -------------------------------------------------------------------
 
 library(camtrapR) #install.packages("camtrapR")
@@ -28,7 +25,7 @@ camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1-4_consolida
 # create camera operation matrix, correct for 2016-2019
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
-                         #sessionCol = "session" #I think I need to work with this variable
+                         #sessionCol = "session" #I might need to work with this variable (for the moment, I've worked around it)
                          setupCol     = "Start",
                          retrievalCol = "End",
                          hasProblems  = TRUE,
@@ -38,9 +35,7 @@ camop <- cameraOperation(CTtable      = camtraps,
 # big picture question is whether I need to do this? (posted to the google group)
 #would this be worth writing into a single function?
 
-#subset to dates of interest for 2016, need to remove cameras that were inoperable in 2017
-#list of sites to be removed: A06(1), B05(4), D09(12), E12(18), F09(23), G10(29), G12(30), H09(34), H11(35), H13(36), I14(42), J09(46), L09(56), L13(58), M08(59)
-#need to run nex chunk of code first (NOT TRUE if we use all operational cameras)
+#create 2016 camera operation matrix
 camop_subset_16 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.16:end.date.16) %>% # select columns of interest
@@ -49,27 +44,26 @@ camop_subset_16 <- camop %>%
   #column_to_rownames("Camera") %>%  # put column back into row names (silly)
   as.matrix() # get it back into matrix form for calculating detection history
 
-
-# subset to dates of interest 2017 and remove cameras that weren't operating during this period
-# another line to achieve removal of NAs: camop_subset_17[complete.cases(camop_subset_17), ] (only works on data frames)
+#2017 operation matrix
 camop_subset_17 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.17:end.date.17) %>% # select columns of interest
   filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
   as.matrix() # get it back into matrix form for calculating detection history
 
+#2018 operation matrix
 camop_subset_18 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.18:end.date.18) %>% # select columns of interest
   filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
   as.matrix() # get it back into matrix form for calculating detection history
 
+#2019 operation matrix
 camop_subset_19 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.19:end.date.19) %>% # select columns of interest
   filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
   as.matrix() # get it back into matrix form for calculating detection history
-
 
 
 # Format record tables ----------------------------------------------------
@@ -99,7 +93,7 @@ record_table_subset_18 <- record_table %>%
   filter(Date >= as.Date(start.date.18) & Date <= as.Date(end.date.18))
 
 #2019
-#might need to cut records from E04 (I think it was actually down during the late dry season this year)
+#E04 was inoperable during this period 
 record_table_subset_19 <- record_table %>% 
   mutate(Date = as.Date(datetime, # format date column as date for subsetting
                         format = "%m/%d/%Y %H:%M:%S")) %>% 
@@ -107,18 +101,16 @@ record_table_subset_19 <- record_table %>%
   filter(site != "E04") #I believe this cut all records from E04 because they were incorrectly dated
 
 
-# Make detection history for species --------------------------------------
-#I *think* that this can be done in a single step? still working on how
+# Make detection history for species ------------------------------------------------------------------------------------------------
 
 detectionHistoryfourseasons <- function(species_name) {
   
   # make detection history for 2016 (without trapping effort)
-  #problem: the camera names from camOp don't match "Camera" (which come from record table csv); NOW SOLVED
   DetHist_16 <- detectionHistory(recordTable     = record_table_subset_16,
-                                       camOp                = camop_subset_16, #trying with just general camop
-                                       stationCol           = "site", #also had to edit for new spreadsheet
-                                       speciesCol           = "species", #also edited for new spreadsheet
-                                       recordDateTimeCol    = "datetime", #edited for new spreadsheet
+                                       camOp                = camop_subset_16, 
+                                       stationCol           = "site", 
+                                       speciesCol           = "species", 
+                                       recordDateTimeCol    = "datetime", 
                                        recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
                                        timeZone             = "Africa/Maputo",
                                        species              = species_name,
@@ -210,33 +202,36 @@ detectionHistoryfourseasons <- function(species_name) {
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 # now run the above function for different species
-detectionHistoryfourseasons(species_name = "genet") 
-DetHist_genet_complete <- read.csv("data/gorongosa-cameras/derived/genet_complete.csv", header = FALSE)
 
+#genet
+detectionHistoryfourseasons(species_name = "genet") 
+DetHist_genet_complete <- read.csv("data/gorongosa-cameras/derived/genet_complete.csv", header = FALSE) #reads in detection history that comes out of the function
+
+#civet
 detectionHistoryfourseasons(species_name = "civet")
 
 #create list of years
-yrs <- as.character(2016:2019) #creates a list with the relevant years 
-yrs <- matrix(yrs, nrow(camop), 4, byrow=TRUE) #I think we're just making a matrix with a row for every site (so it doesn't matter what object you use to get that number)
+#yrs <- as.character(2016:2019) #creates a list with the relevant years 
+#yrs <- matrix(yrs, nrow(camop), 4, byrow=TRUE) #I think we're just making a matrix with a row for every site (so it doesn't matter what object you use to get that number)
 
-#import yearly site covs (created outside of R)
+#import yearly site covs (created outside of R, has year and dog data)
 yearlysitecovs <- read_csv("data/gorongosa-cameras/yearlysitecovs.csv", col_names = TRUE)
 
 year <- yearlysitecovs[1:60, 2:5] #select columns with years
 dog <- yearlysitecovs[1:60, 7:10] # select columns with rough dog info 
 yearlysitecovs <- list(year = year, dog = dog) 
 
-#load occupancy covariates
+#load occupancy covariates (ACTUALLY DONE BELOW)
 #leaving the column names in for now
 #includes distance to lake, tree cover, mound density, etc
-# occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame() #done below
+# occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
 # load in GNP cam metadata
 cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
 
 #make table with all covariates (environmental and detection)
 #calling it GNP_covs because I needed to keep study site names
-GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground) %>%
+GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.count.100m, lion_latedry, detect.obscured, cover.ground) %>%
   rename(Camera = StudySite) #%>% # to match column name in camop_subset_17
   #filter(Camera %in% rownames(camop_subset_17))  # remove unused sites (USING ALL SITES NOW)
 
@@ -254,5 +249,7 @@ write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
 #create data object
 #I think this successfully creates a umf data object?
 GNP_umf <- unmarkedMultFrame(y=DetHist_genet_complete, #creates the actual data object; sets y to detection history (matrix of observed data)
-                         siteCovs=GNP_covs[,2:5], yearlySiteCovs=yearlysitecovs, #assigns siteCovs to the second four columns of occ_covs (Urema distance, tree hansen, termite, lion); assigns yearlySiteCovs as created(covariates at the site-year level)
+                         siteCovs=GNP_covs[,2:7], yearlySiteCovs=yearlysitecovs, #assigns siteCovs to the proposed environmental and detection covariates; assigns yearlySiteCovs as created (covariates at the site-year level)
                          numPrimary=4) #number of primary time periods (in this case, years)
+
+summary(GNP_umf) #look at UMF
