@@ -23,7 +23,7 @@ end.date.19 <- "2019-10-13" #until we have more data
 camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1-4_consolidated.csv")
 
 #need to reformat data to include sessions--------------------------------------------------------------------------------------------
-
+#PROBABLY NOT USING THIS CHUNK (going to try to work from the consolidated version)
 rm(list=ls()) #SCARY LINE THAT CLEARS THE GLOBAL ENVIRONMENT
 dat1 <- read.csv("data-cleaning-master/operation-files/Camera_operation_years1and2.csv") #read in file
 dat1$Notes <- NA 
@@ -226,7 +226,11 @@ detectionHistoryfourseasons <- function(species_name) {
   #write_csv(DetHist_16_17_18, "data/gorongosa-cameras/derived/genet_16_17_18.csv", col_names = F)
   
   DetHist_complete <- merge(DetHist_16_17_18, DetHist_19, by = 0, all = TRUE) #merges 16/17/18 with 19; throws a warning
+  padding <- data.frame(matrix(NA, nrow = 60, ncol = 48)) #creating a matrix to pad the "missing" data from 2019
+  padding$Row.names <- DetHist_complete$Row.names #need a shared column to merge the two data frames
+  DetHist_complete <- merge(DetHist_complete, padding, by = "Row.names")
   DetHist_complete$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
+  
   write_csv(DetHist_complete, paste("data/gorongosa-cameras/derived/", species_name, "_complete.csv", sep = ""), col_names = F)
   
   options(warning.length = 6000L) #need to extend the warning messages
