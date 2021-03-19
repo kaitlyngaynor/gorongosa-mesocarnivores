@@ -22,6 +22,39 @@ end.date.19 <- "2019-10-13" #until we have more data
 #updated with consolidated data for 2016-2019 (THANK YOU KAITLYN AND MEREDITH, YOU ROCK)
 camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1-4_consolidated.csv")
 
+#need to reformat data to include sessions--------------------------------------------------------------------------------------------
+
+rm(list=ls()) #SCARY LINE THAT CLEARS THE GLOBAL ENVIRONMENT
+dat1 <- read.csv("data-cleaning-master/operation-files/Camera_operation_years1and2.csv") #read in file
+dat1$Notes <- NA 
+dat1$Session <- "1" #assign session to this set (need to figure out how to differentiate between year 1 & 2)
+
+dat2 <- read.csv("data-cleaning-master/operation-files/Camera_operation_year3.csv")
+dat2$X <- NULL; dat2$X.1 <- NULL; dat2$X.2 <- NULL
+dat2$Problem2_from <- NA; dat2$Problem2_to <- NA; dat2$Problem3_from <- NA; dat2$Problem3_to <- NA
+dat2$Session <- "3" #assign a session value
+dat2 <- dat2 %>% rename(Camera = ï..Camera) #the camera column randomly had a weird name...
+
+dat3 <- read.csv("data-cleaning-master/operation-files/Camera_operation_year4.csv")
+dat3$X <- NULL
+dat3$Problem3_from <- NA; dat3$Problem3_to <- NA #creating these columns and filling with NAs
+dat3$Session <- "4" #assign a session value
+dat3 <- dat3 %>% rename(Camera = ï..Camera) #the camera column randomly had a weird name...
+ 
+dat4 <- rbind(dat1, dat2, dat3)
+
+myfun <- function(x) strptime(x, format="%m/%d/%y")
+dat4[,c(2:9)] <- lapply(dat4[,c(2:9)], myfun)
+dat4 <- dat4[!is.na(dat4$Start),] #one invalid roll 
+max(dat4$End) 
+dat4[] <- lapply(dat4[], as.character)
+dat4[is.na(dat4)] <- ""
+
+# save 
+write.csv(dat4, "data/gorongosa-cameras/Camera_operation_year1-4_sessions.csv", row.names=F)
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+
 # create camera operation matrix, correct for 2016-2019
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
