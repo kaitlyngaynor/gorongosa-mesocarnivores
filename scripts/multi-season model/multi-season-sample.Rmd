@@ -114,8 +114,11 @@ fm0
  # Like fm0, but with year-dependent detection
  fm1 <- colext(~1, ~1, ~1, ~year, umf)
  
+ fm1
+ 
  # Like fm0, but with year-dependent colonization and extinction
  fm2 <- colext(~1, ~year-1, ~year-1, ~1, umf)
+ fm2
  
  # A fully time-dependent model
  fm3 <- colext(~1, ~year-1, ~year-1, ~year, umf)
