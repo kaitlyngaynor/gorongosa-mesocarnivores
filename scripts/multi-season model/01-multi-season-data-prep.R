@@ -24,10 +24,10 @@ camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1-4_consolida
 
 #need to reformat data to include sessions--------------------------------------------------------------------------------------------
 #PROBABLY NOT USING THIS CHUNK (going to try to work from the consolidated version)
-rm(list=ls()) #SCARY LINE THAT CLEARS THE GLOBAL ENVIRONMENT
-dat1 <- read.csv("data-cleaning-master/operation-files/Camera_operation_years1and2.csv") #read in file
-dat1$Notes <- NA 
-dat1$Session <- "1" #assign session to this set (need to figure out how to differentiate between year 1 & 2)
+#rm(list=ls()) #SCARY LINE THAT CLEARS THE GLOBAL ENVIRONMENT
+#dat1 <- read.csv("data-cleaning-master/operation-files/Camera_operation_years1and2.csv") #read in file
+#dat1$Notes <- NA 
+#dat1$Session <- "1" #assign session to this set (need to figure out how to differentiate between year 1 & 2)
 
 dat2 <- read.csv("data-cleaning-master/operation-files/Camera_operation_year3.csv")
 dat2$X <- NULL; dat2$X.1 <- NULL; dat2$X.2 <- NULL
@@ -246,6 +246,16 @@ DetHist_genet_complete <- read.csv("data/gorongosa-cameras/derived/genet_complet
 
 #civet
 detectionHistoryfourseasons(species_name = "civet")
+DetHist_civet_complete <- read.csv("data/gorongosa-cameras/derived/civet_complete.csv", header = FALSE) #reads in detection history that comes out of the function
+
+#honey badger
+detectionHistoryfourseasons(species_name = "honey_badger")
+DetHist_honey_badger_complete <- read.csv("data/gorongosa-cameras/derived/honey_badger_complete.csv", header = FALSE) #reads in detection history that comes out of the function
+
+#marsh mongoose
+#can't run yet, 2019 data hasn't been cleaned for different mongoose species
+detectionHistoryfourseasons(species_name = "mongoose_marsh")
+DetHist_civet_complete <- read.csv("data/gorongosa-cameras/derived/civet_complete.csv", header = FALSE) #reads in detection history that comes out of the function
 
 #create list of years
 #yrs <- as.character(2016:2019) #creates a list with the relevant years 
@@ -285,8 +295,173 @@ write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
 
 #create data object
 #I think this successfully creates a umf data object?
-GNP_umf <- unmarkedMultFrame(y=DetHist_genet_complete, #creates the actual data object; sets y to detection history (matrix of observed data)
+GNP_umf_genet <- unmarkedMultFrame(y=DetHist_genet_complete, #creates the actual data object; sets y to detection history (matrix of observed data)
                          siteCovs=GNP_covs[,2:7], yearlySiteCovs=yearlysitecovs, #assigns siteCovs to the proposed environmental and detection covariates; assigns yearlySiteCovs as created (covariates at the site-year level)
                          numPrimary=4) #number of primary time periods (in this case, years)
 
-summary(GNP_umf) #look at UMF
+summary(GNP_umf_genet) #look at UMF
+
+#Let's try and run some models, shall we?---------------------------------------------------------------------------------------------
+#notes included here so I don't have to keep switching between tabs
+#colext(psiformula= ~1, gammaformula =  ~ 1, epsilonformula = ~ 1,
+      # pformula = ~ 1, data, starts, method="BFGS", se=TRUE, ...)
+
+#psiformula: right-hand sided formula for the initial probability of occupancy at each site
+#gammaformula: right-hand sided formula for colonization probability
+#epsilonformula: right-hand sided formula for extinction probability
+#pformula: right-hand sided formula for detection probability
+#data: unmarkedMultFrame object that supplies the data
+#starts: optionally, initial values for parameters in the optimization
+#method: optimization method used by optim
+#se: logical specifying whether or not to compute standard errors
+
+#building detection formula
+Gfit0 <- colext(~1, ~1, ~1, ~1, GNP_umf_genet) #constant parameters
+Gfit0
+
+Gfit01 <- colext(~1, ~1, ~1, ~detect.obscured, GNP_umf_genet)
+Gfit01
+
+Gfit02 <- colext(~1, ~1, ~1, ~cover.ground, GNP_umf_genet)
+Gfit02
+
+Gfit03 <- colext(~1, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_genet) #winner
+Gfit03
+
+#building occupancy formula
+Gfit1 <- colext(~urema_dist, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit1
+
+Gfit11 <- colext(~tree_hansen, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit11
+
+Gfit12 <- colext(~termite.large.count.100m, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit12
+
+Gfit13 <- colext(~lion_latedry, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit13
+
+#trying to add in colonization
+Gfit2 <- colext(~1, ~year, ~1, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit2
+
+Gfit21 <- colext(~1, ~dog, ~1, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit21
+
+Gfit22 <- colext(~1, ~year+dog, ~1, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit22
+
+#and trying to add in extinction
+Gfit3 <- colext(~1, ~1, ~year, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit3
+
+Gfit31 <- colext(~1, ~1, ~dog, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit31
+
+Gfit32 <- colext(~1, ~1, ~year+dog, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit32
+
+Gfit33 <- colext(~1, ~dog, ~dog, ~detect.obscured + cover.ground, GNP_umf_genet)
+Gfit33
+
+#Let's try another species
+GNP_umf_civet <- unmarkedMultFrame(y=DetHist_civet_complete, #creates the actual data object; sets y to detection history (matrix of observed data)
+                                   siteCovs=GNP_covs[,2:7], yearlySiteCovs=yearlysitecovs, #assigns siteCovs to the proposed environmental and detection covariates; assigns yearlySiteCovs as created (covariates at the site-year level)
+                                   numPrimary=4) #number of primary time periods (in this case, years)
+
+summary(GNP_umf_civet) #look at UMF
+
+#going to assume that detection covariates are the same throughout
+Cfit0 <- colext(~1, ~1, ~1, ~1, GNP_umf_civet) #constant
+Cfit0
+
+Cfit01 <- colext(~1, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit01
+
+#testing occupancy covariates
+Cfit1 <- colext(~urema_dist, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit1
+
+Cfit12 <- colext(~tree_hansen, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit12
+
+Cfit13 <- colext(~termite.large.count.100m, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit13
+
+Cfit14 <- colext(~lion_latedry, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit14
+
+Cfit15 <- colext(~urema_dist + termite.large.count.100m, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit15
+
+#testing colonization covariates
+Cfit2 <- colext(~urema_dist + termite.large.count.100m, ~year, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit2
+
+Cfit21 <- colext(~urema_dist + termite.large.count.100m, ~dog, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit21
+
+Cfit22 <- colext(~urema_dist + termite.large.count.100m, ~dog+year, ~1, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit22
+
+#texting extinction covariates
+Cfit3 <- colext(~urema_dist + termite.large.count.100m, ~1, ~year, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit3
+
+Cfit31 <- colext(~urema_dist + termite.large.count.100m, ~1, ~dog, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit31
+
+Cfit32 <- colext(~urema_dist + termite.large.count.100m, ~1, ~year+dog, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit32
+
+Cfit33 <- colext(~urema_dist + termite.large.count.100m, ~dog, ~dog, ~detect.obscured + cover.ground, GNP_umf_civet)
+Cfit33
+
+#Let's try another species
+GNP_umf_honey_badger <- unmarkedMultFrame(y=DetHist_honey_badger_complete, #creates the actual data object; sets y to detection history (matrix of observed data)
+                                   siteCovs=GNP_covs[,2:7], yearlySiteCovs=yearlysitecovs, #assigns siteCovs to the proposed environmental and detection covariates; assigns yearlySiteCovs as created (covariates at the site-year level)
+                                   numPrimary=4) #number of primary time periods (in this case, years)
+
+summary(GNP_umf_honey_badger) #look at UMF
+
+Hfit0 <- colext(~1, ~1, ~1, ~1, GNP_umf_honey_badger)
+Hfit0
+
+Hfit01 <- colext(~1, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit01
+
+Hfit1 <- colext(~urema_dist, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit1
+
+Hfit11 <- colext(~tree_hansen, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit11
+
+Hfit12 <- colext(~termite.large.count.100m, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit12
+
+Hfit13 <- colext(~lion_latedry, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit13
+
+Hfit14 <- colext(~tree_hansen+urema_dist, ~1, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit14
+
+Hfit2 <- colext(~1, ~year, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit2
+
+Hfit21 <- colext(~1, ~dog, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit21
+
+Hfit22 <- colext(~1, ~year+dog, ~1, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit22
+
+Hfit3 <- colext(~1, ~1, ~year, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit3
+
+Hfit31 <- colext(~1, ~1, ~dog, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit31
+
+Hfit32 <- colext(~1, ~1, ~year+dog, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit32
+
+Hfit33 <- colext(~1, ~year, ~dog, ~detect.obscured + cover.ground, GNP_umf_honey_badger)
+Hfit33
