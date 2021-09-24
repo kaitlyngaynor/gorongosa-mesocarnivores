@@ -1,9 +1,9 @@
 # Setup -------------------------------------------------------------------
 
 library(camtrapR) #install.packages("camtrapR")
-library(tidyverse)
-library(dplyr)
-library(unmarked)
+library(tidyverse) #install.packages("tidyverse") 
+library(dplyr) #install.packages("dplyr") 
+library(unmarked) #install.packages("unmarked")
 
 # define start and end date - these are used to subset both operation matrix and record table
 start.date.16 <- "2016-08-01"
