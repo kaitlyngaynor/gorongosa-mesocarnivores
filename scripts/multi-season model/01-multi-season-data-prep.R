@@ -56,6 +56,8 @@ write.csv(dat4, "data/gorongosa-cameras/Camera_operation_year1-4_sessions.csv", 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 # create camera operation matrix, correct for 2016-2019
+# this has a row for each camera and a column for each date, with
+# NA: cam not set up; 0: cam not operational; 1: cam operational
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
                          #sessionCol = "session" #I might need to work with this variable (for the moment, I've worked around it)
@@ -68,7 +70,7 @@ camop <- cameraOperation(CTtable      = camtraps,
 # big picture question is whether I need to do this? (posted to the google group)
 #would this be worth writing into a single function?
 
-#create 2016 camera operation matrix
+#create 2016 camera operation matrix; subsets to 2016 data
 camop_subset_16 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.16:end.date.16) %>% # select columns of interest
@@ -102,6 +104,7 @@ camop_subset_19 <- camop %>%
 # Format record tables ----------------------------------------------------
 
 # load in Gorongosa record table, updated for 2016-2019
+# columns for site, species, datetime, behavior
 record_table <- read_csv("data/gorongosa-cameras/wildcam_mesocarnivores.csv")
 
 # subset to dates of interest 2016
@@ -135,7 +138,8 @@ record_table_subset_19 <- record_table %>%
 
 
 # Make detection history for species ------------------------------------------------------------------------------------------------
-
+# This yields a spreadsheet with a row for each camera, a column
+# for each date in the season. 0: not detected, 1: detected, NA: camera not operational
 detectionHistoryfourseasons <- function(species_name) {
   
   # make detection history for 2016 (without trapping effort)

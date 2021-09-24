@@ -6,8 +6,8 @@ library("unmarked")  #install.packages("unmarked")
 library(camtrapR) #install.packages("camtrapR")
 library(tidyverse)
 library(dplyr)
-library(patchwork) #install.packages("patchwork")
-library(ggpubr)  #install.packages("ggpubr")
+library(patchwork) #install.packages("patchwork") 
+library(ggpubr) #install.packages("ggpubr") 
 
 #Import data
 #detection histories for 2016 are already subset to the late dry season, set noon to noon b/c nocturnal animals
