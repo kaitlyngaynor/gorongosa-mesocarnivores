@@ -58,6 +58,7 @@ write.csv(dat4, "data/gorongosa-cameras/Camera_operation_year1-4_sessions.csv", 
 # create camera operation matrix, correct for 2016-2019
 # this has a row for each camera and a column for each date, with
 # NA: cam not set up; 0: cam not operational; 1: cam operational
+#added occasionStartTime because it changed functions (JK?)
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
                          #sessionCol = "session" #I might need to work with this variable (for the moment, I've worked around it)
@@ -154,8 +155,8 @@ detectionHistoryfourseasons <- function(species_name) {
                                        species              = species_name,
                                        occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                                        day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                       includeEffort        = FALSE,
-                                       occasionStartTime    = 12  #start at noon b/c nocturnal animals
+                                       includeEffort        = FALSE
+                                       #occasionStartTime    = 12  #start at noon b/c nocturnal animals
   )
   
   DetHist_16 <- as.data.frame(DetHist_16) 
@@ -173,8 +174,8 @@ detectionHistoryfourseasons <- function(species_name) {
                                        species              = species_name,
                                        occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                                        day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                       includeEffort        = FALSE,
-                                       occasionStartTime    = 12  #start at noon b/c nocturnal animals
+                                       includeEffort        = FALSE
+                                       #occasionStartTime    = 12  #start at noon b/c nocturnal animals
   )
   
   DetHist_17 <- as.data.frame(DetHist_17)
@@ -192,8 +193,8 @@ detectionHistoryfourseasons <- function(species_name) {
                                  species              = species_name,
                                  occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                                  day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                 includeEffort        = FALSE,
-                                 occasionStartTime    = 12  #start at noon b/c nocturnal animals
+                                 includeEffort        = FALSE
+                                 #occasionStartTime    = 12  #start at noon b/c nocturnal animals
   )
   
   DetHist_18 <- as.data.frame(DetHist_18)
@@ -212,8 +213,8 @@ detectionHistoryfourseasons <- function(species_name) {
                                  species              = species_name,
                                  occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                                  day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                 includeEffort        = FALSE,
-                                 occasionStartTime    = 12  #start at noon b/c nocturnal animals
+                                 includeEffort        = FALSE
+                                 #occasionStartTime    = 12  #start at noon b/c nocturnal animals
   )
   
   DetHist_19 <- as.data.frame(DetHist_19)
