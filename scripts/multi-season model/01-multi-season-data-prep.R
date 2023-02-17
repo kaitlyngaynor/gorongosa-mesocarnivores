@@ -6,14 +6,16 @@ library(dplyr) #install.packages("dplyr")
 library(unmarked) #install.packages("unmarked")
 
 # define start and end date - these are used to subset both operation matrix and record table
-start.date.16 <- "2016-08-01"
-end.date.16 <- "2016-11-30"
-start.date.17 <- "2017-08-01"
-end.date.17 <- "2017-11-30"
-start.date.18 <- "2018-08-01"
-end.date.18 <- "2018-11-30"
-start.date.19 <- "2019-08-01"
-end.date.19 <- "2019-10-13" #until we have more data
+#added "+12h" because occasionStartTime got added to cameraOperation, and 
+#we're starting sampling occasions at noon bc nocturnal animals
+start.date.16 <- "2016-08-01+12h"
+end.date.16 <- "2016-11-30+12h"
+start.date.17 <- "2017-08-01+12h"
+end.date.17 <- "2017-11-30+12h"
+start.date.18 <- "2018-08-01+12h"
+end.date.18 <- "2018-11-30+12h"
+start.date.19 <- "2019-08-01+12h"
+end.date.19 <- "2019-10-13+12h" #until we have more data
 
 
 # Format camera operation matrices ----------------------------------------
@@ -58,14 +60,17 @@ write.csv(dat4, "data/gorongosa-cameras/Camera_operation_year1-4_sessions.csv", 
 # create camera operation matrix, correct for 2016-2019
 # this has a row for each camera and a column for each date, with
 # NA: cam not set up; 0: cam not operational; 1: cam operational
-#added occasionStartTime because it changed functions (JK?)
+#added occasionStartTime because it changed functions
+#Since version 2.1, setup and retrieval are assumed to have happened at 12 noon (resulting in daily
+#effort of 0.5 instead of 1).
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
                          #sessionCol = "session" #I might need to work with this variable (for the moment, I've worked around it)
                          setupCol     = "Start",
                          retrievalCol = "End",
                          hasProblems  = TRUE,
-                         dateFormat   = "mdy"
+                         dateFormat   = "mdy",
+                         occasionStartTime = 12 #when I put 12 here bc nocturnal animals, the camop df has the "date +12h" as column names
 )
 
 # big picture question is whether I need to do this? (posted to the google group)
@@ -281,8 +286,8 @@ detectionHistorythreeseasons <- function(species_name) {
                                  species              = species_name,
                                  occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                                  day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                 includeEffort        = FALSE,
-                                 occasionStartTime    = 12  #start at noon b/c nocturnal animals
+                                 includeEffort        = FALSE
+                                 #occasionStartTime    = 12  #start at noon b/c nocturnal animals
   )
   
   DetHist_16 <- as.data.frame(DetHist_16) 
@@ -300,8 +305,8 @@ detectionHistorythreeseasons <- function(species_name) {
                                  species              = species_name,
                                  occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                                  day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                 includeEffort        = FALSE,
-                                 occasionStartTime    = 12  #start at noon b/c nocturnal animals
+                                 includeEffort        = FALSE
+                                 #occasionStartTime    = 12  #start at noon b/c nocturnal animals
   )
   
   DetHist_17 <- as.data.frame(DetHist_17)
@@ -319,8 +324,8 @@ detectionHistorythreeseasons <- function(species_name) {
                                  species              = species_name,
                                  occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                                  day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                                 includeEffort        = FALSE,
-                                 occasionStartTime    = 12  #start at noon b/c nocturnal animals
+                                 includeEffort        = FALSE
+                                 #occasionStartTime    = 12  #start at noon b/c nocturnal animals
   )
   
   DetHist_18 <- as.data.frame(DetHist_18)
@@ -361,7 +366,7 @@ DetHist_honey_badger_three <- read.csv("data/gorongosa-cameras/derived/honey_bad
 #marsh mongoose
 #can't run yet, 2019 data hasn't been cleaned for different mongoose species
 detectionHistorythreeseasons(species_name = "mongoose_marsh")
-DetHist_civet_three <- read.csv("data/gorongosa-cameras/derived/civet_three.csv", header = FALSE) #reads in detection history that comes out of the function
+DetHist_mongoose_marsh_three <- read.csv("data/gorongosa-cameras/derived/mongoose_marsh_three.csv", header = FALSE) #reads in detection history that comes out of the function
 
 #create list of years
 #yrs <- as.character(2016:2019) #creates a list with the relevant years 
@@ -529,9 +534,12 @@ Cfit33 <- colext(~urema_dist + termite.large.count.100m, ~dog, ~dog, ~detect.obs
 Cfit33
 
 #Let's try another species
-GNP_umf_honey_badger <- unmarkedMultFrame(y=DetHist_honey_badger_complete, #creates the actual data object; sets y to detection history (matrix of observed data)
+#can't run this yet with all four seasons because they have a different 
+#number of secondary survey periods (when I was working on this, the 
+#data wasn't complete from 2019)
+GNP_umf_honey_badger <- unmarkedMultFrame(y=DetHist_honey_badger_three, #creates the actual data object; sets y to detection history (matrix of observed data)
                                    siteCovs=GNP_covs[,2:7], yearlySiteCovs=yearlysitecovs, #assigns siteCovs to the proposed environmental and detection covariates; assigns yearlySiteCovs as created (covariates at the site-year level)
-                                   numPrimary=4) #number of primary time periods (in this case, years)
+                                   numPrimary=3) #number of primary time periods (in this case, years)
 
 summary(GNP_umf_honey_badger) #look at UMF
 
