@@ -8,14 +8,24 @@ library(unmarked) #install.packages("unmarked")
 # define start and end date - these are used to subset both operation matrix and record table
 #added "+12h" because occasionStartTime got added to cameraOperation, and 
 #we're starting sampling occasions at noon bc nocturnal animals
-start.date.16 <- "2016-08-01+12h"
-end.date.16 <- "2016-11-30+12h"
-start.date.17 <- "2017-08-01+12h"
-end.date.17 <- "2017-11-30+12h"
-start.date.18 <- "2018-08-01+12h"
-end.date.18 <- "2018-11-30+12h"
-start.date.19 <- "2019-08-01+12h"
-end.date.19 <- "2019-10-13+12h" #until we have more data
+start.date.16.camop <- "2016-08-01+12h"
+end.date.16.camop <- "2016-11-30+12h"
+start.date.17.camop <- "2017-08-01+12h"
+end.date.17.camop <- "2017-11-30+12h"
+start.date.18.camop <- "2018-08-01+12h"
+end.date.18.camop <- "2018-11-30+12h"
+start.date.19.camop <- "2019-08-01+12h"
+end.date.19.camop <- "2019-10-13+12h" #until we have more data
+
+#not sure this will fix what I think it will, but going to add non "+12h" dates too
+start.date.16 <- "2016-08-01"
+end.date.16 <- "2016-11-30"
+start.date.17 <- "2017-08-01"
+end.date.17 <- "2017-11-30"
+start.date.18 <- "2018-08-01"
+end.date.18 <- "2018-11-30"
+start.date.19 <- "2019-08-01"
+end.date.19 <- "2019-10-13"
 
 
 # Format camera operation matrices ----------------------------------------
@@ -60,8 +70,8 @@ write.csv(dat4, "data/gorongosa-cameras/Camera_operation_year1-4_sessions.csv", 
 # create camera operation matrix, correct for 2016-2019
 # this has a row for each camera and a column for each date, with
 # NA: cam not set up; 0: cam not operational; 1: cam operational
-#added occasionStartTime because it changed functions
-#Since version 2.1, setup and retrieval are assumed to have happened at 12 noon (resulting in daily
+#added occasionStartTime because it changed to being a variable in this function
+#note: Since version 2.1, setup and retrieval are assumed to have happened at 12 noon (resulting in daily
 #effort of 0.5 instead of 1).
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
@@ -79,7 +89,7 @@ camop <- cameraOperation(CTtable      = camtraps,
 #create 2016 camera operation matrix; subsets to 2016 data
 camop_subset_16 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
-  select(start.date.16:end.date.16) %>% # select columns of interest
+  select(start.date.16.camop:end.date.16.camop) %>% # select columns of interest
   #rownames_to_column("Camera") %>% # make row names into column so they can be filtered
   #filter(Camera %in% rownames(camop_subset_17)) %>% #selects only the cameras that are in the 2017 data
   #column_to_rownames("Camera") %>%  # put column back into row names (silly)
@@ -88,21 +98,21 @@ camop_subset_16 <- camop %>%
 #2017 operation matrix
 camop_subset_17 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
-  select(start.date.17:end.date.17) %>% # select columns of interest
+  select(start.date.17.camop:end.date.17.camop) %>% # select columns of interest
   filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
   as.matrix() # get it back into matrix form for calculating detection history
 
 #2018 operation matrix
 camop_subset_18 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
-  select(start.date.18:end.date.18) %>% # select columns of interest
+  select(start.date.18.camop:end.date.18.camop) %>% # select columns of interest
   filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
   as.matrix() # get it back into matrix form for calculating detection history
 
 #2019 operation matrix
 camop_subset_19 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
-  select(start.date.19:end.date.19) %>% # select columns of interest
+  select(start.date.19.camop:end.date.19.camop) %>% # select columns of interest
   filter_all(any_vars(!is.na(.))) %>% #delete cameras that were inoperational during this period (all NAs); still need to do so to keep detectionhistory happy
   as.matrix() # get it back into matrix form for calculating detection history
 
