@@ -1,0 +1,470 @@
+---
+title: "Supplementary Information: Simulation Results"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, echo=FALSE, warning=FALSE, fig.height=7, fig.width=9)
+```
+
+```{r}
+library(tidyverse)
+source('sim_functions.R')
+
+f <- c(1.7,-0.7,1)
+psi <- c(exp(sum(f)),exp(f[1]),exp(f[2]),exp(0))
+psi <- psi/sum(psi)
+#psi
+
+N <- 100
+
+#True occupancy probability for each state
+#psi <- c(0.5, 0.4, 0.03, 0.07)
+
+#Probability of initial markov state
+mu1 <- c(3, 150)
+mu2 <- c(1, 60)
+
+#coyotes: 0.68, 0.34, 0.17
+#deer: 1, 0.5, 0.25
+
+#Detection intensities (always 0 in first state)
+#lambdas are rough rounding of values from fitted model
+#can't set first value to 0, has to at least be a little bigger
+lam1 <- c(0.0001,40) #sp1 | sp2 present
+lam2 <- c(0.0001,11) #sp1 | sp2 absent
+lam3 <- c(0.0001,3.5) #sp2
+
+#Time intervals
+maxt <- 21 #3 days, intervals by hour
+
+
+sim_truth <- c(f, log(mu1), log(mu2), log(lam1[2]), log(lam2[2]), log(lam3[2]))
+
+# Find values for mu[1]
+
+#Deer
+mu_deer_vals <- rep(NA,3)
+cands <- as.matrix(data.frame(m1=seq(0.05,3,0.001), m2=mu1[2]))
+pval <- rep(NA, nrow(cands))
+for (i in 1:length(pval)){
+  pval[i] <- get_p(cands[i,], lam1, maxt)
+}
+mu_deer_vals[1] <- cands[,1][which(round(pval,2)==0.25)[1]]
+mu_deer_vals[2] <- cands[,1][which(round(pval,2)==0.5)[1]]
+mu_deer_vals[3] <- mu1[1]
+
+#plot(cands[,1], pval, type='l')
+#for (i in 1:3){
+#  abline(v=mu_deer_vals[i], col='red')
+#}
+
+#Coyote
+mu_coy_vals <- rep(NA,3)
+cands <- as.matrix(data.frame(m1=seq(0.05,1,0.001), m2=mu2[2]))
+pval <- rep(NA, nrow(cands))
+for (i in 1:length(pval)){
+  pval[i] <- get_p(cands[i,], lam3, maxt)
+}
+mu_coy_vals[1] <- cands[,1][which(round(pval,2)==0.25)[1]]
+mu_coy_vals[2] <- cands[,1][which(round(pval,2)==0.5)[1]]
+mu_coy_vals[3] <- mu2[1]
+
+#plot(cands[,1], pval, type='l')
+#for (i in 1:3){
+#  abline(v=mu_coy_vals[i], col='red')
+#}
+
+# Set up simulation matrix
+
+Nsize <- c(100,1000)
+
+sim_mat <- expand.grid(mu_deer_vals, mu_coy_vals, Nsize)
+
+colnames(sim_mat) <- c("mu1_1","mu1_2","N")
+sim_mat$ID <- 1:18
+sim_mat$sp1 <- c("low","med","high")
+sim_mat$sp2 <- rep(c("low","med","high"),each=3)
+
+
+# Load in and format results
+
+truth <- c(psi, sim_truth[4:10])
+
+sim_N100 <- readRDS('sim_N100.Rds')
+
+sim_N1000 <- readRDS('sim_N1000.Rds')
+
+pars <- c("both","deer","coyote","none","mu1[1]","mu1[2]","mu2[1]","mu2[2]","lam1","lam2","lam3",
+          "p1_2pres","p1_2abs","p2","sp1_dur1","sp1_dur2","sp2_dur1","sp2_dur2")
+
+sim_df <- lapply(1:9, function(i){
+  sublist <- sim_N100[[i]]
+  nsim <- length(sublist)
+  out <- lapply(1:nsim, function(x){
+    if(is.null(sublist[[x]])) return(data.frame(ID=i, repl=x, param=pars, val=NA,truth=NA,conv=1,
+                                     lik=NA))
+    est <- sublist[[x]]$par
+    psi <- c(exp(est[1]+est[2]+est[3]),exp(est[1]),exp(est[2]),exp(0))
+    psi <- psi/sum(psi)
+    est <- c(psi, exp(est[4:10]))
+    new_truth <- truth
+    new_truth[5:11] <- exp(new_truth[5:11])
+    new_truth[5] <- sim_mat[i,1]
+    new_truth[7] <- sim_mat[i,2]
+
+    #Detection probability
+    p1 <- get_p(est[5:6], c(0.0001, est[9]), maxt)
+    p2 <- get_p(est[5:6], c(0.0001, est[10]), maxt)
+    p3 <- get_p(est[7:8], c(0.0001, est[11]), maxt)
+
+    p1_truth <- get_p(new_truth[5:6], c(0.0001,new_truth[9]), maxt)
+    p2_truth <- get_p(new_truth[5:6], c(0.0001,new_truth[10]), maxt)
+    p3_truth <- get_p(new_truth[7:8], c(0.0001,new_truth[11]), maxt)
+    
+    est <- c(est,p1,p2,p3,1/est[5:8])
+    new_truth <- c(new_truth, p1_truth, p2_truth, p3_truth, 1/new_truth[5:8])
+
+    data.frame(ID=i, repl=x, param=pars, val=est, truth=new_truth,
+               conv=sublist[[x]]$convergence, lik=sublist[[x]]$value)
+  })
+  do.call("rbind",out)
+})
+sim_df_N100 <- as_tibble(do.call("rbind", sim_df))
+
+sim_df_N100 <- sim_df_N100 %>%
+  left_join(sim_mat, by='ID')
+
+sim_df_N1000 <- lapply(1:9, function(i){
+  sublist <- sim_N1000[[i]]
+  nsim <- length(sublist)
+  out <- lapply(1:nsim, function(x){
+    if(is.null(sublist[[x]])) return(data.frame(ID=i, repl=x, param=pars, val=NA, truth=NA,conv=1,
+                                     lik=NA))
+    est <- sublist[[x]]$par
+    psi <- c(exp(est[1]+est[2]+est[3]),exp(est[1]),exp(est[2]),exp(0))
+    psi <- psi/sum(psi)
+    est <- c(psi, exp(est[4:10]))
+    new_truth <- truth
+    new_truth[5:11] <- exp(new_truth[5:11])
+    new_truth[5] <- sim_mat[i,1]
+    new_truth[7] <- sim_mat[i,2]
+
+    #Detection probability
+    p1 <- get_p(est[5:6], c(0.0001, est[9]), maxt)
+    p2 <- get_p(est[5:6], c(0.0001, est[10]), maxt)
+    p3 <- get_p(est[7:8], c(0.0001, est[11]), maxt)
+
+    p1_truth <- get_p(new_truth[5:6], c(0.0001,new_truth[9]), maxt)
+    p2_truth <- get_p(new_truth[5:6], c(0.0001,new_truth[10]), maxt)
+    p3_truth <- get_p(new_truth[7:8], c(0.0001,new_truth[11]), maxt)
+    
+    est <- c(est,p1,p2,p3,1/est[5:8])
+    new_truth <- c(new_truth, p1_truth, p2_truth, p3_truth, 1/new_truth[5:8])
+
+    data.frame(ID=i+9, repl=x, param=pars, val=est, truth=new_truth,
+               conv=sublist[[x]]$convergence, lik=sublist[[x]]$value)
+  })
+  do.call("rbind",out)
+})
+sim_df_N1000 <- as_tibble(do.call("rbind",sim_df_N1000))
+
+sim_df_N1000 <- sim_df_N1000 %>%
+  left_join(sim_mat, by='ID') %>%
+  mutate(ID=ID+9)
+```
+
+
+
+
+```{r}
+
+mytheme <- theme_bw() +
+  theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(),
+        axis.text=element_text(size=14), axis.title=element_text(size=16),
+        legend.text=element_text(size=14), legend.title=element_text(size=16),
+        strip.background=element_rect("transparent"), strip.text=element_text(size=16),
+        plot.title=element_text(size=16))
+
+occ_sub <- sim_df_N100 %>%
+  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+  mutate(`Species 1`=fct_recode(`Species 1`, `0.25`="low", `0.50`="med",`1.00`="high")) %>% 
+  mutate(`Species 2`=fct_recode(`Species 2`, `0.25`="low", `0.50`="med",`0.68`="high")) %>% 
+  filter(param %in% c("both","deer","coyote","none")) %>%
+  mutate(param=factor(param, levels=c("both","deer","coyote","none")))
+
+occ_sub$padj <- factor(occ_sub$param, levels=c("both","deer","coyote","none"),
+                       labels=c("Both~species~(psi[11])","Species~1~only~(psi[10])",
+                                "Species~2~only~(psi[\"01\"])","Neither~species~(psi[\"00\"])"))
+
+
+#Occupancy
+occ_sub %>%
+  filter(conv==0) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+  geom_boxplot(aes(fill=`Species 2`)) +
+  geom_hline(yintercept=0, linetype=2) +
+  facet_wrap("padj", scales='free', labeller=label_parsed) +
+  labs(x="Species 1 detection probability", y="Proportion bias", 
+       fill="Species 2\ndetection\nprobability") +
+  mytheme +
+  ggtitle("Occupancy, N = 100 sites")
+```
+
+**Figure S1**. Proportion bias in model estimates of multi-species occupancy parameters, relative to true values, for a total sample size of N=100 sites. Each boxplot represents distribution of bias values for 30 datasets simulated under one of 9 possible scenarios of overall detection probabilities for two species. 
+
+\newpage
+
+```{r}
+occ_sub <- sim_df_N1000 %>%
+  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+  mutate(`Species 1`=fct_recode(`Species 1`, `0.25`="low", `0.50`="med",`1.00`="high")) %>% 
+  mutate(`Species 2`=fct_recode(`Species 2`, `0.25`="low", `0.50`="med",`0.68`="high")) %>% 
+  filter(param %in% c("both","deer","coyote","none")) %>%
+  mutate(param=factor(param, levels=c("both","deer","coyote","none")))
+
+occ_sub$padj <- factor(occ_sub$param, levels=c("both","deer","coyote","none"),
+                       labels=c("Both~species~(psi[11])","Species~1~only~(psi[10])",
+                                "Species~2~only~(psi[\"01\"])","Neither~species~(psi[\"00\"])"))
+
+
+occ_sub %>%
+  #filter(conv==0) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+  geom_boxplot(aes(fill=`Species 2`)) +
+  geom_hline(yintercept=0, linetype=2) +
+  facet_wrap("padj", scales='free', labeller=label_parsed) +
+  labs(x="Species 1 detection probability", y="Proportion bias", 
+       fill="Species 2\ndetection\nprobability") +
+  mytheme +
+  ggtitle("Occupancy, N = 1000 sites")
+```
+
+**Figure S2**. Proportion bias in model estimates of multi-species occupancy parameters, relative to true values, for a total sample size of N=1000 sites. Each boxplot represents distribution of bias values for 30 datasets simulated under one of 9 possible scenarios of overall detection probabilities for two species. 
+
+\newpage
+
+```{r}
+#Detection
+sim_df_N100 %>%
+  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+  mutate(`Species 1`=fct_recode(`Species 1`, `0.25`="low", `0.50`="med",`1.00`="high")) %>% 
+  mutate(`Species 2`=fct_recode(`Species 2`, `0.25`="low", `0.50`="med",`0.68`="high")) %>% 
+  filter(param %in% c("p1_2pres","p1_2abs","p2")) %>%
+  mutate(param=factor(param, levels=c("p1_2pres","p1_2abs","p2")),
+         param=fct_recode(param, `Species 1 p | Species 2 present`="p1_2pres", `Species 1 p | Species 2 absent`="p1_2abs",
+                          `Species 2 p`="p2")) %>%
+  filter(conv==0) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+  geom_boxplot(aes(fill=`Species 2`)) +
+  geom_hline(yintercept=0, linetype=2) +
+  facet_wrap("param", scales='free', nrow=2) +
+  labs(x="Species 1 detection probability", y="Proportion bias", 
+       fill="Species 2\ndetection\nprobability") +
+  mytheme +
+  ggtitle("Detection probability, N = 100 sites")
+```
+
+**Figure S3**. Proportion bias in model estimates of overall detection probability, relative to true values, for a total sample size of N=100 sites. Each boxplot represents distribution of bias values for 30 datasets simulated under one of 9 possible scenarios of overall detection probabilities for two species.
+
+\newpage
+
+```{r}
+sim_df_N1000 %>%
+  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+  mutate(`Species 1`=fct_recode(`Species 1`, `0.25`="low", `0.50`="med",`1.00`="high")) %>% 
+  mutate(`Species 2`=fct_recode(`Species 2`, `0.25`="low", `0.50`="med",`0.68`="high")) %>% 
+  filter(param %in% c("p1_2pres","p1_2abs","p2")) %>%
+  mutate(param=factor(param, levels=c("p1_2pres","p1_2abs","p2")),
+         param=fct_recode(param, `Species 1 p | Species 2 present`="p1_2pres", `Species 1 p | Species 2 absent`="p1_2abs",
+                          `Species 2 p`="p2")) %>%
+  filter(conv==0) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+  geom_boxplot(aes(fill=`Species 2`)) +
+  geom_hline(yintercept=0, linetype=2) +
+  facet_wrap("param", scales='free', nrow=2) +
+  labs(x="Species 1 detection probability", y="Proportion bias", 
+       fill="Species 2\ndetection\nprobability") +
+  mytheme +
+  ggtitle("Detection probability, N = 1000 sites")
+```
+
+**Figure S4**. Proportion bias in model estimates of overall detection probability, relative to true values, for a total sample size of N=1000 sites. Each boxplot represents distribution of bias values for 30 datasets simulated under one of 9 possible scenarios of overall detection probabilities for two species.
+
+\newpage
+
+```{r}
+#Duration in each state
+#sim_df_N100 %>%
+
+#mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+#         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+#  filter(param %in% c("sp1_dur1","sp1_dur2","sp2_dur1","sp2_dur2")) %>%
+#  #mutate(param=factor(param, levels=c("p1_2pres","p1_2abs","p2")),
+#  #       param=fct_recode(param, `Sp1 p | sp2 present`="p1_2pres", `Sp1 p | sp2 absent`="p1_2abs",
+#  #                        `Sp2 p`="p2")) %>%
+#  filter(conv==0) %>%
+#  mutate(pct_bias = (val-truth)/truth) %>%
+#  filter(pct_bias < 10) %>%
+#  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+#  geom_boxplot(aes(fill=`Species 2`)) +
+#  geom_hline(yintercept=0, linetype=2) +
+#  facet_wrap("param", scales='free') +
+#  labs(x="Species 1 detectability", y="Proportion bias", fill="Species 2\ndetectability") +
+#  mytheme +
+#  ggtitle("Duration in each state, N = 100 sites")
+```
+
+```{r}
+#sim_df_N1000 %>%
+#  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+#         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+#  filter(param %in% c("sp1_dur1","sp1_dur2","sp2_dur1","sp2_dur2")) %>%
+#  #mutate(param=factor(param, levels=c("p1_2pres","p1_2abs","p2")),
+  #       param=fct_recode(param, `Sp1 p | sp2 present`="p1_2pres", `Sp1 p | sp2 absent`="p1_2abs",
+  #                        `Sp2 p`="p2")) %>%
+#  filter(conv==0) %>%
+#  mutate(pct_bias = (val-truth)/truth) %>%
+#  filter(pct_bias < 10) %>%
+#  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+#  geom_boxplot(aes(fill=`Species 2`)) +
+#  geom_hline(yintercept=0, linetype=2) +
+#  facet_wrap("param", scales='free') +
+#  labs(x="Species 1 detectability", y="Proportion bias", fill="Species 2\ndetectability") +
+#  mytheme +
+#  ggtitle("Duration in each state, N = 1000 sites")
+```
+
+```{r}
+#Lambda
+sim_df_N100 %>%
+  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+  mutate(`Species 1`=fct_recode(`Species 1`, `0.25`="low", `0.50`="med",`1.00`="high")) %>% 
+  mutate(`Species 2`=fct_recode(`Species 2`, `0.25`="low", `0.50`="med",`0.68`="high")) %>% 
+  filter(param %in% c("lam1","lam2","lam3")) %>%
+  mutate(param=factor(param, levels=c("lam1","lam2","lam3"),
+                      labels=c("Sp.~1~lambda~'|'~Sp.~2~present","Sp.~1~lambda~'|'~Sp.~2~absent","Sp.~2~lambda"))) %>%
+  filter(conv==0) %>%
+  #filter(val < 100) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+  geom_boxplot(aes(fill=`Species 2`)) +
+  geom_hline(yintercept=0, linetype=2) +
+  facet_wrap("param", scales='free', nrow=2, labeller=label_parsed) +
+  labs(x="Species 1 detection probability", y="Proportion bias", 
+       fill="Species 2\ndetection\nprobability") +
+  mytheme +
+  theme(strip.text=element_text(size=14)) +
+  ggtitle(expression(lambda*", N = 100 sites"))
+```
+
+**Figure S5**. Proportion bias in model estimates of detection intensity ($\lambda$), relative to true values, for a total sample size of N=100 sites. Each boxplot represents distribution of bias values for 30 datasets simulated under one of 9 possible scenarios of overall detection probabilities for two species.
+
+\newpage
+
+```{r}
+
+sim_df_N1000 %>%
+  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+  mutate(`Species 1`=fct_recode(`Species 1`, `0.25`="low", `0.50`="med",`1.00`="high")) %>% 
+  mutate(`Species 2`=fct_recode(`Species 2`, `0.25`="low", `0.50`="med",`0.68`="high")) %>% 
+  filter(param %in% c("lam1","lam2","lam3")) %>%
+  mutate(param=factor(param, levels=c("lam1","lam2","lam3"),
+                      labels=c("Sp.~1~lambda~'|'~Sp.~2~present","Sp.~1~lambda~'|'~Sp.~2~absent","Sp.~2~lambda"))) %>%
+  filter(conv==0) %>%
+  #filter(val < 100) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+  geom_boxplot(aes(fill=`Species 2`)) +
+  geom_hline(yintercept=0, linetype=2) +
+  facet_wrap("param", scales='free', nrow=2, labeller=label_parsed) +
+  labs(x="Species 1 detection probability", y="Proportion bias", 
+       fill="Species 2\ndetection\nprobability") +
+  mytheme +
+  theme(strip.text=element_text(size=14)) +
+  ggtitle(expression(lambda*", N = 1000 sites"))
+```
+
+**Figure S6**. Proportion bias in model estimates of detection intensity ($\lambda$), relative to true values, for a total sample size of N=1000 sites. Each boxplot represents distribution of bias values for 30 datasets simulated under one of 9 possible scenarios of overall detection probabilities for two species.
+
+\newpage
+
+```{r}
+
+#Mu
+sim_df_N100 %>%
+  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+  mutate(`Species 1`=fct_recode(`Species 1`, `0.25`="low", `0.50`="med",`1.00`="high")) %>% 
+  mutate(`Species 2`=fct_recode(`Species 2`, `0.25`="low", `0.50`="med",`0.68`="high")) %>% 
+  filter(param %in% c("mu1[1]","mu1[2]","mu2[1]","mu2[2]")) %>%
+  mutate(param=factor(param, levels=c("mu1[1]","mu1[2]","mu2[1]","mu2[2]"),
+                      labels=c("Species~1~mu[1]","Species~1~mu[2]","Species~2~mu[1]","Species~2~mu[2]"))) %>%
+  filter(conv==0) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  filter(pct_bias < 10) %>%
+  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+  geom_boxplot(aes(fill=`Species 2`)) +
+  geom_hline(yintercept=0, linetype=2) +
+  facet_wrap("param", scales='free', nrow=2, labeller=label_parsed) +
+  labs(x="Species 1 detection probability", y="Proportion bias", 
+       fill="Species 2\ndetection\nprobability") +
+  mytheme +
+  theme(strip.text=element_text(size=14)) +
+  ggtitle(expression(mu*", N = 100 sites"))
+```
+
+**Figure S7**. Proportion bias in model estimates of the state rate parameters $\mu$, relative to true values, for a total sample size of N=100 sites. Each boxplot represents distribution of bias values for 30 datasets simulated under one of 9 possible scenarios of overall detection probabilities for two species.
+
+\newpage
+
+```{r}
+#Mu
+sim_df_N1000 %>%
+  mutate(`Species 1`=factor(sp1,levels=c("low","med","high")),
+         `Species 2`=factor(sp2,levels=c("low","med","high"))) %>%
+  mutate(`Species 1`=fct_recode(`Species 1`, `0.25`="low", `0.50`="med",`1.00`="high")) %>% 
+  mutate(`Species 2`=fct_recode(`Species 2`, `0.25`="low", `0.50`="med",`0.68`="high")) %>% 
+  filter(param %in% c("mu1[1]","mu1[2]","mu2[1]","mu2[2]")) %>%
+  mutate(param=factor(param, levels=c("mu1[1]","mu1[2]","mu2[1]","mu2[2]"),
+                      labels=c("Species~1~mu[1]","Species~1~mu[2]","Species~2~mu[1]","Species~2~mu[2]"))) %>%
+  filter(conv==0) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  #filter(pct_bias < 10) %>%
+  ggplot(aes(y=pct_bias, x=`Species 1`, group=interaction(`Species 1`,`Species 2`))) +
+  geom_boxplot(aes(fill=`Species 2`)) +
+  geom_hline(yintercept=0, linetype=2) +
+  facet_wrap("param", scales='free', nrow=2, labeller=label_parsed) +
+  labs(x="Species 1 detection probability", y="Proportion bias", 
+       fill="Species 2\ndetection\nprobability") +
+  mytheme +
+  theme(strip.text=element_text(size=14)) +
+  ggtitle(expression(mu*", N = 1000 sites"))
+```
+
+**Figure S8**. Proportion bias in model estimates of the state rate parameters $\mu$, relative to true values, for a total sample size of N=1000 sites. Each boxplot represents distribution of bias values for 30 datasets simulated under one of 9 possible scenarios of overall detection probabilities for two species.
+
+
+```{r}
+
+alldf <- rbind(sim_df_N100, sim_df_N1000) %>%
+  mutate(pct_bias = (val-truth)/truth) %>%
+  filter(sp1=="high",sp2=="high",N==1000) %>%
+  group_by(param) %>%
+  summarize(bias_mean=mean(pct_bias),
+            bias_sd=sd(pct_bias))
+
+alldf <- alldf[1:10,]
+
+```
+
