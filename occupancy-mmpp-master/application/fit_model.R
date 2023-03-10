@@ -8,6 +8,9 @@ sourceCpp("occupancy-mmpp-master/likelihood/likelihood.cpp") # load likelihood f
 # Organize response variable---------------------------------------------------
 
 #Indicator variable: was species ever detected at each site
+# KLG: goes through every deployment in deer and coyote
+# KLG: sapply applies the function to every element of x; function(x) is an anonymous function
+# KLG: if the deployment has no entry for deer/coyote, give it a 0; else, give it a 1
 y1_i <- sapply(deer, function(x) ifelse(is.null(x), 0, 1))
 y2_i <- sapply(coys, function(x) ifelse(is.null(x), 0, 1))
 
@@ -15,12 +18,16 @@ y2_i <- sapply(coys, function(x) ifelse(is.null(x), 0, 1))
 # y = detection times at a camera site
 # J = total time length of survey at a camera site
 # inc = amount of time in each interval (in units of days)
-get_yd <- function(y, J, inc=1){
-  d <- seq(0, J, by=inc)
-  if((J-d[length(d)]) > 0){
+# KLG: this is creating a function
+get_yd <- function(y, J, inc=1){ # KLG: function inputs
+  d <- seq(0, J, by=inc) #KLG: seq() generates a sequence from 0 to total time length of a survey 
+                         # at a site by 1 (which I believe is days)
+  if((J-d[length(d)]) > 0){ #KLG: length of a sequence returns the number of items in that sequence
+    # KLG: I think d[length(d)] is the item in sequence d at its last location (length of d)
+    # KLG: so this is saying if there is time between the last detection and the total time length of survey
     d <- c(d, J)
   }
-  if(is.null(y)){
+  if(is.null(y)){ #if there are no detections 
     groups <- lapply(1:(length(d)-1), function(x) numeric(0))
   } else{
     groups <- split(y, cut(y, d))
@@ -33,6 +40,9 @@ get_yd <- function(y, J, inc=1){
 }
 
 # Get time differences yd for each species at each site
+# KLG: deer[[i]] is the detection times for deer at a certain camera site (y in above function)
+# KLG: dep_len[i] is the length of the deployment for that site (J in above function)
+# KLG: inc = 1/24 I'm pretty sure refers to days/24, so gives hours
 yd_deer <- lapply(1:length(deer), function(i) get_yd(deer[[i]], dep_len[i], inc=1/24))
 yd_coy <- lapply(1:length(coys), function(i) get_yd(coys[[i]], dep_len[i], inc=1/24))
 
