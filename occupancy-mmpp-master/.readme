@@ -1,0 +1,3 @@
+I want to keep track of the order in which to use the scripts, and what they're doing big picture
+
+01_format_data: takes in their raw data as .csv files (need to convert their Excel files to .csv)
