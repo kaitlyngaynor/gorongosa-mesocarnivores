@@ -1,9 +1,10 @@
 library(readxl) #install.packages("readxl")
 
-#I had to go in and manually save excel files as .csv files in the same folder
+#KLG: I had to go in and manually save excel files as .csv files in the same folder
 #I believe this first if loop now runs
 
 # Convert raw excel to CSVs if you haven't already, doing some data cleanup
+#KLG: if any of these files don't exist, tell the coder to download them
 if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occupancy-mmpp-master/data/Covariates.csv')){
   if(!file.exists('occupancy-mmpp-master/data/Raw Data.xlsx') | !file.exists('occupancy-mmpp-master/data/Covariates.xlsx')){
     stop("Download raw data in excel format from Dryad, https://datadryad.org/stash/dataset/doi:10.5061%2Fdryad.gv1dq")
@@ -29,6 +30,7 @@ if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occup
                       "Lone Mountain", "Morrow Mountain", "morrow mountain",
                       "Sandhills", "Umstead", "Uwharrie", "Weymouth")
 
+  #KLG: grepl has to do with pattern matching
   for (site in sites_fix_lower){
     fixed_covs$Camsite[grepl(site,fixed_covs$Camsite)] <-
       last_lower(fixed_covs$Camsite[grepl(site,fixed_covs$Camsite)])
@@ -70,7 +72,7 @@ sits_cov <- unique(covs$Camsite)
 
 # only 1951 sites with covariates, but 1966 sites with detections
 length(sits_cov) #I get 1952 from this line
-length(sits_det)
+length(sits_det) #I get 1966 (same as them) here
 
 # identify those sites without covariates and ignore
 

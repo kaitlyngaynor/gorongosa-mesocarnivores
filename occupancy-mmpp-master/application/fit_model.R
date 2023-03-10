@@ -1,8 +1,8 @@
 library(Rcpp) #install.packages("Rcpp") 
 library(tidyverse)
 library(RcppArmadillo) #install.packages("RcppArmadillo")
-source("occupancy-mmpp-master/application/format_data.R") # loading and cleaning data
-#^^ above line is being cranky, telling me to download raw data in excel (which I have done)
+source("occupancy-mmpp-master/application/01_format_data.R") # loading and cleaning data
+#^^ above line needs 01_format_data to have run already
 sourceCpp("occupancy-mmpp-master/likelihood/likelihood.cpp") # load likelihood function
 
 # Organize response variable---------------------------------------------------
@@ -151,6 +151,7 @@ starts <- optim(rep(0,max(pind)+1), mmpp_covs, method = 'SANN',
             yd1_st_idx=yd1_st_idx, yd1_en_idx=yd1_en_idx, yd2_st_idx=yd2_st_idx,
             yd2_en_idx=yd2_en_idx, y1_i=y1_i, y2_i=y2_i, threads=2)
 # Final SANN NLL value should be 30050.156712
+# ^^this is not the value I get
 
 # Do optimization and calculate hessian
 fit <- optim(starts$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
