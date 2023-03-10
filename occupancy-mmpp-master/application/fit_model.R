@@ -1,7 +1,9 @@
-library(Rcpp)
+library(Rcpp) #install.packages("Rcpp") 
 library(tidyverse)
-source('format_data.R')             # loading and cleaning data
-sourceCpp("../likelihood/likelihood.cpp") # load likelihood function
+library(RcppArmadillo) #install.packages("RcppArmadillo")
+source("occupancy-mmpp-master/application/format_data.R") # loading and cleaning data
+#^^ above line is being cranky, telling me to download raw data in excel (which I have done)
+sourceCpp("occupancy-mmpp-master/likelihood/likelihood.cpp") # load likelihood function
 
 # Organize response variable---------------------------------------------------
 

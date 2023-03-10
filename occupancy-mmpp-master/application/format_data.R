@@ -1,7 +1,11 @@
+library(readxl) #install.packages("readxl")
+
+#I had to go in and manually save excel files as .csv files in the same folder
+#I believe this first if loop now runs
 
 # Convert raw excel to CSVs if you haven't already, doing some data cleanup
-if(!file.exists('Raw Data.csv') | !file.exists('Covariates.csv')){
-  if(!file.exists('Raw Data.xlsx') | !file.exists('Covariates.xlsx')){
+if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occupancy-mmpp-master/data/Covariates.csv')){
+  if(!file.exists('occupancy-mmpp-master/data/Raw Data.xlsx') | !file.exists('occupancy-mmpp-master/data/Covariates.xlsx')){
     stop("Download raw data in excel format from Dryad, https://datadryad.org/stash/dataset/doi:10.5061%2Fdryad.gv1dq")
   }
   suppressMessages(library(readxl))
@@ -57,21 +61,21 @@ if(!file.exists('Raw Data.csv') | !file.exists('Covariates.csv')){
 }
 
 # reading in data
-dets <- read.csv('Raw Data.csv')
-covs <- read.csv('Covariates.csv')
+dets <- read.csv('occupancy-mmpp-master/data/Raw Data.csv')
+covs <- read.csv('occupancy-mmpp-master/data/Covariates.csv')
 
 # unique sites
 sits_det <- unique(dets$title)
 sits_cov <- unique(covs$Camsite)
 
 # only 1951 sites with covariates, but 1966 sites with detections
-length(sits_cov)
+length(sits_cov) #I get 1952 from this line
 length(sits_det)
 
 # identify those sites without covariates and ignore
 
 # only 1937 names match up. some sites need name correction?
-sum(sits_det %in% sits_cov)
+sum(sits_det %in% sits_cov) #I get 1082 here
 
 # site names with detections but no covariates
 sits_det[(sits_det %in% sits_cov) == F]
@@ -96,7 +100,7 @@ dets$title[which(dets$title == 'Rock Creek 5C-2')] <- 'Rock Creek Park 5C-2'
 sits_det <- unique(dets$title)
 
 # now 1944 site names that line up
-sum(sits_det %in% sits_cov)
+sum(sits_det %in% sits_cov) #I get 1089 here
 
 # removing sites without any detections from covariate list
 covs <- covs[covs$Camsite %in% sits_det, ]
