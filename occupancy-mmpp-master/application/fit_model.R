@@ -25,17 +25,25 @@ get_yd <- function(y, J, inc=1){ # KLG: function inputs
   if((J-d[length(d)]) > 0){ #KLG: length of a sequence returns the number of items in that sequence
     # KLG: I think d[length(d)] is the item in sequence d at its last location (length of d)
     # KLG: so this is saying if there is time between the last detection and the total time length of survey
-    d <- c(d, J)
+    d <- c(d, J) #KLG: then add total time to sequence (I think)
   }
+  #KLG: these two if statements are separate from each other
   if(is.null(y)){ #if there are no detections 
-    groups <- lapply(1:(length(d)-1), function(x) numeric(0))
-  } else{
-    groups <- split(y, cut(y, d))
-  }
+    groups <- lapply(1:(length(d)-1), function(x) numeric(0)) #KLG: lapply applies a function over a list or vector
+  #KLG: run the length of the sequence (not sure why minus 1)
+  #KLG: numeric(0) returns a numeric vector of *length 0*, so when you add anything to it you get the same result (it's basically a numeric NULL)
 
+    } else{ #KLG: if there are detections
+    groups <- split(y, cut(y, d)) #KLG: split() takes a vector as an argument and divides the information into groups
+    #KLG: cut divides the range of x into intervals and codes the values in x according to which interval they fall. 
+     }
+
+  #KLG: create another object, run through to the length of 'groups', create a vector with the value of 
+  #d at that index, the value from groups at that index, and the value of d at the next index
   groups2 <- lapply(1:length(groups), function(i){
               c(d[i], groups[[i]], d[i+1])
               })
+  #KLG: diff function computes the difference between pairs of consecutive elements of a numeric vector.
   out <- lapply(groups2, function(x) diff(x))
 }
 
