@@ -96,14 +96,18 @@ groups2_KLG <- lapply(1:length(groups_KLG), function(i){
 out_KLG <- lapply(groups2_KLG, function(x) diff(x))
 
 # Get time differences yd for each species at each site----
+# KLG: back to regularly scheduled programming
 # KLG: deer[[i]] is the detection times for deer at a certain camera site (y in above function)
 # KLG: dep_len[i] is the length of the deployment for that site (J in above function)
 # KLG: inc = 1/24 I'm pretty sure refers to days/24, so gives hours
-# KLG: this runs for every deployment
+# KLG: this runs for every deployment and creates a list as described above (for out_KLG)
 yd_deer <- lapply(1:length(deer), function(i) get_yd(deer[[i]], dep_len[i], inc=1/24))
 yd_coy <- lapply(1:length(coys), function(i) get_yd(coys[[i]], dep_len[i], inc=1/24))
 
 # Convert them to vector from list (working around limitations of lists in C++)
+# KLG: holy cow this produces a large vector containing the time intervals for every deployment
+# KLG: so most are 0.416666 (one full interval, no detections) and some of the numbers are the 
+# KLG: smaller portions of the interval (broken when there's a detection in the interval)
 yd1 <- unlist(yd_deer)
 yd2 <- unlist(yd_coy)
 
