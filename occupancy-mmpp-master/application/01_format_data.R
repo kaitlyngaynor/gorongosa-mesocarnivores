@@ -115,7 +115,7 @@ covs <- covs[covs$Camsite %in% sits_det, ]
 dets <- dets[dets$title %in% covs$Camsite, ]
 
 # some sites may have a camera placed more than once
-# unique deployments
+# unique deployments (list of characters(names of deployment IDs))
 deps <- unique(dets$deployment_id)
 
 # removing deployments with < 1 day of data (can check again if you like)

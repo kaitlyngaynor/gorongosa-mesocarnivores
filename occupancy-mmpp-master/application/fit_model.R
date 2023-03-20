@@ -18,7 +18,7 @@ y2_i <- sapply(coys, function(x) ifelse(is.null(x), 0, 1))
 # y = detection times at a camera site
 # J = total time length of survey at a camera site
 # inc = amount of time in each interval (in units of days)
-# KLG: this is creating a function
+# KLG: this is creating a function for an individual cam trap deployment
 get_yd <- function(y, J, inc=1){ # KLG: function inputs
   d <- seq(0, J, by=inc) #KLG: seq() generates a sequence from 0 to total time length of a survey 
                          # at a site by 1 (which I believe is days)
@@ -27,7 +27,7 @@ get_yd <- function(y, J, inc=1){ # KLG: function inputs
     # KLG: so this is saying if there is time between the last detection and the total time length of survey
     d <- c(d, J) #KLG: then add total time to sequence (I think)
   }
-  #KLG: these two if statements are separate from each other
+  #KLG: these two if statements are separate from each other, with the above one creating your sequence d
   if(is.null(y)){ #if there are no detections 
     groups <- lapply(1:(length(d)-1), function(x) numeric(0)) #KLG: lapply applies a function over a list or vector
   #KLG: run the length of the sequence (not sure why minus 1)
@@ -36,6 +36,8 @@ get_yd <- function(y, J, inc=1){ # KLG: function inputs
     } else{ #KLG: if there are detections
     groups <- split(y, cut(y, d)) #KLG: split() takes a vector as an argument and divides the information into groups
     #KLG: cut divides the range of x into intervals and codes the values in x according to which interval they fall. 
+    #KLG: I think this is figuring out what the intervals are between detections
+    #KLG: so 'groups' contains some info on times between detections
      }
 
   #KLG: create another object, run through to the length of 'groups', create a vector with the value of 
@@ -47,10 +49,57 @@ get_yd <- function(y, J, inc=1){ # KLG: function inputs
   out <- lapply(groups2, function(x) diff(x))
 }
 
-# Get time differences yd for each species at each site
+# KLG attempting to break apart the above function----
+# makes more sense now
+f <- seq(0, dep_len[1], by=1/24)
+
+#I think this is just adding the final time to be considered (the total deployment time) because 
+# breaking it up by hour can get rid of that 
+# so you have a sequence from 0 to the actual end of your deployment by your chosen interval
+if((dep_len[1]-f[length(f)]) > 0){
+  f <- c(f, dep_len[1]) #this adds one numeric value to f
+}
+
+
+# cut(deer[[1]], f) yields the intervals from f (hourly intervals for whole deployment)
+# that include deer detections (assigns a 1 (yes deer detection) or a 0 (no deer detection) 
+# to all hourly intervals)
+c <- cut(deer[[1]], f)
+
+# KLG: if there are detections, this breaks the vector with deer detections into the intervals
+# determined by f (hourly intervals of the whole deployment)
+# groups_KLG contains the intervals, the assigned factor for the interval (0 or 1 based on 
+# deer detection), and the the time value within the intervals that have a deer detection
+# of that deer detection
+if(is.null(deer[[1]])) { #if there are no detections
+  groups_KLG <- lapply(1:(length(f) - 1), function(x)
+    numeric(0))
+} else{ #KLG: if there are detections
+  groups_KLG <- split(deer[[1]], cut(deer[[1]], f))
+} 
+
+#KLG:this runs through the whole list and creates a new list
+#KLG: with at least two doubles for every element (the start and end time of the hourly interval)
+#KLG: if there was a deer detection in that interval, that time value is also included 
+#KLG: (in between the start and end interval times)
+#KLG: this must just be putting it into a usable format for what's to come
+groups2_KLG <- lapply(1:length(groups_KLG), function(i){
+  c(f[i], groups_KLG[[i]], f[i+1])
+})
+
+#KLG: this yields a list of length 512 (number of hourly intervals)
+#KLG: if no deer detection in a given interval, the value is just the amount of time in the 
+#KLG: interval
+#KLG: if there is a deer detection in a given interval, there are two doubles
+#KLG: the first is the time between start of interval and deer detection, and the second is the 
+#KLG: time between deer detection and end of interval
+out_KLG <- lapply(groups2_KLG, function(x) diff(x))
+
+# Get time differences yd for each species at each site----
 # KLG: deer[[i]] is the detection times for deer at a certain camera site (y in above function)
 # KLG: dep_len[i] is the length of the deployment for that site (J in above function)
 # KLG: inc = 1/24 I'm pretty sure refers to days/24, so gives hours
+# KLG: this runs for every deployment
 yd_deer <- lapply(1:length(deer), function(i) get_yd(deer[[i]], dep_len[i], inc=1/24))
 yd_coy <- lapply(1:length(coys), function(i) get_yd(coys[[i]], dep_len[i], inc=1/24))
 
