@@ -112,28 +112,44 @@ yd1 <- unlist(yd_deer)
 yd2 <- unlist(yd_coy)
 
 # Index needed to match elements of above vectors to correct site
-lidx_i <- matrix(NA, nrow=length(yd_deer), ncol=2)
-idx <- 0
-for (i in seq_along(yd_deer)){
-  lidx_i[i,1] <- idx
-  lidx_i[i,2] <- idx + length(yd_deer[[i]]) - 1
-  idx <- idx + length(yd_deer[[i]])
+lidx_i <- matrix(NA, nrow=length(yd_deer), ncol=2) #KLG: creates a matrix with a row for 
+# KLG: every deployment and two columns
+idx <- 0 
+# KLG: I believe this establishes start and end elements for different deployments in the massive vector
+for (i in seq_along(yd_deer)){ #KLG: seq_along() is a function that creates a vector that 
+  #KLG: contains a sequence of numbers from 1 to the length of the object
+  lidx_i[i,1] <- idx #KLG: ith row, first column; starting element of the ith deployment
+  lidx_i[i,2] <- idx + length(yd_deer[[i]]) - 1 #KLG: ith row, second column; last element of the ith deployment
+  idx <- idx + length(yd_deer[[i]]) #set value of idx for the next deployment
 }
 
 #Index to subset yd (y-d) values by site i and interval j
 #yd is now a vector instead of a list of lists so the index is needed
-maxj <- max(sapply(yd_deer, length))
-yd1_st_idx <- yd1_en_idx <- matrix(NA, nrow=length(yd_deer), ncol=maxj)
+#KLG: sapply(yd_deer, length) pulls the length of each deployment (number of hourly intervals)
+maxj <- max(sapply(yd_deer, length)) #KLG: this finds the longest deployment
+
+# KLG: run for deer
+yd1_st_idx <- yd1_en_idx <- matrix(NA, nrow=length(yd_deer), ncol=maxj) #KLG: creates two large empty matrices
+# KLG: with a row for every deployment and a column for every hour/interval of the longest deployment
 idx <- 0
-for (i in seq_along(yd_deer)){
-  yd_sub <- yd_deer[[i]]
-  for (j in seq_along(yd_sub)){
-    yd1_st_idx[i,j] <- idx
-    yd1_en_idx[i,j] <- idx + length(yd_sub[[j]]) - 1
-    idx <- idx + length(yd_sub[[j]])
+for (i in seq_along(yd_deer)){ #KLG: for every deployment, 1 to 1945
+  yd_sub <- yd_deer[[i]] # KLG: set yd_sub to the list of intervals for that deployment
+  for (j in seq_along(yd_sub)){ #KLG: then for every interval in that deployment (1-512 for the first deployment)
+    #KLG: so advancing along for every element in the list
+    yd1_st_idx[i,j] <- idx #KLG: set the value for one matrix starting at 0
+    yd1_en_idx[i,j] <- idx + length(yd_sub[[j]]) - 1 #KLG: length(yd_sub[[j]]) is usually 1, 
+    #KLG: except when there was a detection in that interval and there are two (or more) values
+    idx <- idx + length(yd_sub[[j]]) #KLG: again, this is usually 1 for "empty" intervals
+    #KLG: I think the two matrices only differ when there are intervals with 2 (or more) values
+    #KLG: but both matrices are affected by intervals with detections because that's how idx advances
   }
 }
 
+##KLG figuring out the for loop----
+yd_test <- yd_deer[[1]]
+yd_test[[155]] #example interval with two values
+
+#KLG: run same code for coyote data
 yd2_st_idx <- yd2_en_idx <- matrix(NA, nrow=length(yd_coy), ncol=maxj)
 idx <- 0
 for (i in seq_along(yd_coy)){
@@ -149,36 +165,49 @@ for (i in seq_along(yd_coy)){
 # Get covariates---------------------------------------------------------------
 
 #Match deployemnts to site ID
+#KLG: almost 1:1, though some sites had more than one deployment
 dep_to_site <- dets %>%
   group_by(deployment_id, title) %>%
   summarize()
 
 #Get covariates at each site
-site_covs <- data.frame(deployment_id=deps) %>%
-  left_join(dep_to_site) %>%
-  select(deployment_id, title) %>%
+site_covs <- data.frame(deployment_id=deps) %>% #KLG: 1945 deployments
+  left_join(dep_to_site) %>% #KLG: add sites for each deployment
+  select(deployment_id, title) %>% #KLG: select these columns
   rename(Camsite=title) %>%
-  left_join(covs[,c(1:20)]) %>%
+  left_join(covs[,c(1:20)]) %>% #KLG: add covariates (I thought you usually needed a by = argument)
   select(Camsite, deployment_id, Dist_5km, HDens_250m, Hunting) %>%
   as_tibble()
 
 #Make observation covariate (time of day)
 
 #Make sequence of times for each deployment
-names(yd_deer) <- deps
-ndet <- sapply(yd_deer, length)
+names(yd_deer) <- deps #KLG: instead of yd_deer[[1]], this now has the deployment ID
+ndet <- sapply(yd_deer, length) #KLG: for every element in yd_deer, returns the length of that list 
+                                #KLG: number of hourly intervals
 
 sec_in_inc <- 60*60 #seconds in each increment (1 hr)
 #sec_in_inc <- 2*60*60 #seconds in each increment (2 hr)
 
+#KLG: for every element in ndet (list of the length of every deployment (number of hourly
+#KLG: intervals for each deployment))
 time_list <- lapply(1:length(ndet), function(i){
+  #KLG: I believe the next lines converts every relevant time for each deployment (start time, and
+  #KLG: every hour after--each interval)
+  #KLG: length.out determines the length of the sequence, here it's the length of that deployment's list
   tseq <- as.POSIXlt(seq(dep_start[i], by=sec_in_inc, length.out=ndet[i]))
-  tseq$hour + tseq$min/60 + tseq$sec/3600
+  tseq$hour + tseq$min/60 + tseq$sec/3600 #KLG: then this converts every time into a decimal
 })
-time_vec <- unlist(time_list)
+time_vec <- unlist(time_list) #KLG: convert list to vector
 
 #Fourier series values for each time
-obs_covs <- data.frame(deploy = rep(deps, ndet),
+#KLG: I don't actually understand what a Fourier series is, but this is just filling in 4 values
+#KLG: for every time
+#KLG: It consists of an infinite sum of sines and cosines, and because it is periodic (i.e., 
+#KLG: its values repeat over fixed intervals), it is a useful tool in analyzing periodic functions.
+#KLG: By adding infinite sine (and or cosine) waves we can make other functions
+obs_covs <- data.frame(deploy = rep(deps, ndet), #KLG: creates ndet rows for every deployment 
+                       #KLG: ndet is the length of the deployment (number of hourly intervals)
                        f1c = cos(pi*time_vec/12),
                        f2c = cos(2*pi*time_vec/12),
                        f1s = sin(pi*time_vec/12),
@@ -187,10 +216,13 @@ obs_covs <- data.frame(deploy = rep(deps, ndet),
 # Construct model matrices-----------------------------------------------------
 
 # Occupancy natural parameters
+#KLG: model.matrix creates a design (or model) matrix, e.g., by expanding factors to a set of 
+#KLG: dummy variables (depending on the contrasts) and expanding interactions similarly.
 X_f1 <- model.matrix(~Hunting, site_covs)
 X_f2 <- model.matrix(~Hunting, site_covs)
 X_f12 <- model.matrix(~Hunting, site_covs)
 
+#PAUSE HERE
 # Detection intensity depends time of day
 X_lam1 <- X_lam2 <- X_lam3 <- model.matrix(~f1c + f2c + f1s + f2s, obs_covs)
 
