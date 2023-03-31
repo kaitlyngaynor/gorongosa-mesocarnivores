@@ -218,12 +218,15 @@ obs_covs <- data.frame(deploy = rep(deps, ndet), #KLG: creates ndet rows for eve
 # Occupancy natural parameters
 #KLG: model.matrix creates a design (or model) matrix, e.g., by expanding factors to a set of 
 #KLG: dummy variables (depending on the contrasts) and expanding interactions similarly.
+#KLG: these are identical matrices
 X_f1 <- model.matrix(~Hunting, site_covs)
 X_f2 <- model.matrix(~Hunting, site_covs)
 X_f12 <- model.matrix(~Hunting, site_covs)
 
-#PAUSE HERE
 # Detection intensity depends time of day
+# KLG: makes three large matrices with an intercept column and a column for f1c, f2c, f1s, and f2s
+# KLG: those 4 variables represent the Fourier series applied to the time vector
+# KLG: these are identical matrices
 X_lam1 <- X_lam2 <- X_lam3 <- model.matrix(~f1c + f2c + f1s + f2s, obs_covs)
 
 # Save model matrices for use elsewhere
@@ -231,8 +234,10 @@ save(X_f1, X_f2, X_f12, X_lam1, X_lam2, X_lam3, file='model_matrices.Rdata')
 
 # Indicator matrix to divide up single vector of parameters into
 # subvectors for each parameter to estimate
-pind <- matrix(NA, nrow=8, ncol=2)
-pind[1,] <- c(0, 0+ncol(X_f1)-1)                        #f1
+#KLG: not sure I follow why the different values are used
+pind <- matrix(NA, nrow=8, ncol=2) #KLG: makes an empty matrix with 8 rows and 2 columns
+#KLG: each row is filled in individually
+pind[1,] <- c(0, 0+ncol(X_f1)-1)                        #f1, KLG: fills in first row
 pind[2,] <- c(pind[1,2]+1, pind[1,2]+1+ncol(X_f2)-1)    #f2
 pind[3,] <- c(pind[2,2]+1, pind[2,2]+1+ncol(X_f12)-1)   #f12
 pind[4,] <- c(pind[3,2]+1, pind[3,2]+2)                 #mu (species 1)
@@ -247,6 +252,9 @@ set.seed(123)
 
 # Quickly get reasonable start values with SANN
 # Initial SANN NLL value should be 41111.166130
+# KLG: I do not understand what SANN NLL is
+# KLG: this is used to feed into the next optimization thing, it generates start values
+#KLG: rep() replicates the values in x
 starts <- optim(rep(0,max(pind)+1), mmpp_covs, method = 'SANN',
              control = list(maxit=400, trace=1, REPORT =5),
             pind=pind, X_f1=X_f1, X_f2=X_f2, X_f12=X_f12, X_lam1=X_lam1,
@@ -254,9 +262,20 @@ starts <- optim(rep(0,max(pind)+1), mmpp_covs, method = 'SANN',
             yd1_st_idx=yd1_st_idx, yd1_en_idx=yd1_en_idx, yd2_st_idx=yd2_st_idx,
             yd2_en_idx=yd2_en_idx, y1_i=y1_i, y2_i=y2_i, threads=2)
 # Final SANN NLL value should be 30050.156712
-# ^^this is not the value I get
+# KLG: ~12-15 min to run above code
 
 # Do optimization and calculate hessian
+#KLG: this took ~11 min to get to the first iteration value, 18 (total) for the second
+#KLG: function optimization describes a class of problems for finding the input to a 
+#KLG: given function that results in the minimum or maximum output from the function (default is minimizing)
+#KLG: I'm struggling with what this is doing, but to break apart pieces I understand:
+#KLG: maxit = max number of iterations, REPORT = frequency of reports
+#KLG: hessian = TRUE -> return a numerically differentiated Hessian matrix
+#KLG: mmpp_covs seems to be the function to be optimmized, with the parameters listed after the
+#KLG: control variables (it's basically defined/established here)
+#KLG: starts$par are the initial values for the parameters to be optimized over
+#KLG: this method (L-BFGS-B) allows each variable to be given a lower and/or upper bound
+#KLG: this took somewhere around 5-6 hours to run
 fit <- optim(starts$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
              control = list(trace = 1, REPORT = 5, maxit=400),
              pind=pind, X_f1=X_f1, X_f2=X_f2, X_f12=X_f12, X_lam1=X_lam1,
@@ -267,6 +286,8 @@ fit <- optim(starts$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
 # May take several runs of optimization to get past local minima to this value
 
 #Format and save results
+#KLG: saveRDS saves an R object for it to be called later (it serializes an R object into a 
+#KLG: format that can be called later), but it forgets the original name of the object
 saveRDS(fit, "fit_covs3.Rds")
 
 est <- fit$par
