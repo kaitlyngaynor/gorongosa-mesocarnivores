@@ -23,19 +23,25 @@ for(i in 1:nrow(tfd)){  # looping through all sites
 
   } else{  # deer detected
 
-    # hour the deer was first detected
+    # hour the deer was first detected (KLG: hfd = hour first detected)
     #KLG: floor takes a single numeric argument x and returns a numeric vector containing the 
     #KLG: largest integers not greater than the corresponding elements of x.
-    hfd <- hour(dep_start[i]) + floor(min(deer[[i]]) / hr)
+    #KLG: so this gives the largest integer that's not bigger than the given element of x (I think)
+    #KLG: take the hour of the deployment start and add the time of earliest deer detection (relative
+    #KLG: to camera setup) times 24
+     hfd <- hour(dep_start[i]) + floor(min(deer[[i]]) / hr)
 
     if(hfd <= (21 * 24)){  # detected within 3 weeks?
-
+      
+      #KLG: fill in the row with 1s from the start until the hour of first detection
       tfd[i, hour(dep_start[i]):hfd] <- 1 # deer 'survives' this interval
+      #KLG: and a 0 at that hour of first detection
       tfd[i, hfd] <- 0  # deer 'dies'
 
     } else{  # detection took longer than 3 weeks?
 
       # deer 'survives' entire interval
+      #KLG: fill in the entire row with 1s
       tfd[i, hour(dep_start[i]):(21 * 24)] <- 1
 
     }
@@ -46,7 +52,8 @@ for(i in 1:nrow(tfd)){  # looping through all sites
 
 # predicting to sites open to hunting
 # need to load X_f1 from 'fitting_model.R' script
-load('model_matrices.Rdata')
+#KLG: I think they mean fit_model.R, which is now 02_fit_model.R
+load('model_matrices.Rdata') #KLG: line still works because it's called the same
 hnt <- X_f1[, 2] == 1
 
 sf <- numeric(21 * 24)  # probability of 'surviving' interval
