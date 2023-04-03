@@ -1,12 +1,13 @@
 library(lubridate)
 library(Matrix)
-source('format_data.R')  # loading and cleaning data
+source('occupancy-mmpp-master/application/01_format_data.R')  # loading and cleaning data
 
 # EMPIRICAL SURVIVAL CURVE-----------------------------------------------------
 
 # matrix of time to first detection
 # assume 3 weeks in length. each column is an hour increment
-tfd <- tfd_c <- matrix(nrow = length(dep_len), ncol = 21 * 24)
+# KLG: length(dep_len) gives a row for every deployment, and a column for every hour of 21 days
+tfd <- tfd_c <- matrix(nrow = length(dep_len), ncol = 21 * 24) 
 
 hr <- 1 / 24  # hour expressed as day
 
@@ -15,12 +16,16 @@ for(i in 1:nrow(tfd)){  # looping through all sites
 
   if(is.null(deer[[i]])){  # no deer detected
 
-    # 'survives' entire interval
+    # 'survives' entire interval (KLG: what does 'survives' mean here?)
+    #KLG: hour is used to get/set hours component of a date-time
+    #KLG: row i, columns from hour(dep_start[i]) to 21*24 (= 504))
     tfd[i, hour(dep_start[i]):(21 * 24)] <- 1
 
   } else{  # deer detected
 
     # hour the deer was first detected
+    #KLG: floor takes a single numeric argument x and returns a numeric vector containing the 
+    #KLG: largest integers not greater than the corresponding elements of x.
     hfd <- hour(dep_start[i]) + floor(min(deer[[i]]) / hr)
 
     if(hfd <= (21 * 24)){  # detected within 3 weeks?
