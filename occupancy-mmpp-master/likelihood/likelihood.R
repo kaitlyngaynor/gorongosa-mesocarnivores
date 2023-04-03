@@ -1,3 +1,5 @@
+#KLG: DON'T RUN: Files that contain the . cpp file extension hold program source code 
+#KLG:that has been written in the C++ programming language' (note for the other script)
 mmpp <- function(params, y1, y2, J, inc = 1 / 24){
 
   # Args:
