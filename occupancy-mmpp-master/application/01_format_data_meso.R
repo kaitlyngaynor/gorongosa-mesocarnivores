@@ -80,6 +80,11 @@ if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occup
   write.csv(fixed_covs, "occupancy-mmpp-master/data/Covariates.csv", row.names=FALSE)
 }
 
+#reading in GNP data
+#they have a ton of daily values, I need to think about getting the equivalent numbers for 
+#GNP
+GNP_covs <- read_csv("occupancy-mmpp-master/data/GNP/cam_metadata_fromfield_and_raw_raster_withlion.csv")
+
 # reading in data
 dets <- read.csv('occupancy-mmpp-master/data/Raw Data.csv')
 covs <- read.csv('occupancy-mmpp-master/data/Covariates.csv')
