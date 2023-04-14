@@ -89,6 +89,9 @@ if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occup
 dets <- read.csv('occupancy-mmpp-master/data/Raw Data.csv')
 covs <- read.csv('occupancy-mmpp-master/data/Covariates.csv')
 
+##reading in GNP data
+cam_meta <- read_csv('occupancy-mmpp-master/data/GNP/cam_metadata_fromfield_and_raw_raster_withlion.csv')
+
 # unique sites
 #KLG: title and Camsite are the same; covs is just the metadata (I think)
 sits_det <- unique(dets$title)
