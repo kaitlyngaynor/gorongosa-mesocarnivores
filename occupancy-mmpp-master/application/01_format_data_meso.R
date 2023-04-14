@@ -1,30 +1,24 @@
----
-title: "01_format_data_meso"
-author: "Katie Grabowski"
-date: "2023-04-14"
-output: html_document
----
-*working with an Rmarkdown file because it's easier to take notes like this
-to work with this code, I need the following as data:
-covs: covariates for each deployment (row for every site, all covariates in columns)
-dets: every detection in a row, with columns for when the camera was put out and what was detected
-coys and deer: list of length matching total deployments, gets filled in with detections for each species
-dt: date-time object with the date-time of every detection across all deployments
+#Rmarkdown is messing me up with working directories
+#so we're back to an R script
+#I need the following for data:
+# covs: covariates for each deployment (row for every site, all covariates in columns)
+# dets: every detection in a row, with columns for when the camera was put out and what was detected
+# coys and deer: list of length matching total deployments, gets filled in with detections for each species
+# dt: date-time object with the date-time of every detection across all deployments
+# 
+# and the following values:
+#   coys_ind: indices of coyote detections (not actually sure why this is 33)
+# deer_ind: same thing for deer, again not sure why this is 8 10
+# dep_len: list with how long is each deployment (in days)
+# dep_start:list with start date/time of each deployment in a certain format
+# deps: list with all deployment IDs
+# i: index of all deployments (I think)
+# ind: not sure
+# sits_cov: list of all the sites that have covariates
+# sits_det: list of all the sites that have detections
 
-and the following values:
-coys_ind: indices of coyote detections (not actually sure why this is 33)
-deer_ind: same thing for deer, again not sure why this is 8 10
-dep_len: list with how long is each deployment (in days)
-dep_start:list with start date/time of each deployment in a certain format
-deps: list with all deployment IDs
-i: index of all deployments (I think)
-ind: not sure
-sits_cov: list of all the sites that have covariates
-sits_det: list of all the sites that have detections
-
-```{r setup, include=FALSE}
 library(readxl) #install.packages("readxl")
-library(readr) #install.packages("readr")
+library(readr)
 
 # Convert raw excel to CSVs if you haven't already, doing some data cleanup
 #KLG: if any of these files don't exist, tell the coder to download them
@@ -38,28 +32,28 @@ if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occup
   input_raw <- as.data.frame(read_excel("occupancy-mmpp-master/data/Raw Data.xlsx"))
   # Convert date to format that format_data.R is expecting
   input_raw$begin_date_time <- as.character(format(input_raw$begin_date_time, '%m/%d/%Y %H:%M'))
-
+  
   # Covariates.csv
   input_covs <- as.data.frame(read_excel("occupancy-mmpp-master/data/Covariates.xlsx"))
   fixed_covs <- input_covs
-
+  
   # Some sites need to be changed from e.g. Cheraw 10A to Cheraw 10a
   # in order to match Raw Data.csv
   last_lower <- function(x){
     paste0(substr(x, 1, nchar(x)-1),
-        tolower(substr(x, nchar(x), nchar(x))))
+           tolower(substr(x, nchar(x), nchar(x))))
   }
-
+  
   sites_fix_lower <- c("Cheraw", "Fall Creek Falls", "Frozen Head",
-                      "Lone Mountain", "Morrow Mountain", "morrow mountain",
-                      "Sandhills", "Umstead", "Uwharrie", "Weymouth")
-
+                       "Lone Mountain", "Morrow Mountain", "morrow mountain",
+                       "Sandhills", "Umstead", "Uwharrie", "Weymouth")
+  
   #KLG: grepl has to do with pattern matching
   for (site in sites_fix_lower){
     fixed_covs$Camsite[grepl(site,fixed_covs$Camsite)] <-
       last_lower(fixed_covs$Camsite[grepl(site,fixed_covs$Camsite)])
   }
-
+  
   # Some other sites need to change final letter to camera position string
   # e.g. South Mountains Gameland 10A to South Mountains Gameland 10 on trail
   letter_to_pos <- function(x){
@@ -72,15 +66,15 @@ if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occup
     }
     out
   }
-
+  
   sites_fix_pos <- c("South Mountains Gameland", "Stone Mountain",
                      "Thurmond Chatham", "South Mountains State Park")
-
+  
   for (site in sites_fix_pos){
     fixed_covs$Camsite[grepl(site,fixed_covs$Camsite)] <-
       letter_to_pos(fixed_covs$Camsite[grepl(site,fixed_covs$Camsite)])
   }
-
+  
   # Write out corrected CSVs
   write.csv(input_raw, "occupancy-mmpp-master/data/Raw Data.csv", row.names=FALSE, na="")
   write.csv(fixed_covs, "occupancy-mmpp-master/data/Covariates.csv", row.names=FALSE)
@@ -89,11 +83,6 @@ if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occup
 # reading in data
 dets <- read.csv('occupancy-mmpp-master/data/Raw Data.csv')
 covs <- read.csv('occupancy-mmpp-master/data/Covariates.csv')
-
-##reading in GNP data
-#I could not get my R to read this in where it was, so I copied it to the application folder as well
-#I'm not sure what was happening, but I restarted R and updated R and R studio to try to address the issue
-cam_meta <- read_csv("data/cam_metadata_fromfield_and_raw_raster_withlion.csv")
 
 # unique sites
 #KLG: title and Camsite are the same; covs is just the metadata (I think)
@@ -172,67 +161,48 @@ dep_start <- as.POSIXct(rep(NA, length(deps)))
 # identifying start and end time of each deployment
 # KLG: big for loops are hard to parse apart
 for(i in 1:length(deps)){ #KLG: this runs through every individual deployment
-
+  
   # index of deployment i
   ind <- which(dets$deployment_id == deps[i]) #KLG: which() returns the position or the index of the value which satisfies the given condition
-
+  
   dep_start[i] <- min(dt[ind]) #KLG: the deployment start for deployment i is the minimum
   # value of dt (which has date-time info for every detection)
-
+  
   # deployment length
   # KLG: deployment length for a given deployment
   # is difference between the date/time of the min and max values in days
   dep_len[i] <- as.numeric(difftime(max(dt[ind]), min(dt[ind]),
                                     units = 'days'))
-
+  
   # any deer detected?
   # KLG: any() reports whether any of the values is true
   # so "if any of the detections' scientific names in this deployment is deer", then do something
   if(any(dets$Scientific.Name[ind] == 'Odocoileus virginianus')){
-
+    
     # indices of deer detections
     # KLG: which deployment(s) has deer detection(s)?
     deer_ind <- which(dets$Scientific.Name[ind] == 'Odocoileus virginianus')
-
+    
     # time of deer detection, relative to camera setup
     # KLG: this gets added to the deer list for the given deployment
     deer[[i]] <- as.numeric(difftime(dt[ind][deer_ind], min(dt[ind]),
                                      units = 'days'))
-
-    }
-
+    
+  }
+  
   # any coyote detected?
   # KLG: repeat for coyotes
   if(any(dets$Scientific.Name[ind] == 'Canis latrans')){
-
+    
     # indices of coyote detections
     coys_ind <- which(dets$Scientific.Name[ind] == 'Canis latrans')
-
+    
     # time of coyote detection, relative to camera setup
     coys[[i]] <- as.numeric(difftime(dt[ind][coys_ind], min(dt[ind]),
                                      units = 'days'))
-
-    }
-
+    
+  }
+  
 }
-```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
