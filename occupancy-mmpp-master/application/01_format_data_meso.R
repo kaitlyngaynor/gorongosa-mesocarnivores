@@ -80,11 +80,6 @@ if(!file.exists('occupancy-mmpp-master/data/Raw Data.csv') | !file.exists('occup
   write.csv(fixed_covs, "occupancy-mmpp-master/data/Covariates.csv", row.names=FALSE)
 }
 
-#reading in GNP data
-#they have a ton of daily values, I need to think about getting the equivalent numbers for 
-#GNP
-GNP_covs <- read_csv("occupancy-mmpp-master/data/GNP/cam_metadata_fromfield_and_raw_raster_withlion.csv")
-
 # reading in data
 dets <- read.csv('occupancy-mmpp-master/data/Raw Data.csv')
 covs <- read.csv('occupancy-mmpp-master/data/Covariates.csv')
@@ -144,10 +139,11 @@ dets <- dets[dets$title %in% covs$Camsite, ]
 deps <- unique(dets$deployment_id)
 
 # removing deployments with < 1 day of data (can check again if you like)
-deps <- deps[-c(110, 147, 1773, 1812)]
+deps <- deps[-c(110, 147, 1773, 1812)] #KLG: they end with 1945 deployments
 
 # date / time of each detection
-#KLG: function is just date-time conversion
+#KLG: function is just date-time conversion, this suggests that they only use the beginning 
+#KLG: date-time value, which is good for GNP data
 dt <- as.POSIXlt(dets$begin_date_time, tz = 'US/Eastern',
                  format = '%m/%d/%Y %H:%M')
 
@@ -211,3 +207,111 @@ for(i in 1:length(deps)){ #KLG: this runs through every individual deployment
 }
 
 
+##what happens if we start playing with GNP data? let's find out----
+#reading in GNP data
+#they have a ton of daily values, I need to think about getting the equivalent numbers for 
+#GNP
+GNP_covs <- read_csv("occupancy-mmpp-master/data/GNP/cam_metadata_fromfield_and_raw_raster_withlion.csv")
+GNP_dets <- read_csv("occupancy-mmpp-master/data/GNP/recordtable_allrecordscleaned_speciesmetadata.csv")
+
+#I believe this adds a date column in the right format (the current Date column doesn't match the
+#DateTimeOriginal column, and I'm choosing to believe the former)
+GNP_dets$correct_date <- as.Date(GNP_dets$DateTimeOriginal,tz = 'Africa/Maputo',
+                                 format = '%m/%e/%y %H:%M') 
+
+date <- as.Date(GNP_dets$DateTimeOriginal,
+                format = '%m/%e/%y %H:%M')
+
+##this seems to be the correct format for the date time stuff:
+as.Date("7/11/16 16:01", format = "%m/%e/%y %H:%M")
+
+#subset GNP detections to season of interest
+#without changing name of file because I don't want to change everything following right now
+#will need to edit if we use this for more than one season
+#between is an inclusive function, so this should be good
+GNP_dets <- GNP_dets %>% filter(between(correct_date, as.Date('2016-08-01'), as.Date('2016-11-30')))
+
+#guide code
+#df %>% filter(between(date_column, as.Date('2022-01-20'), as.Date('2022-02-20')))
+
+# unique sites (checking for GNP)
+#KLG: title and Camsite are the same; covs is just the metadata (I think)
+sits_det_GNP <- unique(GNP_dets$Camera) #60 sites with detections
+sits_cov_GNP <- unique(GNP_covs$StudySite) #60 sites with covariates (which is good)
+#^^all of our sites have both detections and covariates (as far as I can tell), so we can skip
+#a good chunk of their code
+
+deps_GNP <- unique(GNP_dets$Camera) #I believe this should just be cameras for GNP data because
+#each camera only has one deployment (different from the Kellner model example, in which cameras
+#were put out in multiple locations and had many deployments)
+
+# date / time of each detection
+#KLG: function is just date-time conversion, this suggests that they only use the beginning 
+#KLG: date-time value, which is good for GNP data
+#I think this worked? edit: it had not worked but now I think it did
+#I had to change the format info, but I *think* it's correct now
+dt_GNP <- as.POSIXlt(GNP_dets$DateTimeOriginal, tz = 'Africa/Maputo',
+                 format = '%m/%e/%y %H:%M')
+
+# blank lists for storing detection times
+#KLG: vector() produces a vector of the given length and mode.
+civet <- genet <- vector('list', length(deps_GNP))
+
+# deployment length (in days)
+dep_len_GNP <- numeric(length(deps_GNP))
+
+# KLG: rep() replicates the values in x; as.POSIXct is date/time conversion again
+# KLG: this creates something like an empty list; getting ready to take the start date of every
+# deployment
+dep_start_GNP <- as.POSIXct(rep(NA, length(deps_GNP)))
+
+# identifying start and end time of each deployment
+# KLG: big for loops are hard to parse apart
+for(i in 1:length(deps_GNP)){ #KLG: this runs through every individual deployment
+  
+  # index of deployment i
+  #not sure it was necessary to rename ind to ind_GNP, but I saw ind as a value and I didn't want it
+  #to be overwritten
+  ind_GNP <- which(GNP_dets$Camera == deps_GNP[i]) #KLG: which() returns the position or the index of the value which satisfies the given condition
+  
+  dep_start_GNP[i] <- min(dt_GNP[ind_GNP]) #KLG: the deployment start for deployment i is the minimum
+  # value of dt (which has date-time info for every detection)
+  
+  # deployment length
+  # KLG: deployment length for a given deployment
+  # is difference between the date/time of the min and max values in days
+  dep_len_GNP[i] <- as.numeric(difftime(max(dt_GNP[ind_GNP]), min(dt_GNP[ind_GNP]),
+                                    units = 'days'))
+  
+  # any civet detected?
+  # KLG: any() reports whether any of the values is true
+  # so "if any of the detections' scientific names in this deployment is civet", then do something
+  if(any(GNP_dets$Species[ind_GNP] == 'Civet')){
+    
+    # indices of civet detections
+    # KLG: which deployment(s) has civet detection(s)?
+    civet_ind <- which(GNP_dets$Species[ind_GNP] == 'Civet')
+    
+    # time of civet detection, relative to camera setup
+    # KLG: this gets added to the civet list for the given deployment
+    civet[[i]] <- as.numeric(difftime(dt_GNP[ind_GNP][civet_ind], min(dt_GNP[ind_GNP]),
+                                     units = 'days'))
+    
+  }
+  
+  # any genet detected?
+  # KLG: repeat for genets
+  if(any(GNP_dets$Species[ind_GNP] == 'Genet')){
+    
+    # indices of coyote detections
+    genet_ind <- which(GNP_dets$Species[ind_GNP] == 'Genet')
+    
+    # time of coyote detection, relative to camera setup
+    genet[[i]] <- as.numeric(difftime(dt_GNP[ind_GNP][genet_ind], min(dt_GNP[ind_GNP]),
+                                     units = 'days'))
+    
+  }
+  
+}
+
+#so now I have the input necessary to run this for GNP? maybe?

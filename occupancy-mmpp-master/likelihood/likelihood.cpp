@@ -16,11 +16,11 @@ vec get_theta(arma::vec S, double U){
 }
 
 mat get_m(arma::vec S, double theta, arma::vec mu){
-  mat out(2,2);
-  out(0,0) = S(1) - theta;
-  out(1,0) = mu(1);
-  out(0,1) = mu(0);
-  out(1,1) = S(0) - theta;
+  mat out(2,2); //2x2 matrix
+  out(0,0) = S(1) - theta; //element in first row, first column
+  out(1,0) = mu(1); //second row, first column
+  out(0,1) = mu(0); //first row, second column
+  out(1,1) = S(0) - theta; //second row, second column
   return out;
 }
 
@@ -133,7 +133,7 @@ double mmpp_covs(arma::vec params, arma::mat pind, arma::mat X_f1, arma::mat X_f
       vec yd1_j = yd1.subvec(yd1_st_idx(i,j), yd1_en_idx(i,j));
       vec yd2_j = yd2.subvec(yd2_st_idx(i,j), yd2_en_idx(i,j));
 
-      ll1 += splt_lik(yd1_j, lambda1_i(j), zet1, mu1, e);
+      ll1 += splt_lik(yd1_j, lambda1_i(j), zet1, mu1, e); //KLG: x+=y is equivalent to x = x+y
       ll2 += splt_lik(yd1_j, lambda2_i(j), zet1, mu1, e);
       ll3 += splt_lik(yd2_j, lambda3_i(j), zet2, mu2, e);
     }
