@@ -481,13 +481,22 @@ dep_to_site <- dets %>%
 
 #Get covariates at each site
 #I chose covariates I'd used in my thesis
+
+
 site_covs_GNP <- data.frame(deployment_id_GNP=deps_GNP) %>% #KLG: 1945 deployments
   #left_join(dep_to_site) %>% #KLG: add sites for each deployment
   #select(deployment_id, title) %>% #KLG: select these columns
   rename(StudySite = deployment_id_GNP) %>% #so the covs matrix can be joined
   left_join(GNP_covs) %>% #KLG: add covariates (I thought you usually needed a by = argument)
-  select(StudySite, termites_100m, tree_hansen, urema_dist, lion_latedry) %>% #they started with camsite and deployment_id
+  select(StudySite, termite.large.count.100m, tree_hansen, urema_dist, lion_latedry) %>% #they started with camsite and deployment_id
   as_tibble()
+
+#scale site covariates
+site_covs_GNP$termite.large.count.100m.scaled <- scale(site_covs_GNP$termite.large.count.100m)
+site_covs_GNP$tree_hansen_scaled <- scale(site_covs_GNP$tree_hansen)
+site_covs_GNP$urema_dist_scaled <- scale(site_covs_GNP$urema_dist)
+site_covs_GNP$lion_latedry_scaled <- scale(site_covs_GNP$lion_latedry)
+
 
 #Make observation covariate (time of day)
 
@@ -495,12 +504,14 @@ site_covs_GNP <- data.frame(deployment_id_GNP=deps_GNP) %>% #KLG: 1945 deploymen
 names(yd_civet) <- deps_GNP #KLG: instead of yd_deer[[1]], this now has the deployment ID
 ndet_GNP <- sapply(yd_civet, length) #KLG: for every element in yd_deer, returns the length of that list 
 #KLG: number of hourly intervals
+#^^this is just using yd_civet for the length of the deployments, not specific to civet over genet (I'm pretty sure)
 
 sec_in_inc <- 60*60 #seconds in each increment (1 hr), same for Kellner and GNP
 #sec_in_inc <- 2*60*60 #seconds in each increment (2 hr)
 
 #KLG: for every element in ndet (list of the length of every deployment (number of hourly
 #KLG: intervals for each deployment))
+#I don't *think* anything about this is species specific
 time_list_GNP <- lapply(1:length(ndet_GNP), function(i){
   #KLG: I believe the next lines converts every relevant time for each deployment (start time, and
   #KLG: every hour after--each interval)
@@ -510,18 +521,117 @@ time_list_GNP <- lapply(1:length(ndet_GNP), function(i){
 })
 time_vec_GNP <- unlist(time_list_GNP) #KLG: convert list to vector
 
+##from Arielle, how to calculate time since last detection of the dominant
+#
+#TSL (time since last detection of sp2 - the dominant species)
+#
+
+#Vectorize the time since the last detection of the dominant species
+#on the same scale as time_list
+time_list2_GNP <- lapply(1:length(ndet_GNP), function(i){
+  seq(0, dep_len_GNP[[i]], by=1/24)
+})
+time_vec2_GNP <- unlist(time_list2_GNP)
+length(time_vec_GNP)==length(time_vec2_GNP) #TRUE
+
+#species 1: civet, species 2: genet
+#Convert the day/hours of the deployment to the time since the last sp2 passed
+TSL_GNP <- list() #I got rid of _c (because I think that was for coyote and it's confusing with civet)
+for(i in 1:length(time_list2_GNP)){
+  
+  if(length(genet[[i]])==0){TSL_GNP[[i]]<-rep(NA, length(time_list2_GNP[[i]]))}
+  
+  else{
+    genet[[i]]<-genet[[i]][order(genet[[i]])]
+    
+    hr2_GNP <- hr2b_GNP <- time_list2_GNP[[i]]
+    
+    if(length(genet[[i]]) > 1) {
+      for(k in 2:length(genet[[i]])){
+        hr2_GNP[which(hr2b_GNP > genet[[i]][k-1] & hr2b_GNP <= genet[[i]][k])]<-
+          hr2_GNP[which(hr2b_GNP > genet[[i]][k-1]& hr2b_GNP <= genet[[i]][k])] - genet[[i]][k-1]
+      }
+      hr2_GNP[which(hr2b_GNP > genet[[i]][length(genet[[i]])])]<-
+        hr2_GNP[which(hr2b_GNP > genet[[i]][length(genet[[i]])])] - genet[[i]][length(genet[[i]])]
+      hr2_GNP[which(hr2b_GNP < genet[[i]][1])]<-NA
+    }
+    
+    else{
+      hr2_GNP[which(hr2b_GNP > genet[[i]][length(genet[[i]])])]<-
+        hr2_GNP[which(hr2b_GNP > genet[[i]][length(genet[[i]])])] - genet[[i]][length(genet[[i]])]
+      hr2_GNP[which(hr2b_GNP < genet[[i]][1])]<-NA
+    }
+    
+    TSL_GNP[[i]] <- hr2_GNP
+  }
+}
+
+TSL_vec_GNP <- unlist(TSL_GNP)
+summary(TSL_vec_GNP)
+
+#Replace the NA values with the overall mean
+#This allows the model to run while remaining uninformative for those instances
+TSL_vec_GNP[is.na(TSL_vec_GNP)] <- mean(TSL_vec_GNP, na.rm=TRUE)
+summary(TSL_vec_GNP)
+
+length(time_vec_GNP)==length(TSL_vec_GNP)#should match, TRUE
+#end from Arielle
+####
+
+###from Arielle for using a spatial covariate as a detection covariate
+#Example of adding a spatial covariate as an observation covariate
+# KLG: make a lake observations list
+# KLG: just makes a repeating list so you have a lake value for every time point
+#run for distance to lake
+lake_obs <- list()
+for(i in 1:length(time_list_GNP)){
+  lake <- site_covs_GNP$urema_dist[which(site_covs_GNP$StudySite==deps_GNP[i])]
+  lake_obs[[i]] <- rep(lake,length(time_list_GNP[[i]]))
+}
+lake_vec <- unlist(lake_obs)
+summary(lake_vec)
+
+length(time_vec_GNP)==length(lake_vec) #should match, TRUE
+
+#run for detect obscured
+detect_obs <- list()
+for(i in 1:length(time_list_GNP)){
+  detect <- GNP_covs$detect.obscured[which(GNP_covs$StudySite==deps_GNP[i])]
+  detect_obs[[i]] <- rep(detect,length(time_list_GNP[[i]]))
+}
+detect_vec <- unlist(detect_obs)
+summary(detect_vec)
+
+length(time_vec_GNP)==length(detect_vec) #should match, TRUE
+
+#and for ground cover
+ground_obs <- list()
+for(i in 1:length(time_list_GNP)){
+  ground <- GNP_covs$cover.ground[which(GNP_covs$StudySite==deps_GNP[i])]
+  ground_obs[[i]] <- rep(ground,length(time_list_GNP[[i]]))
+}
+ground_vec <- unlist(ground_obs)
+summary(ground_vec)
+
+length(time_vec_GNP)==length(ground_vec) #should match, TRUE
+
 #Fourier series values for each time
 #KLG: I don't actually understand what a Fourier series is, but this is just filling in 4 values
 #KLG: for every time
 #KLG: It consists of an infinite sum of sines and cosines, and because it is periodic (i.e., 
 #KLG: its values repeat over fixed intervals), it is a useful tool in analyzing periodic functions.
 #KLG: By adding infinite sine (and or cosine) waves we can make other functions
+#KLG: first argument here just creates a column with the site name
 obs_covs_GNP <- data.frame(deploy_GNP = rep(deps_GNP, ndet_GNP), #KLG: creates ndet rows for every deployment 
                        #KLG: ndet is the length of the deployment (number of hourly intervals)
                        f1c_GNP = cos(pi*time_vec_GNP/12),
                        f2c_GNP = cos(2*pi*time_vec_GNP/12),
                        f1s_GNP = sin(pi*time_vec_GNP/12),
-                       f2s_GNP = sin(2*pi*time_vec_GNP/12))
+                       f2s_GNP = sin(2*pi*time_vec_GNP/12),
+                       TSL_GNP = scale(TSL_vec_GNP),
+                       lake = scale(lake_vec),
+                       detect.obscured = detect_vec,
+                       cover.ground = scale(ground_vec))
 
 # Construct model matrices-----------------------------------------------------
 
@@ -530,15 +640,22 @@ obs_covs_GNP <- data.frame(deploy_GNP = rep(deps_GNP, ndet_GNP), #KLG: creates n
 #KLG: dummy variables (depending on the contrasts) and expanding interactions similarly.
 #KLG: these are identical matrices
 #I don't understand this well enough to know which one of my covariates to choose
-X_f1_GNP <- model.matrix(~lion_latedry, site_covs_GNP)
-X_f2_GNP <- model.matrix(~lion_latedry, site_covs_GNP)
-X_f12_GNP <- model.matrix(~lion_latedry, site_covs_GNP)
+X_f1_GNP <- model.matrix(~urema_dist_scaled, site_covs_GNP)
+X_f2_GNP <- model.matrix(~urema_dist_scaled + termite.large.count.100m.scaled, site_covs_GNP)
+X_f12_GNP <- model.matrix(~lion_latedry_scaled, site_covs_GNP)
 
 # Detection intensity depends time of day
 # KLG: makes three large matrices with an intercept column and a column for f1c, f2c, f1s, and f2s
 # KLG: those 4 variables represent the Fourier series applied to the time vector
 # KLG: these are identical matrices
-X_lam1_GNP <- X_lam2_GNP <- X_lam3_GNP <- model.matrix(~f1c_GNP + f2c_GNP + f1s_GNP + f2s_GNP, obs_covs_GNP)
+#species 1, species 2 present
+X_lam1_GNP <- model.matrix(~f1c_GNP + f2c_GNP + f1s_GNP + f2s_GNP + detect.obscured + cover.ground + TSL_GNP, obs_covs_GNP)
+
+#species 1, species 2 absent
+X_lam2_GNP <- model.matrix(~f1c_GNP + f2c_GNP + f1s_GNP + f2s_GNP + detect.obscured + cover.ground, obs_covs_GNP)
+
+#species 2
+X_lam3_GNP <- model.matrix(~f1c_GNP + f2c_GNP + f1s_GNP + f2s_GNP + detect.obscured + cover.ground, obs_covs_GNP)
 
 # Save model matrices for use elsewhere
 save(X_f1_GNP, X_f2_GNP, X_f12_GNP, X_lam1_GNP, X_lam2_GNP, X_lam3_GNP, file='model_matrices_GNP.Rdata')
@@ -616,10 +733,13 @@ se_GNP <- sqrt(diag(solve(fit_GNP$hessian)))
 #if it's just for the se, maybe not a big issue? I'm not sure
 
 #I can't run the last few lines because I don't have the se
-results_GNP <- data.frame(est_GNP = round(est_GNP, 3), se=round(se,3))
+#results_GNP <- data.frame(est_GNP = round(est_GNP, 3), se=round(se,3))
+results_GNP <- data.frame(est_GNP = round(est_GNP, 3))
 results$lower <- results$est - 1.96*results$se
 results$upper <- results$est + 1.96*results$se
-results
+results_GNP
 
-saveRDS(results, 'results.Rds')
+saveRDS(results, 'results_GNP.Rds')
 
+#AIC
+(2*length(fit_GNP$par))-(2*-fit_GNP$value)
