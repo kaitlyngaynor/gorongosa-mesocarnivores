@@ -1,3 +1,4 @@
+#GNP code starts ~line 308
 library(Rcpp) #install.packages("Rcpp") 
 library(tidyverse)
 library(RcppArmadillo) #install.packages("RcppArmadillo")
@@ -432,7 +433,7 @@ for (i in seq_along(yd_civet)){ #KLG: seq_along() is a function that creates a v
 #KLG: sapply(yd_deer, length) pulls the length of each deployment (number of hourly intervals)
 maxj_GNP <- max(sapply(yd_civet, length)) #KLG: this finds the longest deployment
 
-# KLG: run for deer
+# KLG: run for civet
 yd1_st_idx_GNP <- yd1_en_idx_GNP <- matrix(NA, nrow=length(yd_civet), ncol=maxj_GNP) #KLG: creates two large empty matrices
 # KLG: with a row for every deployment and a column for every hour/interval of the longest deployment
 idx_GNP <- 0
@@ -473,6 +474,7 @@ for (i in seq_along(yd_genet)){
 #Match deployemnts to site ID
 #KLG: almost 1:1, though some sites had more than one deployment
 #again, I don't think I have to deal with this
+#this is for the Kellner sites still
 dep_to_site <- dets %>%
   group_by(deployment_id, title) %>%
   summarize()

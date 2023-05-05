@@ -1,3 +1,4 @@
+#GNP code starts ~line 210
 #Rmarkdown is messing me up with working directories
 #so we're back to an R script
 #I need the following for data:
@@ -219,6 +220,7 @@ GNP_dets <- read_csv("occupancy-mmpp-master/data/GNP/recordtable_allrecordsclean
 GNP_dets$correct_date <- as.Date(GNP_dets$DateTimeOriginal,tz = 'Africa/Maputo',
                                  format = '%m/%e/%y %H:%M') 
 
+#this is me figuring out the correct date format
 date <- as.Date(GNP_dets$DateTimeOriginal,
                 format = '%m/%e/%y %H:%M')
 
