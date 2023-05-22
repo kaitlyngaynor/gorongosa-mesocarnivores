@@ -351,55 +351,7 @@ get_yd <- function(y, J, inc=1){ # KLG: function inputs
   out <- lapply(groups2, function(x) diff(x))
 }
 
-# KLG attempting to break apart the above function----
-# makes more sense now
-f <- seq(0, dep_len[1], by=1/24)
-
-#I think this is just adding the final time to be considered (the total deployment time) because 
-# breaking it up by hour can get rid of that 
-# so you have a sequence from 0 to the actual end of your deployment by your chosen interval
-if((dep_len[1]-f[length(f)]) > 0){
-  f <- c(f, dep_len[1]) #this adds one numeric value to f
-}
-
-
-# cut(deer[[1]], f) yields the intervals from f (hourly intervals for whole deployment)
-# that include deer detections (assigns a 1 (yes deer detection) or a 0 (no deer detection) 
-# to all hourly intervals)
-c <- cut(deer[[1]], f)
-
-# KLG: if there are detections, this breaks the vector with deer detections into the intervals
-# determined by f (hourly intervals of the whole deployment)
-# groups_KLG contains the intervals, the assigned factor for the interval (0 or 1 based on 
-# deer detection), and the the time value within the intervals that have a deer detection
-# of that deer detection
-if(is.null(deer[[1]])) { #if there are no detections
-  groups_KLG <- lapply(1:(length(f) - 1), function(x)
-    numeric(0))
-} else{ #KLG: if there are detections
-  groups_KLG <- split(deer[[1]], cut(deer[[1]], f))
-} 
-
-#KLG:this runs through the whole list and creates a new list
-#KLG: with at least two doubles for every element (the start and end time of the hourly interval)
-#KLG: if there was a deer detection in that interval, that time value is also included 
-#KLG: (in between the start and end interval times)
-#KLG: this must just be putting it into a usable format for what's to come
-groups2_KLG <- lapply(1:length(groups_KLG), function(i){
-  c(f[i], groups_KLG[[i]], f[i+1])
-})
-
-#KLG: this yields a list of length 512 (number of hourly intervals)
-#KLG: if no deer detection in a given interval, the value is just the amount of time in the 
-#KLG: interval
-#KLG: if there is a deer detection in a given interval, there are two doubles
-#KLG: the first is the time between start of interval and deer detection, and the second is the 
-#KLG: time between deer detection and end of interval
-out_KLG <- lapply(groups2_KLG, function(x) diff(x))
-
-
 # Get time differences yd for each species at each site----
-# KLG: back to regularly scheduled programming
 # KLG: deer[[i]] is the detection times for deer at a certain camera site (y in above function)
 # KLG: dep_len[i] is the length of the deployment for that site (J in above function)
 # KLG: inc = 1/24 I'm pretty sure refers to days/24, so gives hours
@@ -450,12 +402,6 @@ for (i in seq_along(yd_civet)){ #KLG: for every deployment, 1 to 1945
   }
 }
 
-##KLG figuring out the for loop----
-yd_test <- yd_deer[[1]]
-yd_test[[155]] #example interval with two values
-
-
-
 #KLG: run same code for genet data----
 yd2_st_idx_GNP <- yd2_en_idx_GNP <- matrix(NA, nrow=length(yd_genet), ncol=maxj_GNP)
 idx_GNP <- 0
@@ -481,7 +427,6 @@ dep_to_site <- dets %>%
 
 #Get covariates at each site
 #I chose covariates I'd used in my thesis
-
 
 site_covs_GNP <- data.frame(deployment_id_GNP=deps_GNP) %>% #KLG: 1945 deployments
   #left_join(dep_to_site) %>% #KLG: add sites for each deployment
@@ -880,10 +825,10 @@ X_f12_GNP5 <- model.matrix(~lion_latedry_scaled, site_covs_GNP)
 X_lam1_GNP5 <- model.matrix(~cover.ground + detect.obscured, obs_covs_GNP)
 
 #species 1, species 2 absent
-X_lam2_GNP5 <- model.matrix(~~cover.ground + detect.obscured, obs_covs_GNP)
+X_lam2_GNP5 <- model.matrix(~cover.ground + detect.obscured, obs_covs_GNP)
 
 #species 2
-X_lam3_GNP5 <- model.matrix(~~cover.ground + detect.obscured, obs_covs_GNP)
+X_lam3_GNP5 <- model.matrix(~cover.ground + detect.obscured, obs_covs_GNP)
 
 # Save model matrices for use elsewhere
 save(X_f1_GNP5, X_f2_GNP5, X_f12_GNP5, X_lam1_GNP5, X_lam2_GNP5, X_lam3_GNP5, file='model_matrices_GNP5.Rdata')
@@ -918,8 +863,6 @@ starts_GNP5 <- optim(rep(0,max(pind_GNP5)+1), mmpp_covs, method = 'SANN',
                      X_lam2=X_lam2_GNP5, X_lam3=X_lam3_GNP5, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
                      yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
                      yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
-# Final SANN NLL value should be 30050.156712
-# KLG: ~12-15 min to run above code
 
 # Do optimization and calculate hessian
 #KLG: this took ~11 min to get to the first iteration value, 18 (total) for the second
@@ -1721,3 +1664,97 @@ saveRDS(results_GNP3.3, 'results_GNP3.3.Rds')
 
 #AIC
 (2*length(fit_GNP3.3$par))-(2*-fit_GNP3.3$value)
+
+# Construct model matrices-----------------------------------------------------
+#I believe I need this for every time I run the model
+#this is a mm5.2
+
+# Occupancy natural parameters
+#KLG: model.matrix creates a design (or model) matrix, e.g., by expanding factors to a set of 
+#KLG: dummy variables (depending on the contrasts) and expanding interactions similarly.
+#KLG: these are identical matrices
+#I don't understand this well enough to know which one of my covariates to choose
+X_f1_GNP5.2 <- model.matrix(~urema_dist_scaled, site_covs_GNP)
+X_f2_GNP5.2 <- model.matrix(~urema_dist_scaled + termite.large.count.100m.scaled, site_covs_GNP)
+X_f12_GNP5.2 <- model.matrix(~lion_latedry_scaled, site_covs_GNP) 
+
+# Detection intensity depends time of day
+# KLG: makes three large matrices with an intercept column and a column for f1c, f2c, f1s, and f2s
+# KLG: those 4 variables represent the Fourier series applied to the time vector
+# KLG: these are identical matrices
+#species 1, species 2 present
+X_lam1_GNP5.2 <- model.matrix(~cover.ground, obs_covs_GNP)
+
+#species 1, species 2 absent
+X_lam2_GNP5.2 <- model.matrix(~cover.ground, obs_covs_GNP)
+
+#species 2
+X_lam3_GNP5.2 <- model.matrix(~cover.ground, obs_covs_GNP)
+
+# Save model matrices for use elsewhere
+save(X_f1_GNP5.2, X_f2_GNP5.2, X_f12_GNP5.2, X_lam1_GNP5.2, X_lam2_GNP5.2, X_lam3_GNP5.2, file='model_matrices_GNP5.2.Rdata')
+
+# Indicator matrix to divide up single vector of parameters into
+# subvectors for each parameter to estimate
+#KLG: not sure I follow why the different values are used
+#I THINK I NEED TO MAKE A NEW MATRIX FOR THIS EVERY RUN
+pind_GNP5.2 <- matrix(NA, nrow=8, ncol=2) #KLG: makes an empty matrix with 8 rows and 2 columns
+#KLG: each row is filled in individually
+pind_GNP5.2[1,] <- c(0, 0+ncol(X_f1_GNP5.2)-1)                #f1, KLG: fills in first row
+pind_GNP5.2[2,] <- c(pind_GNP5.2[1,2]+1, pind_GNP5.2[1,2]+1+ncol(X_f2_GNP5.2)-1)    #f2
+pind_GNP5.2[3,] <- c(pind_GNP5.2[2,2]+1, pind_GNP5.2[2,2]+1+ncol(X_f12_GNP5.2)-1)   #f12
+pind_GNP5.2[4,] <- c(pind_GNP5.2[3,2]+1, pind_GNP5.2[3,2]+2)                 #mu (species 1)
+pind_GNP5.2[5,] <- c(pind_GNP5.2[4,2]+1, pind_GNP5.2[4,2]+2)                 #mu (species 2)
+pind_GNP5.2[6,] <- c(pind_GNP5.2[5,2]+1, pind_GNP5.2[5,2]+1+ncol(X_lam1_GNP5.2)-1)  #lambda sp1|sp2 present
+pind_GNP5.2[7,] <- c(pind_GNP5.2[6,2]+1, pind_GNP5.2[6,2]+1+ncol(X_lam2_GNP5.2)-1)  #lambda sp1|sp2 absent
+pind_GNP5.2[8,] <- c(pind_GNP5.2[7,2]+1, pind_GNP5.2[7,2]+1+ncol(X_lam3_GNP5.2)-1)  #lambda sp2
+
+# Optimization-----------------------------------------------------------------
+
+set.seed(123)
+
+# Quickly get reasonable start values with SANN
+# Initial SANN NLL value should be 41111.166130
+# KLG: I do not understand what SANN NLL is
+# KLG: this is used to feed into the next optimization thing, it generates start values
+#KLG: rep() replicates the values in x
+starts_GNP5.2 <- optim(rep(0, max(pind_GNP5.2)+1), mmpp_covs, method = 'SANN',
+                     control = list(maxit=400, trace=1, REPORT =5),
+                     pind=pind_GNP5.2, X_f1=X_f1_GNP5.2, X_f2=X_f2_GNP5.2, X_f12=X_f12_GNP5.2, X_lam1=X_lam1_GNP5.2,
+                     X_lam2=X_lam2_GNP5.2, X_lam3=X_lam3_GNP5.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                     yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                     yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+
+# Do optimization and calculate hessian
+fit_GNP5.2 <- optim(starts_GNP5.2$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
+                  control = list(trace = 1, REPORT = 5, maxit=400),
+                  pind=pind_GNP5.2, X_f1=X_f1_GNP5.2, X_f2=X_f2_GNP5.2, X_f12=X_f12_GNP5.2, X_lam1=X_lam1_GNP5.2,
+                  X_lam2=X_lam2_GNP5.2, X_lam3=X_lam3_GNP5.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                  yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                  yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+# Final NLL value should be ~ 26461.08
+# May take several runs of optimization to get past local minima to this value
+
+#Format and save results
+#KLG: saveRDS saves an R object for it to be called later (it serializes an R object into a 
+#KLG: format that can be called later), but it forgets the original name of the object
+saveRDS(fit_GNP5.2, "fit_covs3_GNP5.2.Rds")
+
+est_GNP5.2 <- fit_GNP5.2$par 
+names(est_GNP5.2) <- c(paste0("f1_",colnames(X_f1_GNP5.2)), paste0("f2_",colnames(X_f2_GNP5.2)),
+                     paste0("f12_",colnames(X_f12_GNP5.2)),
+                     "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                     paste0("loglam1_",colnames(X_lam1_GNP5.2)),
+                     paste0("loglam2_",colnames(X_lam2_GNP5.2)), paste0("loglam3_",colnames(X_lam3_GNP5.2)))
+se_GNP5.2 <- sqrt(diag(solve(fit_GNP5.2$hessian))) 
+
+results_GNP5.2 <- data.frame(est = round(est_GNP5.2, 3), se = round(se_GNP5.2,3))
+#results_GNP5 <- data.frame(est = round(est_GNP5, 3))
+results_GNP5.2$lower <- results_GNP5.2$est - 1.96*results_GNP5.2$se
+results_GNP5.2$upper <- results_GNP5.2$est + 1.96*results_GNP5.2$se
+results_GNP5.2
+
+saveRDS(results_GNP5.2, 'results_GNP5.2.Rds')
+
+#AIC
+(2*length(fit_GNP5.2$par))-(2*-fit_GNP5.2$value)
