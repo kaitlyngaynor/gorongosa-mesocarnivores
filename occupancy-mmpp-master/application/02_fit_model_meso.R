@@ -1856,4 +1856,4 @@ saveRDS(results_GNP13.1, 'results_GNP13.1.Rds')
 #AIC
 (2*length(fit_GNP13.1$par))-(2*-fit_GNP13.1$value)
 
-write.csv(results_GNP13.1, file = '/occupancy-mmpp-master/model_results/results/results_GNP13.1.csv')
+write.csv(results_GNP13.1, file = 'occupancy-mmpp-master/model_results/results/results_GNP13.1.csv')
