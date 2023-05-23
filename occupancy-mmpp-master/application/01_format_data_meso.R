@@ -213,6 +213,9 @@ for(i in 1:length(deps)){ #KLG: this runs through every individual deployment
 #reading in GNP data
 #they have a ton of daily values, I need to think about getting the equivalent numbers for 
 #GNP
+library(tidyr)
+library(dplyr)
+
 GNP_covs <- read_csv("occupancy-mmpp-master/data/GNP/cam_metadata_fromfield_and_raw_raster_withlion.csv")
 GNP_dets <- read_csv("occupancy-mmpp-master/data/GNP/recordtable_allrecordscleaned_speciesmetadata.csv")
 
