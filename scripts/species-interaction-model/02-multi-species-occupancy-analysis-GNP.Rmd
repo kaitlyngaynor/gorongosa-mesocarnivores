@@ -34,7 +34,9 @@ names(y) <- c('genet','civet','honey_badger', 'marsh_mongoose')
 
 #trying to trouble shoot a below warning
 any_na <- is.na(genet_dh) | is.na(civet_dh) | is.na(honeybadger_dh) | is.na(marshmongoose_dh) 
-identical(genet_dh, civet_dh)
+identical(genet_dh, civet_dh) #FALSE, which makes sense
+identical(is.na(genet_dh), is.na(civet_dh)) #FALSE, which doesn't make sense
+all.equal(is.na(genet_dh), is.na(civet_dh)) #1 element mismatch
 
 #load occupancy covariates
 #leaving the column names in for now
@@ -103,6 +105,7 @@ occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion
 detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
 
 fit <- occuMulti(detFormulas, stateformulas = occFormulas, data)
+##^^yields a warning about missing detections that Ken Kellner said was okay to ignore
 ```
 
 # explore model output
