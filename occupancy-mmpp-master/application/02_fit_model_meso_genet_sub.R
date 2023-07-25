@@ -308,11 +308,12 @@ saveRDS(results, 'results.Rds')
 
 ##GNP version, let's go!----
 #Indicator variable: was species ever detected at each site
+# KLG: species 1 = sub (deer, genet here), species 2 = dom (coyote, civet here)
 # KLG: goes through every deployment in civet and genet
 # KLG: sapply applies the function to every element of x; function(x) is an anonymous function
 # KLG: if the deployment has no entry for civet/genet, give it a 0; else, give it a 1
-y1_i_GNP <- sapply(civet, function(x) ifelse(is.null(x), 0, 1))
-y2_i_GNP <- sapply(genet, function(x) ifelse(is.null(x), 0, 1))
+y1_i_GNP_gs <- sapply(genet, function(x) ifelse(is.null(x), 0, 1)) #gs for genet sub
+y2_i_GNP_gs <- sapply(civet, function(x) ifelse(is.null(x), 0, 1))
 
 #Get time difference between detection times and interval boundaries
 # y = detection times at a camera site
@@ -357,6 +358,7 @@ get_yd <- function(y, J, inc=1){ # KLG: function inputs
 # KLG: inc = 1/24 I'm pretty sure refers to days/24, so gives hours
 # KLG: this runs for every deployment and creates a list as described above (for out_KLG)
 #this runs for GNP data, not sure how to check if it's working as expected
+#this is the same whether genet or civet is sub/dom
 yd_civet <- lapply(1:length(civet), function(i) get_yd(civet[[i]], dep_len_GNP[i], inc=1/24))
 yd_genet <- lapply(1:length(genet), function(i) get_yd(genet[[i]], dep_len_GNP[i], inc=1/24))
 
@@ -364,11 +366,12 @@ yd_genet <- lapply(1:length(genet), function(i) get_yd(genet[[i]], dep_len_GNP[i
 # KLG: holy cow this produces a large vector containing the time intervals for every deployment
 # KLG: so most are 0.416666 (one full interval, no detections) and some of the numbers are the 
 # KLG: smaller portions of the interval (broken when there's a detection in the interval)
-yd1_GNP <- unlist(yd_civet)
-yd2_GNP <- unlist(yd_genet)
+yd1_GNP_gs <- unlist(yd_genet)
+yd2_GNP_gs <- unlist(yd_civet)
 
 #civet = deer, genet = coyote
 # Index needed to match elements of above vectors to correct site
+#again, I think this is the same regardless of dominant spp
 lidx_i_GNP <- matrix(NA, nrow=length(yd_civet), ncol=2) #KLG: creates a matrix with a row for 
 # KLG: every deployment and two columns
 idx_GNP <- 0 
@@ -383,18 +386,19 @@ for (i in seq_along(yd_civet)){ #KLG: seq_along() is a function that creates a v
 #Index to subset yd (y-d) values by site i and interval j
 #yd is now a vector instead of a list of lists so the index is needed
 #KLG: sapply(yd_deer, length) pulls the length of each deployment (number of hourly intervals)
+#again, same regardless of dominant spp
 maxj_GNP <- max(sapply(yd_civet, length)) #KLG: this finds the longest deployment
 
-# KLG: run for civet
-yd1_st_idx_GNP <- yd1_en_idx_GNP <- matrix(NA, nrow=length(yd_civet), ncol=maxj_GNP) #KLG: creates two large empty matrices
+# KLG: run for genet
+yd1_st_idx_GNP_gs <- yd1_en_idx_GNP_gs <- matrix(NA, nrow=length(yd_genet), ncol=maxj_GNP) #KLG: creates two large empty matrices
 # KLG: with a row for every deployment and a column for every hour/interval of the longest deployment
 idx_GNP <- 0
-for (i in seq_along(yd_civet)){ #KLG: for every deployment, 1 to 1945
-  yd_sub_GNP <- yd_civet[[i]] # KLG: set yd_sub to the list of intervals for that deployment
+for (i in seq_along(yd_genet)){ #KLG: for every deployment, 1 to 1945
+  yd_sub_GNP <- yd_genet[[i]] # KLG: set yd_sub to the list of intervals for that deployment
   for (j in seq_along(yd_sub_GNP)){ #KLG: then for every interval in that deployment (1-512 for the first deployment)
     #KLG: so advancing along for every element in the list
-    yd1_st_idx_GNP[i,j] <- idx_GNP #KLG: set the value for one matrix starting at 0
-    yd1_en_idx_GNP[i,j] <- idx_GNP + length(yd_sub_GNP[[j]]) - 1 #KLG: length(yd_sub[[j]]) is usually 1, 
+    yd1_st_idx_GNP_gs[i,j] <- idx_GNP #KLG: set the value for one matrix starting at 0
+    yd1_en_idx_GNP_gs[i,j] <- idx_GNP + length(yd_sub_GNP[[j]]) - 1 #KLG: length(yd_sub[[j]]) is usually 1, 
     #KLG: except when there was a detection in that interval and there are two (or more) values
     idx_GNP <- idx_GNP + length(yd_sub_GNP[[j]]) #KLG: again, this is usually 1 for "empty" intervals
     #KLG: I think the two matrices only differ when there are intervals with 2 (or more) values
@@ -402,14 +406,14 @@ for (i in seq_along(yd_civet)){ #KLG: for every deployment, 1 to 1945
   }
 }
 
-#KLG: run same code for genet data----
-yd2_st_idx_GNP <- yd2_en_idx_GNP <- matrix(NA, nrow=length(yd_genet), ncol=maxj_GNP)
+#KLG: run same code for civet data----
+yd2_st_idx_GNP_gs <- yd2_en_idx_GNP_gs <- matrix(NA, nrow=length(yd_civet), ncol=maxj_GNP)
 idx_GNP <- 0
-for (i in seq_along(yd_genet)){
-  yd_sub_GNP <- yd_genet[[i]]
+for (i in seq_along(yd_civet)){
+  yd_sub_GNP <- yd_civet[[i]]
   for (j in seq_along(yd_sub_GNP)){
-    yd2_st_idx_GNP[i,j] <- idx_GNP
-    yd2_en_idx_GNP[i,j] <- idx_GNP + length(yd_sub_GNP[[j]]) - 1
+    yd2_st_idx_GNP_gs[i,j] <- idx_GNP
+    yd2_en_idx_GNP_gs[i,j] <- idx_GNP + length(yd_sub_GNP[[j]]) - 1
     idx_GNP <- idx_GNP + length(yd_sub_GNP[[j]])
   }
 }
@@ -449,6 +453,7 @@ site_covs_GNP$int <- 1
 #Make observation covariate (time of day)
 
 #Make sequence of times for each deployment
+#I don't think this changes for civet or genet dom/sub
 names(yd_civet) <- deps_GNP #KLG: instead of yd_deer[[1]], this now has the deployment ID
 ndet_GNP <- sapply(yd_civet, length) #KLG: for every element in yd_deer, returns the length of that list 
 #KLG: number of hourly intervals
@@ -456,6 +461,8 @@ ndet_GNP <- sapply(yd_civet, length) #KLG: for every element in yd_deer, returns
 
 sec_in_inc <- 60*60 #seconds in each increment (1 hr), same for Kellner and GNP
 #sec_in_inc <- 2*60*60 #seconds in each increment (2 hr)
+
+#PAUSE HERE
 
 #KLG: for every element in ndet (list of the length of every deployment (number of hourly
 #KLG: intervals for each deployment))
@@ -571,16 +578,16 @@ length(time_vec_GNP)==length(ground_vec) #should match, TRUE
 #KLG: By adding infinite sine (and or cosine) waves we can make other functions
 #KLG: first argument here just creates a column with the site name
 obs_covs_GNP <- data.frame(deploy_GNP = rep(deps_GNP, ndet_GNP), #KLG: creates ndet rows for every deployment 
-                       #KLG: ndet is the length of the deployment (number of hourly intervals)
-                       int=1,
-                       f1c_GNP = cos(pi*time_vec_GNP/12),
-                       f2c_GNP = cos(2*pi*time_vec_GNP/12),
-                       f1s_GNP = sin(pi*time_vec_GNP/12),
-                       f2s_GNP = sin(2*pi*time_vec_GNP/12),
-                       TSL_GNP = scale(TSL_vec_GNP),
-                       lake = scale(lake_vec),
-                       detect.obscured = scale(detect_vec),
-                       cover.ground = scale(ground_vec))
+                           #KLG: ndet is the length of the deployment (number of hourly intervals)
+                           int=1,
+                           f1c_GNP = cos(pi*time_vec_GNP/12),
+                           f2c_GNP = cos(2*pi*time_vec_GNP/12),
+                           f1s_GNP = sin(pi*time_vec_GNP/12),
+                           f2s_GNP = sin(2*pi*time_vec_GNP/12),
+                           TSL_GNP = scale(TSL_vec_GNP),
+                           lake = scale(lake_vec),
+                           detect.obscured = scale(detect_vec),
+                           cover.ground = scale(ground_vec))
 
 # Construct model matrices-----------------------------------------------------
 
@@ -633,11 +640,11 @@ set.seed(123)
 # KLG: this is used to feed into the next optimization thing, it generates start values
 #KLG: rep() replicates the values in x
 starts_GNP <- optim(rep(0,max(pind_GNP)+1), mmpp_covs, method = 'SANN',
-                control = list(maxit=400, trace=1, REPORT =5),
-                pind=pind_GNP, X_f1=X_f1_GNP, X_f2=X_f2_GNP, X_f12=X_f12_GNP, X_lam1=X_lam1_GNP,
-                X_lam2=X_lam2_GNP, X_lam3=X_lam3_GNP, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                    control = list(maxit=400, trace=1, REPORT =5),
+                    pind=pind_GNP, X_f1=X_f1_GNP, X_f2=X_f2_GNP, X_f12=X_f12_GNP, X_lam1=X_lam1_GNP,
+                    X_lam2=X_lam2_GNP, X_lam3=X_lam3_GNP, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                    yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                    yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final SANN NLL value should be 30050.156712
 # KLG: ~12-15 min to run above code
 
@@ -654,11 +661,11 @@ starts_GNP <- optim(rep(0,max(pind_GNP)+1), mmpp_covs, method = 'SANN',
 #KLG: this method (L-BFGS-B) allows each variable to be given a lower and/or upper bound
 #KLG: this took somewhere around 5-6 hours to run
 fit_GNP <- optim(starts_GNP$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
-             control = list(trace = 1, REPORT = 5, maxit=400),
-             pind=pind_GNP, X_f1=X_f1_GNP, X_f2=X_f2_GNP, X_f12=X_f12_GNP, X_lam1=X_lam1_GNP,
-             X_lam2=X_lam2_GNP, X_lam3=X_lam3_GNP, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-             yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-             yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                 control = list(trace = 1, REPORT = 5, maxit=400),
+                 pind=pind_GNP, X_f1=X_f1_GNP, X_f2=X_f2_GNP, X_f12=X_f12_GNP, X_lam1=X_lam1_GNP,
+                 X_lam2=X_lam2_GNP, X_lam3=X_lam3_GNP, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                 yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                 yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final NLL value should be ~ 26461.08
 # May take several runs of optimization to get past local minima to this value
 
@@ -669,10 +676,10 @@ saveRDS(fit_GNP, "fit_covs3_GNP.Rds")
 
 est_GNP <- fit_GNP$par 
 names(est_GNP) <- c(paste0("f1_",colnames(X_f1_GNP)), paste0("f2_",colnames(X_f2_GNP)),
-                paste0("f12_",colnames(X_f12_GNP)),
-                "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
-                paste0("loglam1_",colnames(X_lam1_GNP)),
-                paste0("loglam2_",colnames(X_lam2_GNP)), paste0("loglam3_",colnames(X_lam3_GNP)))
+                    paste0("f12_",colnames(X_f12_GNP)),
+                    "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                    paste0("loglam1_",colnames(X_lam1_GNP)),
+                    paste0("loglam2_",colnames(X_lam2_GNP)), paste0("loglam3_",colnames(X_lam3_GNP)))
 se_GNP <- sqrt(diag(solve(fit_GNP$hessian))) 
 #this throws an error
 #Error in solve.default(fit_GNP$hessian) : 
@@ -752,11 +759,11 @@ set.seed(123)
 # KLG: this is used to feed into the next optimization thing, it generates start values
 #KLG: rep() replicates the values in x
 starts_GNP1 <- optim(rep(0,max(pind_GNP1)+1), mmpp_covs, method = 'SANN',
-                    control = list(maxit=400, trace=1, REPORT =5),
-                    pind=pind_GNP1, X_f1=X_f1_GNP1, X_f2=X_f2_GNP1, X_f12=X_f12_GNP1, X_lam1=X_lam1_GNP1,
-                    X_lam2=X_lam2_GNP1, X_lam3=X_lam3_GNP1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                    yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                    yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                     control = list(maxit=400, trace=1, REPORT =5),
+                     pind=pind_GNP1, X_f1=X_f1_GNP1, X_f2=X_f2_GNP1, X_f12=X_f12_GNP1, X_lam1=X_lam1_GNP1,
+                     X_lam2=X_lam2_GNP1, X_lam3=X_lam3_GNP1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                     yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                     yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final SANN NLL value should be 30050.156712
 # KLG: ~12-15 min to run above code
 
@@ -773,11 +780,11 @@ starts_GNP1 <- optim(rep(0,max(pind_GNP1)+1), mmpp_covs, method = 'SANN',
 #KLG: this method (L-BFGS-B) allows each variable to be given a lower and/or upper bound
 #KLG: this took somewhere around 5-6 hours to run
 fit_GNP1 <- optim(starts_GNP1$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
-                 control = list(trace = 1, REPORT = 5, maxit=400),
-                 pind=pind_GNP1, X_f1=X_f1_GNP1, X_f2=X_f2_GNP1, X_f12=X_f12_GNP1, X_lam1=X_lam1_GNP1,
-                 X_lam2=X_lam2_GNP1, X_lam3=X_lam3_GNP1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                 yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                 yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                  control = list(trace = 1, REPORT = 5, maxit=400),
+                  pind=pind_GNP1, X_f1=X_f1_GNP1, X_f2=X_f2_GNP1, X_f12=X_f12_GNP1, X_lam1=X_lam1_GNP1,
+                  X_lam2=X_lam2_GNP1, X_lam3=X_lam3_GNP1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                  yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                  yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final NLL value should be ~ 26461.08
 # May take several runs of optimization to get past local minima to this value
 
@@ -788,10 +795,10 @@ saveRDS(fit_GNP1, "fit_covs3_GNP1.Rds")
 
 est_GNP1 <- fit_GNP1$par 
 names(est_GNP1) <- c(paste0("f1_",colnames(X_f1_GNP1)), paste0("f2_",colnames(X_f2_GNP1)),
-                    paste0("f12_",colnames(X_f12_GNP1)),
-                    "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
-                    paste0("loglam1_",colnames(X_lam1_GNP1)),
-                    paste0("loglam2_",colnames(X_lam2_GNP1)), paste0("loglam3_",colnames(X_lam3_GNP1)))
+                     paste0("f12_",colnames(X_f12_GNP1)),
+                     "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                     paste0("loglam1_",colnames(X_lam1_GNP1)),
+                     paste0("loglam2_",colnames(X_lam2_GNP1)), paste0("loglam3_",colnames(X_lam3_GNP1)))
 se_GNP1 <- sqrt(diag(solve(fit_GNP1$hessian))) 
 
 results_GNP1 <- data.frame(est_GNP1 = round(est_GNP1, 3), se_GNP1=round(se_GNP1,3))
@@ -1281,11 +1288,11 @@ set.seed(123)
 # KLG: this is used to feed into the next optimization thing, it generates start values
 #KLG: rep() replicates the values in x
 starts_GNP13 <- optim(rep(0,max(pind_GNP13)+1), mmpp_covs, method = 'SANN',
-                    control = list(maxit=400, trace=1, REPORT =5),
-                    pind=pind_GNP13, X_f1=X_f1_GNP13, X_f2=X_f2_GNP13, X_f12=X_f12_GNP13, X_lam1=X_lam1_GNP13,
-                    X_lam2=X_lam2_GNP13, X_lam3=X_lam3_GNP13, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                    yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                    yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                      control = list(maxit=400, trace=1, REPORT =5),
+                      pind=pind_GNP13, X_f1=X_f1_GNP13, X_f2=X_f2_GNP13, X_f12=X_f12_GNP13, X_lam1=X_lam1_GNP13,
+                      X_lam2=X_lam2_GNP13, X_lam3=X_lam3_GNP13, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                      yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                      yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final SANN NLL value should be 30050.156712
 # KLG: ~12-15 min to run above code
 
@@ -1302,11 +1309,11 @@ starts_GNP13 <- optim(rep(0,max(pind_GNP13)+1), mmpp_covs, method = 'SANN',
 #KLG: this method (L-BFGS-B) allows each variable to be given a lower and/or upper bound
 #KLG: this took somewhere around 5-6 hours to run
 fit_GNP13 <- optim(starts_GNP13$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
-                 control = list(trace = 1, REPORT = 5, maxit=400),
-                 pind=pind_GNP13, X_f1=X_f1_GNP13, X_f2=X_f2_GNP13, X_f12=X_f12_GNP13, X_lam1=X_lam1_GNP13,
-                 X_lam2=X_lam2_GNP13, X_lam3=X_lam3_GNP13, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                 yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                 yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                   control = list(trace = 1, REPORT = 5, maxit=400),
+                   pind=pind_GNP13, X_f1=X_f1_GNP13, X_f2=X_f2_GNP13, X_f12=X_f12_GNP13, X_lam1=X_lam1_GNP13,
+                   X_lam2=X_lam2_GNP13, X_lam3=X_lam3_GNP13, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                   yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                   yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final NLL value should be ~ 26461.08
 # May take several runs of optimization to get past local minima to this value
 
@@ -1317,10 +1324,10 @@ saveRDS(fit_GNP13, "fit_covs3_GNP13.Rds")
 
 est_GNP13 <- fit_GNP13$par 
 names(est_GNP13) <- c(paste0("f1_",colnames(X_f1_GNP13)), paste0("f2_",colnames(X_f2_GNP13)),
-                    paste0("f12_",colnames(X_f12_GNP13)),
-                    "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
-                    paste0("loglam1_",colnames(X_lam1_GNP13)),
-                    paste0("loglam2_",colnames(X_lam2_GNP13)), paste0("loglam3_",colnames(X_lam3_GNP13)))
+                      paste0("f12_",colnames(X_f12_GNP13)),
+                      "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                      paste0("loglam1_",colnames(X_lam1_GNP13)),
+                      paste0("loglam2_",colnames(X_lam2_GNP13)), paste0("loglam3_",colnames(X_lam3_GNP13)))
 se_GNP13 <- sqrt(diag(solve(fit_GNP13$hessian))) 
 #this throws an error
 #Error in solve.default(fit_GNP$hessian) : 
@@ -1400,11 +1407,11 @@ set.seed(123)
 # KLG: this is used to feed into the next optimization thing, it generates start values
 #KLG: rep() replicates the values in x
 starts_GNP3.1 <- optim(rep(0,max(pind_GNP3.1)+1), mmpp_covs, method = 'SANN',
-                      control = list(maxit=400, trace=1, REPORT =5),
-                      pind=pind_GNP3.1, X_f1=X_f1_GNP3.1, X_f2=X_f2_GNP3.1, X_f12=X_f12_GNP3.1, X_lam1=X_lam1_GNP3.1,
-                      X_lam2=X_lam2_GNP3.1, X_lam3=X_lam3_GNP3.1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                      yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                      yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                       control = list(maxit=400, trace=1, REPORT =5),
+                       pind=pind_GNP3.1, X_f1=X_f1_GNP3.1, X_f2=X_f2_GNP3.1, X_f12=X_f12_GNP3.1, X_lam1=X_lam1_GNP3.1,
+                       X_lam2=X_lam2_GNP3.1, X_lam3=X_lam3_GNP3.1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                       yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                       yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final SANN NLL value should be 30050.156712
 # KLG: ~12-15 min to run above code
 
@@ -1421,11 +1428,11 @@ starts_GNP3.1 <- optim(rep(0,max(pind_GNP3.1)+1), mmpp_covs, method = 'SANN',
 #KLG: this method (L-BFGS-B) allows each variable to be given a lower and/or upper bound
 #KLG: this took somewhere around 5-6 hours to run
 fit_GNP3.1 <- optim(starts_GNP3.1$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
-                   control = list(trace = 1, REPORT = 5, maxit=400),
-                   pind=pind_GNP3.1, X_f1=X_f1_GNP3.1, X_f2=X_f2_GNP3.1, X_f12=X_f12_GNP3.1, X_lam1=X_lam1_GNP3.1,
-                   X_lam2=X_lam2_GNP3.1, X_lam3=X_lam3_GNP3.1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                   yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                   yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                    control = list(trace = 1, REPORT = 5, maxit=400),
+                    pind=pind_GNP3.1, X_f1=X_f1_GNP3.1, X_f2=X_f2_GNP3.1, X_f12=X_f12_GNP3.1, X_lam1=X_lam1_GNP3.1,
+                    X_lam2=X_lam2_GNP3.1, X_lam3=X_lam3_GNP3.1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                    yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                    yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final NLL value should be ~ 26461.08
 # May take several runs of optimization to get past local minima to this value
 
@@ -1436,10 +1443,10 @@ saveRDS(fit_GNP3.1, "fit_covs3_GNP3.1.Rds")
 
 est_GNP3.1 <- fit_GNP3.1$par 
 names(est_GNP3.1) <- c(paste0("f1_",colnames(X_f1_GNP3.1)), paste0("f2_",colnames(X_f2_GNP3.1)),
-                      paste0("f12_",colnames(X_f12_GNP3.1)),
-                      "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
-                      paste0("loglam1_",colnames(X_lam1_GNP3.1)),
-                      paste0("loglam2_",colnames(X_lam2_GNP3.1)), paste0("loglam3_",colnames(X_lam3_GNP3.1)))
+                       paste0("f12_",colnames(X_f12_GNP3.1)),
+                       "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                       paste0("loglam1_",colnames(X_lam1_GNP3.1)),
+                       paste0("loglam2_",colnames(X_lam2_GNP3.1)), paste0("loglam3_",colnames(X_lam3_GNP3.1)))
 se_GNP3.1 <- sqrt(diag(solve(fit_GNP3.1$hessian))) 
 
 #I can't run the last few lines because I don't have the se
@@ -1507,11 +1514,11 @@ set.seed(123)
 # KLG: this is used to feed into the next optimization thing, it generates start values
 #KLG: rep() replicates the values in x
 starts_GNP3.2 <- optim(rep(0,max(pind_GNP3.2)+1), mmpp_covs, method = 'SANN',
-                     control = list(maxit=400, trace=1, REPORT =5),
-                     pind=pind_GNP3.2, X_f1=X_f1_GNP3.2, X_f2=X_f2_GNP3.2, X_f12=X_f12_GNP3.2, X_lam1=X_lam1_GNP3.2,
-                     X_lam2=X_lam2_GNP3.2, X_lam3=X_lam3_GNP3.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                     yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                     yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                       control = list(maxit=400, trace=1, REPORT =5),
+                       pind=pind_GNP3.2, X_f1=X_f1_GNP3.2, X_f2=X_f2_GNP3.2, X_f12=X_f12_GNP3.2, X_lam1=X_lam1_GNP3.2,
+                       X_lam2=X_lam2_GNP3.2, X_lam3=X_lam3_GNP3.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                       yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                       yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final SANN NLL value should be 30050.156712
 # KLG: ~12-15 min to run above code
 
@@ -1528,11 +1535,11 @@ starts_GNP3.2 <- optim(rep(0,max(pind_GNP3.2)+1), mmpp_covs, method = 'SANN',
 #KLG: this method (L-BFGS-B) allows each variable to be given a lower and/or upper bound
 #KLG: this took somewhere around 5-6 hours to run
 fit_GNP3.2 <- optim(starts_GNP3.2$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
-                  control = list(trace = 1, REPORT = 5, maxit=400),
-                  pind=pind_GNP3.2, X_f1=X_f1_GNP3.2, X_f2=X_f2_GNP3.2, X_f12=X_f12_GNP3.2, X_lam1=X_lam1_GNP3.2,
-                  X_lam2=X_lam2_GNP3.2, X_lam3=X_lam3_GNP3.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                  yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                  yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                    control = list(trace = 1, REPORT = 5, maxit=400),
+                    pind=pind_GNP3.2, X_f1=X_f1_GNP3.2, X_f2=X_f2_GNP3.2, X_f12=X_f12_GNP3.2, X_lam1=X_lam1_GNP3.2,
+                    X_lam2=X_lam2_GNP3.2, X_lam3=X_lam3_GNP3.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                    yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                    yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final NLL value should be ~ 26461.08
 # May take several runs of optimization to get past local minima to this value
 
@@ -1543,10 +1550,10 @@ saveRDS(fit_GNP3.2, "fit_covs3_GNP3.2.Rds")
 
 est_GNP3.2 <- fit_GNP3.2$par 
 names(est_GNP3.2) <- c(paste0("f1_",colnames(X_f1_GNP3.2)), paste0("f2_",colnames(X_f2_GNP3.2)),
-                     paste0("f12_",colnames(X_f12_GNP3.2)),
-                     "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
-                     paste0("loglam1_",colnames(X_lam1_GNP3.2)),
-                     paste0("loglam2_",colnames(X_lam2_GNP3.2)), paste0("loglam3_",colnames(X_lam3_GNP3.2)))
+                       paste0("f12_",colnames(X_f12_GNP3.2)),
+                       "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                       paste0("loglam1_",colnames(X_lam1_GNP3.2)),
+                       paste0("loglam2_",colnames(X_lam2_GNP3.2)), paste0("loglam3_",colnames(X_lam3_GNP3.2)))
 se_GNP3.2 <- sqrt(diag(solve(fit_GNP3.2$hessian))) 
 
 results_GNP3.2 <- data.frame(est_GNP3.2 = round(est_GNP3.2, 3), se=round(se_GNP3.2,3))
@@ -1719,19 +1726,19 @@ set.seed(123)
 # KLG: this is used to feed into the next optimization thing, it generates start values
 #KLG: rep() replicates the values in x
 starts_GNP5.2 <- optim(rep(0, max(pind_GNP5.2)+1), mmpp_covs, method = 'SANN',
-                     control = list(maxit=400, trace=1, REPORT =5),
-                     pind=pind_GNP5.2, X_f1=X_f1_GNP5.2, X_f2=X_f2_GNP5.2, X_f12=X_f12_GNP5.2, X_lam1=X_lam1_GNP5.2,
-                     X_lam2=X_lam2_GNP5.2, X_lam3=X_lam3_GNP5.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                     yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                     yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                       control = list(maxit=400, trace=1, REPORT =5),
+                       pind=pind_GNP5.2, X_f1=X_f1_GNP5.2, X_f2=X_f2_GNP5.2, X_f12=X_f12_GNP5.2, X_lam1=X_lam1_GNP5.2,
+                       X_lam2=X_lam2_GNP5.2, X_lam3=X_lam3_GNP5.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                       yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                       yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 
 # Do optimization and calculate hessian
 fit_GNP5.2 <- optim(starts_GNP5.2$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
-                  control = list(trace = 1, REPORT = 5, maxit=400),
-                  pind=pind_GNP5.2, X_f1=X_f1_GNP5.2, X_f2=X_f2_GNP5.2, X_f12=X_f12_GNP5.2, X_lam1=X_lam1_GNP5.2,
-                  X_lam2=X_lam2_GNP5.2, X_lam3=X_lam3_GNP5.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                  yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                  yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                    control = list(trace = 1, REPORT = 5, maxit=400),
+                    pind=pind_GNP5.2, X_f1=X_f1_GNP5.2, X_f2=X_f2_GNP5.2, X_f12=X_f12_GNP5.2, X_lam1=X_lam1_GNP5.2,
+                    X_lam2=X_lam2_GNP5.2, X_lam3=X_lam3_GNP5.2, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                    yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                    yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final NLL value should be ~ 26461.08
 # May take several runs of optimization to get past local minima to this value
 
@@ -1742,10 +1749,10 @@ saveRDS(fit_GNP5.2, "fit_covs3_GNP5.2.Rds")
 
 est_GNP5.2 <- fit_GNP5.2$par 
 names(est_GNP5.2) <- c(paste0("f1_",colnames(X_f1_GNP5.2)), paste0("f2_",colnames(X_f2_GNP5.2)),
-                     paste0("f12_",colnames(X_f12_GNP5.2)),
-                     "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
-                     paste0("loglam1_",colnames(X_lam1_GNP5.2)),
-                     paste0("loglam2_",colnames(X_lam2_GNP5.2)), paste0("loglam3_",colnames(X_lam3_GNP5.2)))
+                       paste0("f12_",colnames(X_f12_GNP5.2)),
+                       "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                       paste0("loglam1_",colnames(X_lam1_GNP5.2)),
+                       paste0("loglam2_",colnames(X_lam2_GNP5.2)), paste0("loglam3_",colnames(X_lam3_GNP5.2)))
 se_GNP5.2 <- sqrt(diag(solve(fit_GNP5.2$hessian))) 
 
 results_GNP5.2 <- data.frame(est = round(est_GNP5.2, 3), se = round(se_GNP5.2,3))
@@ -1811,21 +1818,21 @@ set.seed(123)
 # KLG: this is used to feed into the next optimization thing, it generates start values
 #KLG: rep() replicates the values in x
 starts_GNP13.1 <- optim(rep(0,max(pind_GNP13.1)+1), mmpp_covs, method = 'SANN',
-                      control = list(maxit=400, trace=1, REPORT =5),
-                      pind=pind_GNP13.1, X_f1=X_f1_GNP13.1, X_f2=X_f2_GNP13.1, X_f12=X_f12_GNP13.1, X_lam1=X_lam1_GNP13.1,
-                      X_lam2=X_lam2_GNP13.1, X_lam3=X_lam3_GNP13.1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                      yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                      yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                        control = list(maxit=400, trace=1, REPORT =5),
+                        pind=pind_GNP13.1, X_f1=X_f1_GNP13.1, X_f2=X_f2_GNP13.1, X_f12=X_f12_GNP13.1, X_lam1=X_lam1_GNP13.1,
+                        X_lam2=X_lam2_GNP13.1, X_lam3=X_lam3_GNP13.1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                        yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                        yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final SANN NLL value should be 30050.156712
 # KLG: ~12-15 min to run above code
 
 # Do optimization and calculate hessian
 fit_GNP13.1 <- optim(starts_GNP13.1$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
-                   control = list(trace = 1, REPORT = 5, maxit=400),
-                   pind=pind_GNP13.1, X_f1=X_f1_GNP13.1, X_f2=X_f2_GNP13.1, X_f12=X_f12_GNP13.1, X_lam1=X_lam1_GNP13.1,
-                   X_lam2=X_lam2_GNP13.1, X_lam3=X_lam3_GNP13.1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
-                   yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
-                   yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
+                     control = list(trace = 1, REPORT = 5, maxit=400),
+                     pind=pind_GNP13.1, X_f1=X_f1_GNP13.1, X_f2=X_f2_GNP13.1, X_f12=X_f12_GNP13.1, X_lam1=X_lam1_GNP13.1,
+                     X_lam2=X_lam2_GNP13.1, X_lam3=X_lam3_GNP13.1, yd1=yd1_GNP, yd2=yd2_GNP, lidx_i=lidx_i_GNP,
+                     yd1_st_idx=yd1_st_idx_GNP, yd1_en_idx=yd1_en_idx_GNP, yd2_st_idx=yd2_st_idx_GNP,
+                     yd2_en_idx=yd2_en_idx_GNP, y1_i=y1_i_GNP, y2_i=y2_i_GNP, threads=2)
 # Final NLL value should be ~ 26461.08
 # May take several runs of optimization to get past local minima to this value
 
@@ -1836,10 +1843,10 @@ saveRDS(fit_GNP13.1, "fit_covs3_GNP13.1.Rds")
 
 est_GNP13.1 <- fit_GNP13.1$par 
 names(est_GNP13.1) <- c(paste0("f1_",colnames(X_f1_GNP13.1)), paste0("f2_",colnames(X_f2_GNP13.1)),
-                      paste0("f12_",colnames(X_f12_GNP13.1)),
-                      "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
-                      paste0("loglam1_",colnames(X_lam1_GNP13.1)),
-                      paste0("loglam2_",colnames(X_lam2_GNP13.1)), paste0("loglam3_",colnames(X_lam3_GNP13.1)))
+                        paste0("f12_",colnames(X_f12_GNP13.1)),
+                        "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                        paste0("loglam1_",colnames(X_lam1_GNP13.1)),
+                        paste0("loglam2_",colnames(X_lam2_GNP13.1)), paste0("loglam3_",colnames(X_lam3_GNP13.1)))
 se_GNP13.1 <- sqrt(diag(solve(fit_GNP13.1$hessian))) 
 
 #I can't run the last few lines because I don't have the se

@@ -11,20 +11,27 @@ end.date <- "2016-11-30"
 
 #load in Gorongosa camera operations data table
 camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1and2.csv")
+camtraps <- as.data.frame(camtraps) #needs to be a data frame for the cameraOperation function
 
 # create camera operation matrix
+#if I want to specify occasionStartTime, that's now been moved to this function 
+# (from the one for detection histories). but I think it's wrong to say 12:00 start 
+# time here, because whether or not the camera was operational on a given day was 
+# determined from midnight to midnight, right?
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
                          setupCol     = "Start",
                          retrievalCol = "End",
                          hasProblems  = TRUE,
                          dateFormat   = "mdy"
+                         #occasionStartTime = 12
 )
 
 # subset to dates of interest
+#July 2023: added all_of because " Using an external vector in selections was deprecated in tidyselect 1.1.0."
 camop_subset <- camop %>% 
     as.data.frame %>% # first need to convert matrix to data frame
-    select(start.date:end.date) %>% # select columns of interest
+    select(all_of(start.date):all_of(end.date)) %>% # select columns of interest
     as.matrix() # get it back into matrix form for calculating detection history
 
 # load in Gorongosa record table
@@ -37,6 +44,7 @@ record_table_subset <- record_table %>%
     filter(Date >= as.Date(start.date) & Date <= as.Date(end.date))
 
 # make detection history for genets (without trapping effort)
+# removed start time designation (no longer part of this function)
 DetHist_genet <- detectionHistory(recordTable     = record_table_subset,
                              camOp                = camop_subset,
                              stationCol           = "Camera",
@@ -47,13 +55,14 @@ DetHist_genet <- detectionHistory(recordTable     = record_table_subset,
                              species              = "Genet",
                              occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
                              day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
-                             includeEffort        = FALSE,
-                             occasionStartTime    = 12  #start at noon b/c nocturnal animals
+                             includeEffort        = FALSE
+                             #occasionStartTime    = 12  #start at noon b/c nocturnal animals
                              )
 
 DetHist_genet <- as.data.frame(DetHist_genet)
 
-write_csv(DetHist_genet, "data/gorongosa-cameras/genet.csv", col_names = F)
+#added _23 to compare what removing start time does
+write_csv(DetHist_genet, "data/gorongosa-cameras/genet_23.csv", col_names = F)
 
 # make detection history for civets (without trapping effort)
 DetHist_civet <- detectionHistory(recordTable          = record_table_subset,
