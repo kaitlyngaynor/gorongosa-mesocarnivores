@@ -215,6 +215,7 @@ for(i in 1:length(deps)){ #KLG: this runs through every individual deployment
 #GNP
 library(tidyr)
 library(dplyr)
+library(readr) #install.packages("readr")
 
 GNP_covs <- read_csv("occupancy-mmpp-master/data/GNP/cam_metadata_fromfield_and_raw_raster_withlion.csv")
 GNP_dets <- read_csv("occupancy-mmpp-master/data/GNP/recordtable_allrecordscleaned_speciesmetadata.csv")

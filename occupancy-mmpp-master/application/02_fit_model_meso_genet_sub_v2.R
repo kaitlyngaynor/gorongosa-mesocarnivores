@@ -2,7 +2,7 @@
 library(Rcpp) #install.packages("Rcpp") 
 library(tidyverse)
 library(RcppArmadillo) #install.packages("RcppArmadillo")
-source("occupancy-mmpp-master/application/01_format_data.R") # loading and cleaning data
+source("occupancy-mmpp-master/application/01_format_data_meso.R") # loading and cleaning data
 #^^ above line needs 01_format_data to have run already
 sourceCpp("occupancy-mmpp-master/likelihood/likelihood.cpp") # load likelihood function
 
@@ -583,7 +583,7 @@ obs_covs_GNP <- data.frame(deploy_GNP = rep(deps_GNP, ndet_GNP), #KLG: creates n
                            f2c_GNP = cos(2*pi*time_vec_GNP/12),
                            f1s_GNP = sin(pi*time_vec_GNP/12),
                            f2s_GNP = sin(2*pi*time_vec_GNP/12),
-                           TSL_GNP = scale(TSL_vec_GNP),
+                           TSL_GNP = scale(TSL_vec_GNP_gs),
                            lake = scale(lake_vec),
                            detect.obscured = scale(detect_vec),
                            cover.ground = scale(ground_vec))
@@ -681,6 +681,100 @@ saveRDS(results_GNP1_gs, 'results_GNP1_gs.Rds')
 
 #AIC
 (2*length(fit_GNP1_gs$par))-(2*-fit_GNP1_gs$value)
+
+# Construct model matrices-----------------------------------------------------
+#I believe I need this for every time I run the model
+#this is a null model with dependence
+
+#this is mmg13 (genet subordinate, fuller model)
+
+# Occupancy natural parameters
+#KLG: model.matrix creates a design (or model) matrix, e.g., by expanding factors to a set of 
+#KLG: dummy variables (depending on the contrasts) and expanding interactions similarly.
+#KLG: these are identical matrices
+#I don't understand this well enough to know which one of my covariates to choose
+X_f1_GNP13_gs <- model.matrix(~urema_dist_scaled, site_covs_GNP)
+X_f2_GNP13_gs <- model.matrix(~urema_dist_scaled + termite.large.count.100m.scaled, site_covs_GNP)
+X_f12_GNP13_gs <- model.matrix(~lion_latedry_scaled, site_covs_GNP) 
+
+# Detection intensity depends time of day
+# KLG: makes three large matrices with an intercept column and a column for f1c, f2c, f1s, and f2s
+# KLG: those 4 variables represent the Fourier series applied to the time vector
+# KLG: these are identical matrices
+#species 1, species 2 present
+X_lam1_GNP13_gs <- model.matrix(~f1c_GNP + f2c_GNP + f1s_GNP + f2s_GNP + TSL_GNP + cover.ground + lake, obs_covs_GNP)
+
+#species 1, species 2 absent
+X_lam2_GNP13_gs <- model.matrix(~f1c_GNP + f2c_GNP + f1s_GNP + f2s_GNP + cover.ground + lake, obs_covs_GNP)
+
+#species 2
+X_lam3_GNP13_gs <- model.matrix(~f1c_GNP + f2c_GNP + f1s_GNP + f2s_GNP + cover.ground + lake, obs_covs_GNP)
+
+# Save model matrices for use elsewhere
+save(X_f1_GNP13_gs, X_f2_GNP13_gs, X_f12_GNP13_gs, X_lam1_GNP13_gs, X_lam2_GNP13_gs, X_lam3_GNP13_gs, file='model_matrices_GNP13_gs.Rdata')
+
+# Indicator matrix to divide up single vector of parameters into
+# subvectors for each parameter to estimate
+#KLG: not sure I follow why the different values are used
+#I THINK I NEED TO MAKE A NEW MATRIX FOR THIS EVERY RUN
+pind_GNP13_gs <- matrix(NA, nrow=8, ncol=2) #KLG: makes an empty matrix with 8 rows and 2 columns
+#KLG: each row is filled in individually
+pind_GNP13_gs[1,] <- c(0, 0+ncol(X_f1_GNP13_gs)-1)                #f1, KLG: fills in first row
+pind_GNP13_gs[2,] <- c(pind_GNP13_gs[1,2]+1, pind_GNP13_gs[1,2]+1+ncol(X_f2_GNP13_gs)-1)    #f2
+pind_GNP13_gs[3,] <- c(pind_GNP13_gs[2,2]+1, pind_GNP13_gs[2,2]+1+ncol(X_f12_GNP13_gs)-1)   #f12
+pind_GNP13_gs[4,] <- c(pind_GNP13_gs[3,2]+1, pind_GNP13_gs[3,2]+2)                 #mu (species 1)
+pind_GNP13_gs[5,] <- c(pind_GNP13_gs[4,2]+1, pind_GNP13_gs[4,2]+2)                 #mu (species 2)
+pind_GNP13_gs[6,] <- c(pind_GNP13_gs[5,2]+1, pind_GNP13_gs[5,2]+1+ncol(X_lam1_GNP13_gs)-1)  #lambda sp1|sp2 present
+pind_GNP13_gs[7,] <- c(pind_GNP13_gs[6,2]+1, pind_GNP13_gs[6,2]+1+ncol(X_lam2_GNP13_gs)-1)  #lambda sp1|sp2 absent
+pind_GNP13_gs[8,] <- c(pind_GNP13_gs[7,2]+1, pind_GNP13_gs[7,2]+1+ncol(X_lam3_GNP13_gs)-1)  #lambda sp2
+
+# Optimization-----------------------------------------------------------------
+
+set.seed(123)
+
+# Quickly get reasonable start values with SANN
+# Initial SANN NLL value should be 41111.166130
+# KLG: I do not understand what SANN NLL is
+# KLG: this is used to feed into the next optimization thing, it generates start values
+#KLG: rep() replicates the values in x
+#THIS IS THE FIRST ONE I'M FULLY SWITCHING
+starts_GNP13_gs <- optim(rep(0,max(pind_GNP13_gs)+1), mmpp_covs, method = 'SANN',
+                        control = list(maxit=400, trace=1, REPORT =5),
+                        pind=pind_GNP13_gs, X_f1=X_f1_GNP13_gs, X_f2=X_f2_GNP13_gs, X_f12=X_f12_GNP13_gs, X_lam1=X_lam1_GNP13_gs,
+                        X_lam2=X_lam2_GNP13_gs, X_lam3=X_lam3_GNP13_gs, yd1=yd1_GNP_gs, yd2=yd2_GNP_gs, lidx_i=lidx_i_GNP,
+                        yd1_st_idx=yd1_st_idx_GNP_gs, yd1_en_idx=yd1_en_idx_GNP_gs, yd2_st_idx=yd2_st_idx_GNP_gs,
+                        yd2_en_idx=yd2_en_idx_GNP_gs, y1_i=y1_i_GNP_gs, y2_i=y2_i_GNP_gs, threads=2)
+
+# Do optimization and calculate hessian
+fit_GNP13_gs <- optim(starts_GNP13_gs$par, mmpp_covs, method = 'L-BFGS-B', hessian=TRUE,
+                     control = list(trace = 1, REPORT = 5, maxit=400),
+                     pind=pind_GNP13_gs, X_f1=X_f1_GNP13_gs, X_f2=X_f2_GNP13_gs, X_f12=X_f12_GNP13_gs, X_lam1=X_lam1_GNP13_gs,
+                     X_lam2=X_lam2_GNP13_gs, X_lam3=X_lam3_GNP13_gs, yd1=yd1_GNP_gs, yd2=yd2_GNP_gs, lidx_i=lidx_i_GNP,
+                     yd1_st_idx=yd1_st_idx_GNP_gs, yd1_en_idx=yd1_en_idx_GNP_gs, yd2_st_idx=yd2_st_idx_GNP_gs,
+                     yd2_en_idx=yd2_en_idx_GNP_gs, y1_i=y1_i_GNP_gs, y2_i=y2_i_GNP_gs, threads=2)
+
+#Format and save results
+#KLG: saveRDS saves an R object for it to be called later (it serializes an R object into a 
+#KLG: format that can be called later), but it forgets the original name of the object
+saveRDS(fit_GNP13_gs, "fit_covs3_GNP13_gs.Rds")
+
+est_GNP13_gs <- fit_GNP13_gs$par 
+names(est_GNP13_gs) <- c(paste0("f1_",colnames(X_f1_GNP13_gs)), paste0("f2_",colnames(X_f2_GNP13_gs)),
+                        paste0("f12_",colnames(X_f12_GNP13_gs)),
+                        "log_mu1[1]","log_mu1[2]","log_mu2[1]","log_mu2[2]",
+                        paste0("loglam1_",colnames(X_lam1_GNP13_gs)),
+                        paste0("loglam2_",colnames(X_lam2_GNP13_gs)), paste0("loglam3_",colnames(X_lam3_GNP13_gs)))
+se_GNP13_gs <- sqrt(diag(solve(fit_GNP13_gs$hessian))) 
+
+results_GNP13_gs <- data.frame(est = round(est_GNP13_gs, 3), se = round(se_GNP13_gs,3))
+results_GNP13_gs$lower <- results_GNP13_gs$est - 1.96*results_GNP13_gs$se
+results_GNP13_gs$upper <- results_GNP13_gs$est + 1.96*results_GNP13_gs$se
+results_GNP13_gs
+
+saveRDS(results_GNP13_gs, 'results_GNP13_gs.Rds')
+
+#AIC
+(2*length(fit_GNP13_gs$par))-(2*-fit_GNP13_gs$value)
 
 # Construct model matrices-----------------------------------------------------
 #I believe I need this for every time I run the model
