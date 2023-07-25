@@ -65,7 +65,7 @@ for(i in 1:length(sf)){  # looping through all 1-hour intervals
 
 # quick and dirty plot of results
 plot(y = cumprod(sf), x = cumsum(rep(1 / 24, 21 * 24)), type = 'l',
-     ylab = 'Survival probability', xlab = 'Days')
+     ylab = 'Survival probability', xlab = 'Days', main = 'Deer')
 
 saveRDS(cumprod(sf), 'deer_empr.rds')
 
@@ -107,8 +107,11 @@ for(i in 1:length(sf_c)){  # looping through all 1-hour intervals
 }
 
 # quick and dirty plot of results
+#KLG: cumprod - Returns a vector whose elements are the cumulative products of the elements 
+# of the argument.
+#KLG: cumsum is the same idea but for sums, gives the number of days across the x axis
 plot(y = cumprod(sf_c), x = cumsum(rep(1 / 24, 21 * 24)), type = 'l',
-     ylab = 'Survival probability', xlab = 'Days', main = 'Coyote')
+     ylab = 'Survival probability', xlab = 'Days', main = 'Coyote Empirical')
 
 saveRDS(cumprod(sf_c), 'coys_empr.rds')
 
@@ -186,6 +189,11 @@ for(i in 1:(21 * 24)){  # looping through all 1-hour intervals
 
 }
 
+#KLG: I think s1, s2 and s3 are the equivalent probabilities to what's plotted in the 
+#KLG: empirical stuff
+#KLG: but then I'm not sure how the below stuff works
+
+
 # occurrence probability, hunted sites
 psi <- c(exp(sum(est[1:6])), exp(sum(est[1:2])), exp(sum(est[3:4])), 1)
 psi <- psi / sum(psi)
@@ -197,3 +205,15 @@ saveRDS(ds, 'deer_theo.rds')
 # weighted average, coyote
 ds_coy <- (psi[1] + psi[3]) * cumprod(s3) + (psi[2] + psi[4])
 saveRDS(ds_coy, 'coys_theo.rds')
+
+##END OF KELLNER CODE
+
+# quick and dirty plot of results (KLG: trying for the theoretical stuff for deer)
+#plotting with ds looks really different from what's in their paper
+#plotting with s1 looks more similar to what's in their paper
+plot(y = cumprod(s2), x = cumsum(rep(1 / 24, 21 * 24)), type = 'l',
+     ylab = 'Survival probability', xlab = 'Days', main = 'Deer Theoretical')
+
+# quick and dirty plot of results (KLG: trying for the theoretical stuff for deer)
+plot(y = cumprod(s3), x = cumsum(rep(1 / 24, 21 * 24)), type = 'l',
+     ylab = 'Survival probability', xlab = 'Days', main = 'Coyote Theoretical')
