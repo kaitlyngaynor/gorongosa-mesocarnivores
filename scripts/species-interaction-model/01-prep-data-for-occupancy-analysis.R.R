@@ -28,7 +28,8 @@ camop <- cameraOperation(CTtable      = camtraps,
 )
 
 # subset to dates of interest
-#July 2023: added all_of because " Using an external vector in selections was deprecated in tidyselect 1.1.0."
+#July 2023: added all_of because "Using an external vector in selections was deprecated in tidyselect 1.1.0."
+#^^this seems to be fine, still keeps 8-1 to 11-30
 camop_subset <- camop %>% 
     as.data.frame %>% # first need to convert matrix to data frame
     select(all_of(start.date):all_of(end.date)) %>% # select columns of interest
@@ -38,6 +39,7 @@ camop_subset <- camop %>%
 record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
 
 # subset to dates of interest
+#I believe this works as intended, includes detections from 8/1 and 11/30
 record_table_subset <- record_table %>% 
     mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
                           format = "%m/%d/%y %H:%M")) %>% 
@@ -139,6 +141,7 @@ GNP_p_covariates <- select(cam_meta, detect.obscured, cover.ground)
 write_csv(GNP_p_covariates, "data/gorongosa-cameras/GNP p covariates.csv", col_names = T)
 
 #make table with all covariates (environmental and detection)
-GNP_covariates <- select(cam_meta, urema_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground)
+GNP_covariates <- select(cam_meta, urema_dist, pans_dist, river_dist, tree_hansen, termite.large.count.100m, lion_camera, lion_latedry, fire_frequency, pans_100m, detect.obscured, cover.ground)
 
+#added covariates (pan and river distance) in 2023
 write_csv(GNP_covariates, "data/gorongosa-cameras/GNP covariates.csv", col_names = T)
