@@ -383,6 +383,9 @@ fit001
 #a priori hypotheses
 occFormulas11_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
 
+#a priori hypotheses plus single species exploration
+occFormulas12_23 <- c('~termite.large.count.100m','~water_dist', '~water_dist', '~water_dist','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
 # Length should match number/order of columns in fDesign
 #single 'best' occ covariate from reading
 occFormulas11 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
@@ -395,6 +398,10 @@ fit11 <- occuMulti(detFormulas, stateformulas = occFormulas11, data)
 fit11_23 <- occuMulti(detFormulas, stateformulas = occFormulas11_23, data)
 
 fit11_23
+
+fit12_23 <- occuMulti(detFormulas, stateformulas = occFormulas12_23, data)
+
+fit12_23
 
 #why does this not produce anything except estimates?
 fit11
