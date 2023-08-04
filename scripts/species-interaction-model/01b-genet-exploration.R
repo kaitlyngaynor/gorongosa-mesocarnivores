@@ -5,7 +5,10 @@ genet_dh <-read_csv("data/gorongosa-cameras/genet.csv", col_names = FALSE) %>% a
 
 #load occupancy covariates
 #leaving the column names in for now
-occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+#occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+
+#load occ covs with pan
+occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
 
 #scaling all the non-binary covariates to address the NaN warnings
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
@@ -15,8 +18,11 @@ occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
 occ_covs$fire_frequency = scale(occ_covs$fire_frequency)
 occ_covs$pans_100m = scale(occ_covs$pans_100m)
+occ_covs$water_dist = scale(occ_covs$water_dist)
 
 genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
+
+(genet_fit0 <- occu(~cover.ground+detect.obscured ~1, genet_data))
 
 (genet_fit1 <- occu(~cover.ground+detect.obscured ~urema_dist, genet_data))
 
@@ -25,6 +31,8 @@ genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 (genet_fit3 <- occu(~cover.ground+detect.obscured ~tree_hansen, genet_data))
 
 (genet_fit4 <- occu(~cover.ground+detect.obscured ~lion_latedry, genet_data))
+
+(genet_fit4.1 <- occu(~cover.ground+detect.obscured ~water_dist, genet_data))
 
 (genet_fit5 <- occu(~cover.ground+detect.obscured ~urema_dist+termite.large.count.100m, genet_data))
 
@@ -43,3 +51,7 @@ genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 (genet_fit12 <- occu(~cover.ground+detect.obscured ~pans_100m, genet_data))
 
 (genet_fit12 <- occu(~cover.ground+detect.obscured ~urema_dist+fire_frequency, genet_data))
+
+(genet_fit14 <- occu(~cover.ground+detect.obscured ~water_dist + termite.large.count.100m, genet_data))
+
+(genet_fit15 <- occu(~cover.ground+detect.obscured ~water_dist + tree_hansen, genet_data))
