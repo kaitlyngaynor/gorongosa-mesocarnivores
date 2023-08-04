@@ -11,7 +11,7 @@ Multi-species occupancy modeling
 
 Get set-up. Load libraries, etc.
 ```{r setup}
-library(R2jags)
+library(R2jags) #install.packages("R2jags") #
 library(reshape)
 library(reshape2)
 library(plyr)
