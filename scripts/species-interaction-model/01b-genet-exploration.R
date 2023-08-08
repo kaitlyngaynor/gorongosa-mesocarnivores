@@ -22,6 +22,8 @@ occ_covs$water_dist = scale(occ_covs$water_dist)
 
 genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 
+(genet_fit00 <- occu(~1 ~1, genet_data))
+
 (genet_fit0 <- occu(~cover.ground+detect.obscured ~1, genet_data))
 
 (genet_fit1 <- occu(~cover.ground+detect.obscured ~urema_dist, genet_data))
@@ -55,3 +57,19 @@ genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 (genet_fit14 <- occu(~cover.ground+detect.obscured ~water_dist + termite.large.count.100m, genet_data))
 
 (genet_fit15 <- occu(~cover.ground+detect.obscured ~water_dist + tree_hansen, genet_data))
+
+(genet_fit16 <- occu(~cover.ground+detect.obscured+ water_dist ~1, genet_data))
+
+(genet_fit17 <- occu(~cover.ground+detect.obscured+ termite.large.count.100m ~1, genet_data))
+
+(genet_fit18 <- occu(~cover.ground+detect.obscured+ tree_hansen ~1, genet_data))
+
+(genet_fit19 <- occu(~cover.ground+detect.obscured+ tree_hansen + water_dist ~1, genet_data))
+
+(genet_fit20 <- occu(~cover.ground+detect.obscured+ tree_hansen + termite.large.count.100m ~1, genet_data))
+
+(genet_fit21 <- occu(~cover.ground+detect.obscured+ water_dist + termite.large.count.100m ~1, genet_data))
+
+(genet_fit22 <- occu(~cover.ground+detect.obscured+ water_dist + termite.large.count.100m + tree_hansen ~1, genet_data))
+
+(genet_fit23 <- occu(~cover.ground+detect.obscured+ lion_latedry ~1, genet_data))
