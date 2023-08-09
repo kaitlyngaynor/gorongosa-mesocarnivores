@@ -50,3 +50,5 @@ honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
 (honeybadger_fit11 <- occu(~cover.ground+detect.obscured ~fire_frequency, honeybadger_data))
 
 (honeybadger_fit12 <- occu(~cover.ground+detect.obscured ~pans_100m, honeybadger_data))
+
+(honeybadger_fit13 <- occu(~cover.ground+detect.obscured+termite.large.count.100m ~1, honeybadger_data))

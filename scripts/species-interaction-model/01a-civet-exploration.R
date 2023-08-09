@@ -53,3 +53,21 @@ civet_data <- unmarkedFrameOccu(civet_dh, siteCovs = occ_covs)
 (civet_fit13 <- occu(~cover.ground+detect.obscured ~water_dist + termite.large.count.100m, civet_data))
 
 (civet_fit14 <- occu(~cover.ground+detect.obscured ~water_dist + tree_hansen, civet_data))
+
+(civet_fit15 <- occu(~cover.ground+detect.obscured +water_dist ~1, civet_data))
+
+(civet_fit16 <- occu(~1 ~1, civet_data))
+
+(civet_fit17 <- occu(~cover.ground+detect.obscured +termite.large.count.100m ~1, civet_data))
+
+(civet_fit18 <- occu(~cover.ground+detect.obscured +tree_hansen ~1, civet_data))
+
+(civet_fit19 <- occu(~cover.ground+detect.obscured +tree_hansen + water_dist ~1, civet_data))
+
+(civet_fit20 <- occu(~cover.ground+detect.obscured +tree_hansen + termite.large.count.100m ~1, civet_data))
+
+(civet_fit21 <- occu(~cover.ground+detect.obscured +water_dist + termite.large.count.100m ~1, civet_data))
+
+(civet_fit22 <- occu(~cover.ground+detect.obscured +water_dist + termite.large.count.100m + tree_hansen ~1, civet_data))
+
+(civet_fit23 <- occu(~cover.ground+detect.obscured +lion_latedry ~1, civet_data))

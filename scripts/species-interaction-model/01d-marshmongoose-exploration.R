@@ -49,3 +49,5 @@ marshmongoose_data <- unmarkedFrameOccu(marshmongoose_dh, siteCovs = occ_covs)
 (marshmongoose_fit11 <- occu(~cover.ground+detect.obscured ~fire_frequency, marshmongoose_data))
 
 (marshmongoose_fit12 <- occu(~cover.ground+detect.obscured ~pans_100m, marshmongoose_data))
+
+(marshmongoose_fit13 <- occu(~cover.ground+detect.obscured+water_dist ~1, marshmongoose_data))

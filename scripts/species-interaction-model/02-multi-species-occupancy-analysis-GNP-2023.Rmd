@@ -225,6 +225,16 @@ write_csv(det3, "data/gorongosa-cameras/det3.csv", col_names = T)
 
 fit3
 
+#2023 updates
+#type 1 null occupancy formulas
+occFormulas_23 <- c('~1', '~1', '~1', '~1', '0','0','0','0','0','0', '0', '0', '0', '0', '0')
+
+#order: genet, civet, hb, mm
+detFormulas_23 <- c('~detect.obscured+cover.ground + tree_hansen + termite.large.count.100m', '~detect.obscured+cover.ground + water_dist + termite.large.count.100m', '~detect.obscured+cover.ground + termite.large.count.100m', '~detect.obscured+cover.ground + water_dist')
+
+fit3_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas_23, data)
+
+fit3_23
 ```
 
 #Try to predict model output
@@ -420,6 +430,13 @@ fit13 <- occuMulti(detFormulas, stateformulas = occFormulas13, data)
 
 fit13
 
+#type 2, null occ plus informative detection covariates
+occFormulas13_23 <- c('~1', '~1', '~1', '~1', '~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit13_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas13_23, data)
+
+fit13_23
+
 ```
 
 #starting to think about actual models with ecological background [type 3, includes interaction covariates] 
@@ -560,6 +577,50 @@ occFormulas36_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pa
 fit36_23 <- occuMulti(detFormulas, stateformulas = occFormulas36_23, data)
 
 fit36_23
+
+#running in 2023 with different set of covariates, null occ
+
+#lion only for genet:civet
+occFormulas37_23 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit37_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas37_23, data)
+
+fit37_23
+
+#lion only for genet:hb
+occFormulas38_23 <- c('~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit38_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas38_23, data)
+
+fit38_23
+
+#lion only for genet:mm
+occFormulas39_23 <- c('~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit39_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas39_23, data)
+
+fit39_23
+
+#lion only for civet: hb
+occFormulas40_23 <- c('~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
+
+fit40_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas40_23, data)
+
+fit40_23
+
+#lion only for civet:mm
+occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
+
+fit41_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas41_23, data)
+
+fit41_23
+
+#lion only for hb:mm
+occFormulas42_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
+
+fit42_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas42_23, data)
+
+fit42_23
 
 
 ```
