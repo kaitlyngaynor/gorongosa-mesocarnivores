@@ -5,10 +5,10 @@ honeybadger_dh <-read_csv("data/gorongosa-cameras/honey_badger.csv", col_names =
 
 #load occupancy covariates
 #leaving the column names in for now
-#occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
-#load occ covs with pan
-occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
+#load occ covs with pan (didn't use this one for checking additional termite stuff)
+#occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
 
 #scaling all the non-binary covariates to address the NaN warnings
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
@@ -19,6 +19,8 @@ occ_covs$cover.ground = scale(occ_covs$cover.ground)
 occ_covs$fire_frequency = scale(occ_covs$fire_frequency)
 occ_covs$pans_100m = scale(occ_covs$pans_100m)
 occ_covs$water_dist = scale(occ_covs$water_dist)
+occ_covs$termites_250m = scale(occ_covs$termites_250m)
+occ_covs$termites_500m = scale(occ_covs$termites_500m)
 
 
 honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
@@ -52,3 +54,7 @@ honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
 (honeybadger_fit12 <- occu(~cover.ground+detect.obscured ~pans_100m, honeybadger_data))
 
 (honeybadger_fit13 <- occu(~cover.ground+detect.obscured+termite.large.count.100m ~1, honeybadger_data))
+
+(honeybadger_fit14 <- occu(~cover.ground+detect.obscured+termites_250m ~1, honeybadger_data))
+
+(honeybadger_fit15 <- occu(~cover.ground+detect.obscured+termites_500m ~1, honeybadger_data))
