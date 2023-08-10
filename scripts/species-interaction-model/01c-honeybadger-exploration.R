@@ -21,6 +21,7 @@ occ_covs$pans_100m = scale(occ_covs$pans_100m)
 occ_covs$water_dist = scale(occ_covs$water_dist)
 occ_covs$termites_250m = scale(occ_covs$termites_250m)
 occ_covs$termites_500m = scale(occ_covs$termites_500m)
+occ_covs$termites_1km = scale(occ_covs$termites_1km)
 
 
 honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
@@ -58,3 +59,5 @@ honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
 (honeybadger_fit14 <- occu(~cover.ground+detect.obscured+termites_250m ~1, honeybadger_data))
 
 (honeybadger_fit15 <- occu(~cover.ground+detect.obscured+termites_500m ~1, honeybadger_data))
+
+(honeybadger_fit16 <- occu(~cover.ground+detect.obscured+termites_1km ~1, honeybadger_data))
