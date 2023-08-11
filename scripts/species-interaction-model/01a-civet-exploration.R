@@ -87,3 +87,9 @@ civet_data <- unmarkedFrameOccu(civet_dh, siteCovs = occ_covs)
 (civet_fit28 <- occu(~cover.ground+detect.obscured +termites_250m ~1, civet_data))
 
 (civet_fit29 <- occu(~cover.ground+detect.obscured +termites_1km_count ~1, civet_data))
+
+(civet_fit30 <- occu(~cover.ground+detect.obscured +termites_1km_count +water_dist ~1, civet_data))
+
+(civet_fit31 <- occu(~cover.ground+detect.obscured +termites_1km_count + tree_hansen ~1, civet_data))
+
+(civet_fit32 <- occu(~cover.ground+detect.obscured +termites_1km_count + tree_hansen +water_dist ~1, civet_data))

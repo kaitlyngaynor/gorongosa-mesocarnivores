@@ -85,3 +85,5 @@ genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 (genet_fit26 <- occu(~cover.ground+detect.obscured+ termites_500m_count ~1, genet_data))
 
 (genet_fit29 <- occu(~cover.ground+detect.obscured+ termites_1km_count ~1, genet_data))
+
+(genet_fit30 <- occu(~cover.ground+detect.obscured+ termites_1km_count +tree_hansen ~1, genet_data))

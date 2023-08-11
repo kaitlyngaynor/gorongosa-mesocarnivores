@@ -45,8 +45,14 @@ occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TR
 #load in conservative pans distance
 pan_dist_cons <- read_csv("data/gorongosa-cameras/camera-pan-dist.csv", col_names = TRUE)
 
+#load in termite mound density 
+mound_density_count <- read_csv("data/gorongosa-cameras/camera-mound-density-and-count.csv", col_names = TRUE)
+
 #merge pans variable with occupancy covariates
 occ_covs <- left_join(occ_covs, pan_dist_cons, by = "StudySite")
+
+#merge with mound variables
+occ_covs <- left_join(occ_covs, mound_density_count, by = "StudySite")
 
 #calculate distance to nearest water (lake, river or pan)
 #pans are no longer always the closest water source
@@ -64,6 +70,7 @@ occ_covs$cover.ground = scale(occ_covs$cover.ground)
 occ_covs$pans_dist = scale(occ_covs$pans_dist)
 occ_covs$water_dist = scale(occ_covs$water_dist)
 occ_covs$termites_500m = scale(occ_covs$termites_500m)
+occ_covs$termites_1km_count = scale(occ_covs$termites_1km_count)
 
 # load in GNP cam metadata
 cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
@@ -244,6 +251,12 @@ detFormulas4_23 <- c('~detect.obscured+cover.ground + tree_hansen + termites_500
 fit4_23 <- occuMulti(detFormulas4_23, stateformulas = occFormulas_23, data)
 
 fit4_23
+
+detFormulas5_23 <- c('~detect.obscured+cover.ground + tree_hansen', '~detect.obscured+cover.ground + water_dist + termites_1km_count + tree_hansen', '~detect.obscured+cover.ground + termites_1km_count', '~detect.obscured+cover.ground + water_dist')
+
+fit5_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas_23, data)
+
+fit5_23
 ```
 
 #Try to predict model output
@@ -446,6 +459,9 @@ fit13_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas13_23, data)
 
 fit13_23
 
+fit14_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas13_23, data)
+
+fit14_23
 ```
 
 #starting to think about actual models with ecological background [type 3, includes interaction covariates] 
@@ -636,6 +652,50 @@ occFormulas43_23 <- c('~1','~1','~1','~1','~lion_latedry','~lion_latedry','~1','
 fit43_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas43_23, data)
 
 fit43_23
+
+#running in 2023 with different set of covariates, null occ, new termite layer
+
+#lion only for genet:civet
+occFormulas37_23 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit44_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas37_23, data)
+
+fit44_23
+
+#lion only for genet:hb
+occFormulas38_23 <- c('~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit45_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas38_23, data)
+
+fit45_23
+
+#lion only for genet:mm
+occFormulas39_23 <- c('~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit46_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas39_23, data)
+
+fit46_23
+
+#lion only for civet: hb
+occFormulas40_23 <- c('~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
+
+fit47_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas40_23, data)
+
+fit47_23
+
+#lion only for civet:mm
+occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
+
+fit48_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas41_23, data)
+
+fit48_23
+
+#lion only for hb:mm
+occFormulas42_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
+
+fit49_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas42_23, data)
+
+fit49_23
 ```
 #model comparisons
 ```{r}
