@@ -63,6 +63,7 @@ occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
 occ_covs$pans_dist = scale(occ_covs$pans_dist)
 occ_covs$water_dist = scale(occ_covs$water_dist)
+occ_covs$termites_500m = scale(occ_covs$termites_500m)
 
 # load in GNP cam metadata
 cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
@@ -135,6 +136,8 @@ occFormulas_2_23 <- c('~termite.large.count.100m','~water_dist','~water_dist','~
 fit2_23 <- occuMulti(detFormulas, stateformulas = occFormulas_2_23, data)
 
 fit2_23
+
+
 ```
 
 # explore model output
@@ -235,6 +238,12 @@ detFormulas_23 <- c('~detect.obscured+cover.ground + tree_hansen + termite.large
 fit3_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas_23, data)
 
 fit3_23
+
+detFormulas4_23 <- c('~detect.obscured+cover.ground + tree_hansen + termites_500m', '~detect.obscured+cover.ground + water_dist + termites_500m', '~detect.obscured+cover.ground + termites_500m', '~detect.obscured+cover.ground + water_dist')
+
+fit4_23 <- occuMulti(detFormulas4_23, stateformulas = occFormulas_23, data)
+
+fit4_23
 ```
 
 #Try to predict model output

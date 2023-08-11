@@ -8,7 +8,7 @@ genet_dh <-read_csv("data/gorongosa-cameras/genet.csv", col_names = FALSE) %>% a
 occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
 #load occ covs with pan (didn't use to test termite stuff)
-#occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
+occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
 
 #scaling all the non-binary covariates to address the NaN warnings
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
@@ -21,6 +21,8 @@ occ_covs$pans_100m = scale(occ_covs$pans_100m)
 occ_covs$water_dist = scale(occ_covs$water_dist)
 occ_covs$termites_250m = scale(occ_covs$termites_250m)
 occ_covs$termites_500m = scale(occ_covs$termites_500m)
+occ_covs$termites_500m_count = scale(occ_covs$termites_500m_count)
+occ_covs$termites_1km_count = scale(occ_covs$termites_1km_count)
 
 genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 
@@ -76,6 +78,10 @@ genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 
 (genet_fit23 <- occu(~cover.ground+detect.obscured+ lion_latedry ~1, genet_data))
 
-(genet_fit24 <- occu(~cover.ground+detect.obscured+ termites_250m ~1, genet_data))
+(genet_fit28 <- occu(~cover.ground+detect.obscured+ termites_250m ~1, genet_data))
 
-(genet_fit25 <- occu(~cover.ground+detect.obscured+ termites_500m ~1, genet_data))
+(genet_fit27 <- occu(~cover.ground+detect.obscured+ termites_500m ~1, genet_data))
+
+(genet_fit26 <- occu(~cover.ground+detect.obscured+ termites_500m_count ~1, genet_data))
+
+(genet_fit29 <- occu(~cover.ground+detect.obscured+ termites_1km_count ~1, genet_data))

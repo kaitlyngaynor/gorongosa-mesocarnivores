@@ -5,10 +5,10 @@ civet_dh <-read_csv("data/gorongosa-cameras/civet.csv", col_names = FALSE) %>% a
 
 #load occupancy covariates
 #leaving the column names in for now
-occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+#occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
 #load occ covs with pan (didn't use this one when testing additional termite variables)
-#occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
+occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
 
 #scaling all the non-binary covariates to address the NaN warnings
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
@@ -21,6 +21,8 @@ occ_covs$pans_100m = scale(occ_covs$pans_100m)
 occ_covs$water_dist = scale(occ_covs$water)
 occ_covs$termites_250m = scale(occ_covs$termites_250m)
 occ_covs$termites_500m = scale(occ_covs$termites_500m)
+occ_covs$termites_500m_count = scale(occ_covs$termites_500m_count)
+occ_covs$termites_1km_count = scale(occ_covs$termites_1km_count)
 
 civet_data <- unmarkedFrameOccu(civet_dh, siteCovs = occ_covs)
 
@@ -77,3 +79,11 @@ civet_data <- unmarkedFrameOccu(civet_dh, siteCovs = occ_covs)
 (civet_fit24 <- occu(~cover.ground+detect.obscured +termites_250m ~1, civet_data))
 
 (civet_fit25 <- occu(~cover.ground+detect.obscured +termites_500m ~1, civet_data))
+
+(civet_fit26 <- occu(~cover.ground+detect.obscured +termites_500m_count ~1, civet_data))
+
+(civet_fit27 <- occu(~cover.ground+detect.obscured +termites_500m ~1, civet_data))
+
+(civet_fit28 <- occu(~cover.ground+detect.obscured +termites_250m ~1, civet_data))
+
+(civet_fit29 <- occu(~cover.ground+detect.obscured +termites_1km_count ~1, civet_data))

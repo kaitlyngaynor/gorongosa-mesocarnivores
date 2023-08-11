@@ -8,7 +8,7 @@ honeybadger_dh <-read_csv("data/gorongosa-cameras/honey_badger.csv", col_names =
 occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
 #load occ covs with pan (didn't use this one for checking additional termite stuff)
-#occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
+occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
 
 #scaling all the non-binary covariates to address the NaN warnings
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
@@ -22,6 +22,8 @@ occ_covs$water_dist = scale(occ_covs$water_dist)
 occ_covs$termites_250m = scale(occ_covs$termites_250m)
 occ_covs$termites_500m = scale(occ_covs$termites_500m)
 occ_covs$termites_1km = scale(occ_covs$termites_1km)
+occ_covs$termites_500m_count = scale(occ_covs$termites_500m_count)
+occ_covs$termites_1km_count = scale(occ_covs$termites_1km_count)
 
 
 honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
@@ -56,8 +58,13 @@ honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
 
 (honeybadger_fit13 <- occu(~cover.ground+detect.obscured+termite.large.count.100m ~1, honeybadger_data))
 
-(honeybadger_fit14 <- occu(~cover.ground+detect.obscured+termites_250m ~1, honeybadger_data))
+(honeybadger_fit17 <- occu(~cover.ground+detect.obscured+termites_250m ~1, honeybadger_data))
 
-(honeybadger_fit15 <- occu(~cover.ground+detect.obscured+termites_500m ~1, honeybadger_data))
+(honeybadger_fit18 <- occu(~cover.ground+detect.obscured+termites_500m ~1, honeybadger_data))
 
-(honeybadger_fit16 <- occu(~cover.ground+detect.obscured+termites_1km ~1, honeybadger_data))
+(honeybadger_fit19 <- occu(~cover.ground+detect.obscured+termites_1km ~1, honeybadger_data))
+
+(honeybadger_fit20 <- occu(~cover.ground+detect.obscured+termites_1km_count ~1, honeybadger_data))
+
+(honeybadger_fit21 <- occu(~cover.ground+detect.obscured+termites_500m_count ~1, honeybadger_data))
+
