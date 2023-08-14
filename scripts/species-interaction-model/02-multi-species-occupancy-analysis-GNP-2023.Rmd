@@ -61,6 +61,9 @@ occ_covs$water_dist <- apply(occ_covs[,c(2,4,14)], 1, min, na.rm = TRUE)
 #write out "full" covariates data frame
 write_csv(occ_covs, "data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = T)
 
+#unscales occ covs for graph
+occ_covs_fig <- occ_covs
+
 #scaling all the non-binary covariates to address the NaN warnings
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
 occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
@@ -74,6 +77,8 @@ occ_covs$termites_1km_count = scale(occ_covs$termites_1km_count)
 
 # load in GNP cam metadata
 cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
+
+
 
 # make p covariates table (detection)
 GNP_p_covariates <- select(cam_meta, detect.obscured, cover.ground)
@@ -103,6 +108,16 @@ plot(data)
 # Look at f parameter design matrix
 data@fDesign
 data@ylist
+
+#data for 2023
+det_covs_23 <- select(occ_covs, tree_hansen, lion_latedry, detect.obscured, cover.ground, water_dist, termites_1km_count)
+
+#applying the same work around as before because I don't know how to test if it was fixed
+det_covs_23 <- det_covs_23[rep(seq_len(nrow(det_covs_23)), each = 122), ]
+
+data_predict_23 <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, obsCovs = det_covs_23)
+
+data_predict_23
 ```
 my f equation order: 
 f1: genet
@@ -224,6 +239,11 @@ fit3
 #running fit3 twice, this time with the detection covariates in obsCovs so predict() runs
 fit3_predict <- occuMulti(detFormulas, stateformulas = occFormulas3, data_predict)
 
+#run with predict again in 2023 for best model
+fit5_23_predict <- occuMulti(detFormulas5_23, stateformulas = occFormulas_23, data_predict_23)
+
+fit5_23_predict
+
 #gives a list with one element for the state model
 occ3 <- summary(fit3[1]) 
 det3 <- summary(fit3[2])
@@ -279,7 +299,17 @@ dummy_urema <- data.frame(urema_dist = seq(min(occ_covs$urema_dist, na.rm=T), ma
          cover.ground = 0,
          urema_unscaled = (urema_dist * urema_dist_scalelist$scale + urema_dist_scalelist$center)/1000)
 
-#tree_hansen
+#distance to water
+water_dist_scalelist <- list(scale = attr(occ_covs$water_dist, "scaled:scale"),
+                      center = attr(occ_covs$water_dist, "scaled:center"))
+dummy_water <- data.frame(water_dist = seq(min(occ_covs$water_dist, na.rm=T), max(occ_covs$water_dist, na.rm=T), by = 0.0001)) %>%
+  mutate(termites_1km_count = 0,
+         tree_hansen = 0,
+         detect.obscured = 0,
+         cover.ground = 0,
+         water_unscaled = (water_dist * water_dist_scalelist$scale + water_dist_scalelist$center)/1000)
+
+#tree_hansen (thesis)
 tree_hansen_scalelist <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"),
                       center = attr(occ_covs$tree_hansen, "scaled:center"))
 dummy_tree <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.0001)) %>%
@@ -289,8 +319,17 @@ dummy_tree <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), m
          cover.ground = 0,
          tree_unscaled = (tree_hansen * tree_hansen_scalelist$scale + tree_hansen_scalelist$center))
 
+#tree_hansen (2023)
+#occ_covs_fig is checking to see if I need to start with unscaled variables
+tree_hansen_scalelist_23 <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"), center = attr(occ_covs$tree_hansen, "scaled:center"))
+dummy_tree_23 <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.0001)) %>%
+  mutate(termites_1km_count = 0,
+         water_dist = 0,
+         detect.obscured = 0,
+         cover.ground = 0,
+         tree_unscaled_23 = (tree_hansen * tree_hansen_scalelist_23$scale + tree_hansen_scalelist_23$center))
 
-#termite mound
+#termite mound (thesis)
 termite_scalelist <- list(scale = attr(occ_covs$termite.large.count.100m, "scaled:scale"),
                       center = attr(occ_covs$termite.large.count.100m, "scaled:center"))
 dummy_termite <- data.frame(termite.large.count.100m = seq(min(occ_covs$termite.large.count.100m, na.rm=T), max(occ_covs$termite.large.count.100m, na.rm=T), by = 0.0001)) %>%
@@ -300,10 +339,32 @@ dummy_termite <- data.frame(termite.large.count.100m = seq(min(occ_covs$termite.
          cover.ground = 0,
          termite_unscaled = (termite.large.count.100m * termite_scalelist$scale + termite_scalelist$center))
 
+#termite mound (2023)
+termite_scalelist_23 <- list(scale = attr(occ_covs$termites_1km_count, "scaled:scale"),center = attr(occ_covs$termites_1km_count, "scaled:center"))
+dummy_termite_23 <- data.frame(termites_1km_count = seq(min(occ_covs$termites_1km_count, na.rm=T), max(occ_covs$termites_1km_count, na.rm=T), by = 0.0001)) %>%
+  mutate(tree_hansen = 0,
+         water_dist = 0,
+         detect.obscured = 0,
+         cover.ground = 0,
+         termite_unscaled_23 = (termites_1km_count * termite_scalelist_23$scale + termite_scalelist_23$center))
+
 #genet: black, 1
 #civet: blue, 2
 #honey badger: red, 3
 #marsh mongoose: darkgreen, 4
+
+#generate a better color palette
+library(RColorBrewer) #install.packages("RColorBrewer")
+brewer.pal(n = 4, name = "Set1")
+#output: "#E41A1C" "#377EB8" "#4DAF4A" "#984EA3"
+
+#new colors
+#genet: "#E41A1C"
+#civet: "#377EB8"
+#honey badger: "#4DAF4A"
+#mm:"#984EA3"
+
+#2023 figures needed: genet-tree, civet-tree, civet-water, civet-termite, hb-termite, mm-water
 
 # CIVET & LAKE UREMA 
 civet_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="civet")
@@ -316,9 +377,44 @@ civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Pre
     labs(x = "Distance to Lake (km)") +
     ggtitle("Civet")
 
+# CIVET & WATER
+civet_water_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_water, species="civet")
+civet_water_predict <- cbind(civet_water_predict, dummy_water)
+civet_water <- ggplot(data = civet_water_predict, aes(x = water_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
+    geom_line(colour = "#377EB8") +
+    ylim(0,0.25) +
+    theme_bw() +
+    labs(x = "Distance to Water (km)") +
+    ggtitle("Civet")
+civet_water
 #pdf("scripts/figures//civet_lake.pdf", width = 6, height = 5)
 #civet_lake
 #dev.off()
+
+# CIVET & TERMITE
+civet_termite_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_termite_23, species="civet")
+civet_termite_predict <- cbind(civet_termite_predict, dummy_termite_23)
+civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
+    geom_line(colour = "#377EB8") +
+    ylim(0,0.25) +
+    theme_bw() +
+    labs(x = "Termite Mound Density") +
+    ggtitle(" ")
+civet_termite
+
+# CIVET & TREE
+civet_tree_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_tree_23, species="civet")
+civet_tree_predict <- cbind(civet_tree_predict, dummy_tree_23)
+civet_tree <- ggplot(data = civet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
+    geom_line(colour = "#377EB8") +
+    ylim(0,0.25) +
+    theme_bw() +
+    labs(x = "Tree Cover (%)") +
+    ggtitle(" ")
+civet_tree
 
 # GENET & LAKE UREMA (stays black/grey)
 genet_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="genet")
@@ -331,6 +427,18 @@ genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Pre
     labs(x = "Distance to Lake (km)") +
     ggtitle("Genet")
 
+#GENET & TREE (2023)
+genet_tree_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_tree_23, species= 'genet')
+genet_tree_predict <- cbind(genet_tree_predict, dummy_tree_23)
+genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#E41A1C", alpha = 0.25) +
+    geom_line(colour = "#E41A1C") +
+    ylim(0,0.25) +
+    theme_bw() +
+    labs(x = "Tree Cover (%)") +
+    ggtitle("Genet")
+genet_tree
+
 # HONEY BADGER & LAKE UREMA
 honey_badger_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="honey_badger")
 honey_badger_urema_predict <- cbind(honey_badger_urema_predict, dummy_urema)
@@ -342,6 +450,18 @@ honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_uns
     labs(x = "Distance to Lake (km)") +
     ggtitle("Honey Badger")
 
+# HONEY BADGER & TERMITE (2023)
+honey_badger_termite_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_termite_23, species="honey_badger")
+honey_badger_termite_predict <- cbind(honey_badger_termite_predict, dummy_termite_23)
+honey_badger_termite <- ggplot(data = honey_badger_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#4DAF4A", alpha = 0.25) +
+    geom_line(colour = "#4DAF4A") +
+    ylim(0,0.25) +
+    theme_bw()+
+    labs(x = "Termite Mound Density") +
+    ggtitle("Honey Badger")
+honey_badger_termite
+
 # MARSH MONGOOSE & LAKE UREMA
 marsh_mongoose_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="marsh_mongoose")
 marsh_mongoose_urema_predict <- cbind(marsh_mongoose_urema_predict, dummy_urema)
@@ -352,6 +472,19 @@ marsh_mongoose_lake <- ggplot(data = marsh_mongoose_urema_predict, aes(x = urema
     theme_bw() +
     labs( x = "Distance to Lake (km)") +
     ggtitle("Marsh Mongoose")
+
+# MARSH MONGOOSE & WATER
+marsh_mongoose_water_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_water, species="marsh_mongoose")
+#do not run next line more than once! messes with x axis
+marsh_mongoose_water_predict <- cbind(marsh_mongoose_water_predict, dummy_water)
+marsh_mongoose_water <- ggplot(data = marsh_mongoose_water_predict, aes(x = water_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#984EA3", alpha = 0.25) +
+    geom_line(colour = "#984EA3") +
+    ylim(0,0.25) +
+    theme_bw() +
+    labs( x = "Distance to Water (km)") +
+    ggtitle("Marsh Mongoose")
+marsh_mongoose_water
 
 #CIVET & TERMITE
 civet_termite_predict <- predict(fit3_predict, type = 'state', newdata = dummy_termite, species="civet")
@@ -396,7 +529,12 @@ honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unsca
 
 #create and save figure with all components
 pdf("scripts/figures/best_interaction_model_predict.pdf", width = 6, height = 5)
-ggarrange(civet_lake, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, ncol = 2, nrow = 3)
+ggarrange(civet_water, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, ncol = 2, nrow = 3)
+dev.off()
+
+#2023 create and save figure with all components
+pdf("scripts/figures/best_interaction_model_predict_23.pdf", width = 8, height = 5)
+ggarrange(civet_water, civet_termite, civet_tree, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
 dev.off()
 ```
 
@@ -683,6 +821,11 @@ fit47_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas40_23, data)
 
 fit47_23
 
+#testing without detect.obscured
+fit47_23_2 <- occuMulti(detformulas = c('~cover.ground + tree_hansen', '~cover.ground + water_dist + termites_1km_count + tree_hansen', '~cover.ground + termites_1km_count', '~cover.ground + water_dist'), stateformulas = occFormulas40_23, data)
+
+fit47_23_2
+
 #lion only for civet:mm
 occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
 
@@ -715,6 +858,14 @@ coef(ms)                            # Estimates only
 SE(ms)                              # Standard errors only
 (toExport <- as(ms, "data.frame"))  # Everything as a data frame
 
+#model comparison 2023
+#I'm now not actually convinced we used this in 2020
+fl_23 <- fitList(fit0, fit5_23, fit01, fit14_23, fit44_23, fit45_23, fit46_23, fit47_23, fit48_23, fit49_23)
+
+modsel_23 <- modSel(fl_23, nullmod="fit0")
+#modSel(fl)
+summary(modsel_23)
+coef(modsel_23)
 ```
 
 ```{r}
