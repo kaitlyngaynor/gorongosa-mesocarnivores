@@ -67,7 +67,7 @@ honey_badger_marsh_mongoose <- overlapPlot(honey_badgers$Time.Sun, marsh_mongoos
 # I have code for making these prettier when the time comes
 
 # Make overlap plots using Kaitlyn's functions --------------------------------
-source("scripts/temporal-figure-functions.R")
+source("scripts/temporal-analysis/02-temporal-figure-functions.R")
 
 #seeing what they all create
 timeplot1(honey_badgers$Time.Sun)
@@ -142,6 +142,14 @@ pdf("scripts/figures/activity-patterns-all.pdf", width = 8, height = 5)
 timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("darkorange", "blue", "red", "darkgreen"),
                linetype = c(1,2,3,4))
 legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("darkorange", "blue", "red", "darkgreen"),
+       bg="white", cex = 0.8)
+dev.off()
+
+#4 line version for 2023
+pdf("scripts/figures/activity-patterns-all_23.pdf", width = 8, height = 5)
+timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"),
+               linetype = c(1,2,3,4))
+legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"),
        bg="white", cex = 0.8)
 dev.off()
 
