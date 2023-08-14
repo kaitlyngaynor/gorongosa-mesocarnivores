@@ -147,9 +147,9 @@ dev.off()
 
 #4 line version for 2023
 pdf("scripts/figures/activity-patterns-all_23.pdf", width = 8, height = 5)
-timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"),
-               linetype = c(1,2,3,4))
-legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,2,3,4), col=c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"),
+timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("#d55e00", "#0072b2", "#f0e442", "#009e73"),
+               linetype = c(1,1,1,1))
+legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,1,1,1), col=c("#d55e00", "#0072b2", "#f0e442", "#009e73"),
        bg="white", cex = 0.8)
 dev.off()
 

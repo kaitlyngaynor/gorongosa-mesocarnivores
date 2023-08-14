@@ -351,9 +351,9 @@ timeplot4_noon <-function (A, B, C, D, xscale = 24, linecol = c("#e41a1c","#377e
   else {
     axis(1)
   }
-  lines(xx, densA, col = linecol[1], lwd=2, lty = linetype[1])
-  lines(xx, densB, col = linecol[2], lwd=2, lty = linetype[2])
-  lines(xx, densC, col = linecol[3], lwd=2, lty = linetype[3])
-  lines(xx, densD, col = linecol[4], lwd=2, lty = linetype[4])
+  lines(xx, densA, col = linecol[1], lwd=3, lty = linetype[1])
+  lines(xx, densB, col = linecol[2], lwd=3, lty = linetype[2])
+  lines(xx, densC, col = linecol[3], lwd=3, lty = linetype[3])
+  lines(xx, densD, col = linecol[4], lwd=3, lty = linetype[4])
   return(invisible(list(x = xx, densityA = densA, densityB = densB, densityC = densC, densityD=densB)))
 }

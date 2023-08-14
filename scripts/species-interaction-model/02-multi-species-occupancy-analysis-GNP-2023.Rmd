@@ -357,12 +357,19 @@ dummy_termite_23 <- data.frame(termites_1km_count = seq(min(occ_covs$termites_1k
 library(RColorBrewer) #install.packages("RColorBrewer")
 brewer.pal(n = 4, name = "Set1")
 #output: "#E41A1C" "#377EB8" "#4DAF4A" "#984EA3"
+#JK this isn't colorblind friendly
 
 #new colors
 #genet: "#E41A1C"
 #civet: "#377EB8"
 #honey badger: "#4DAF4A"
 #mm:"#984EA3"
+
+#colorblind colors
+#genet:#d55e00
+#civet: #0072b2
+#hb:#f0e442
+#mm:#009e73
 
 #2023 figures needed: genet-tree, civet-tree, civet-water, civet-termite, hb-termite, mm-water
 
@@ -381,8 +388,8 @@ civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Pre
 civet_water_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_water, species="civet")
 civet_water_predict <- cbind(civet_water_predict, dummy_water)
 civet_water <- ggplot(data = civet_water_predict, aes(x = water_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
-    geom_line(colour = "#377EB8") +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
+    geom_line(colour = "#0072b2") +
     ylim(0,0.2) +
     theme_bw() +
     labs(x = "Distance to Water (km)") +
@@ -396,11 +403,11 @@ civet_water
 civet_termite_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_termite_23, species="civet")
 civet_termite_predict <- cbind(civet_termite_predict, dummy_termite_23)
 civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
-    geom_line(colour = "#377EB8") +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
+    geom_line(colour = "#0072b2") +
     ylim(0,0.2) +
     theme_bw() +
-    labs(x = "Termite Mound Density") +
+    labs(x = "Termite Mounds Within 1km") +
     ggtitle(" ")
 civet_termite
 
@@ -408,8 +415,8 @@ civet_termite
 civet_tree_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_tree_23, species="civet")
 civet_tree_predict <- cbind(civet_tree_predict, dummy_tree_23)
 civet_tree <- ggplot(data = civet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
-    geom_line(colour = "#377EB8") +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
+    geom_line(colour = "#0072b2") +
     ylim(0,0.2) +
     theme_bw() +
     labs(x = "Tree Cover (%)") +
@@ -431,8 +438,8 @@ genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Pre
 genet_tree_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_tree_23, species= 'genet')
 genet_tree_predict <- cbind(genet_tree_predict, dummy_tree_23)
 genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#E41A1C", alpha = 0.25) +
-    geom_line(colour = "#E41A1C") +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#d55e00", alpha = 0.25) +
+    geom_line(colour = "#d55e00") +
     ylim(0,0.25) +
     theme_bw() +
     labs(x = "Tree Cover (%)") +
@@ -454,11 +461,11 @@ honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_uns
 honey_badger_termite_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_termite_23, species="honey_badger")
 honey_badger_termite_predict <- cbind(honey_badger_termite_predict, dummy_termite_23)
 honey_badger_termite <- ggplot(data = honey_badger_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#4DAF4A", alpha = 0.25) +
-    geom_line(colour = "#4DAF4A") +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#f0e442", alpha = 0.25) +
+    geom_line(colour = "#f0e442") +
     ylim(0,0.1) +
     theme_bw()+
-    labs(x = "Termite Mound Density") +
+    labs(x = "Termite Mounds Within 1km") +
     ggtitle("Honey Badger")
 honey_badger_termite
 
@@ -478,8 +485,8 @@ marsh_mongoose_water_predict <- predict(fit5_23_predict, type = 'det', newdata =
 #do not run next line more than once! messes with x axis
 marsh_mongoose_water_predict <- cbind(marsh_mongoose_water_predict, dummy_water)
 marsh_mongoose_water <- ggplot(data = marsh_mongoose_water_predict, aes(x = water_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#984EA3", alpha = 0.25) +
-    geom_line(colour = "#984EA3") +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#009e73", alpha = 0.25) +
+    geom_line(colour = "#009e73") +
     ylim(0,0.1) +
     theme_bw() +
     labs( x = "Distance to Water (km)") +
