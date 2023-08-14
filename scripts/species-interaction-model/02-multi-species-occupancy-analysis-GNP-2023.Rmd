@@ -383,7 +383,7 @@ civet_water_predict <- cbind(civet_water_predict, dummy_water)
 civet_water <- ggplot(data = civet_water_predict, aes(x = water_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
     geom_line(colour = "#377EB8") +
-    ylim(0,0.25) +
+    ylim(0,0.2) +
     theme_bw() +
     labs(x = "Distance to Water (km)") +
     ggtitle("Civet")
@@ -398,7 +398,7 @@ civet_termite_predict <- cbind(civet_termite_predict, dummy_termite_23)
 civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
     geom_line(colour = "#377EB8") +
-    ylim(0,0.25) +
+    ylim(0,0.2) +
     theme_bw() +
     labs(x = "Termite Mound Density") +
     ggtitle(" ")
@@ -410,7 +410,7 @@ civet_tree_predict <- cbind(civet_tree_predict, dummy_tree_23)
 civet_tree <- ggplot(data = civet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#377EB8", alpha = 0.25) +
     geom_line(colour = "#377EB8") +
-    ylim(0,0.25) +
+    ylim(0,0.2) +
     theme_bw() +
     labs(x = "Tree Cover (%)") +
     ggtitle(" ")
@@ -456,7 +456,7 @@ honey_badger_termite_predict <- cbind(honey_badger_termite_predict, dummy_termit
 honey_badger_termite <- ggplot(data = honey_badger_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#4DAF4A", alpha = 0.25) +
     geom_line(colour = "#4DAF4A") +
-    ylim(0,0.25) +
+    ylim(0,0.1) +
     theme_bw()+
     labs(x = "Termite Mound Density") +
     ggtitle("Honey Badger")
@@ -480,7 +480,7 @@ marsh_mongoose_water_predict <- cbind(marsh_mongoose_water_predict, dummy_water)
 marsh_mongoose_water <- ggplot(data = marsh_mongoose_water_predict, aes(x = water_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#984EA3", alpha = 0.25) +
     geom_line(colour = "#984EA3") +
-    ylim(0,0.25) +
+    ylim(0,0.1) +
     theme_bw() +
     labs( x = "Distance to Water (km)") +
     ggtitle("Marsh Mongoose")
