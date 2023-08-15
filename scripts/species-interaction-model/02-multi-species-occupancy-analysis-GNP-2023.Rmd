@@ -389,11 +389,11 @@ civet_water_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_wa
 civet_water_predict <- cbind(civet_water_predict, dummy_water)
 civet_water <- ggplot(data = civet_water_predict, aes(x = water_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
-    geom_line(colour = "#0072b2") +
+    geom_line(colour = "#0072b2", linewidth = 1) +
     ylim(0,0.2) +
     theme_bw() +
-    labs(x = "Distance to Water (km)") +
-    ggtitle("Civet")
+    labs(x = "Distance to Water (km)", y = "Detection Probability") +
+    ggtitle(" ")
 civet_water
 #pdf("scripts/figures//civet_lake.pdf", width = 6, height = 5)
 #civet_lake
@@ -404,10 +404,10 @@ civet_termite_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_
 civet_termite_predict <- cbind(civet_termite_predict, dummy_termite_23)
 civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
-    geom_line(colour = "#0072b2") +
+    geom_line(colour = "#0072b2", linewidth = 1) +
     ylim(0,0.2) +
     theme_bw() +
-    labs(x = "Termite Mounds Within 1km") +
+    labs(x = "Termite Mounds Within 1km" , y = "Detection Probability") +
     ggtitle(" ")
 civet_termite
 
@@ -416,11 +416,11 @@ civet_tree_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_tre
 civet_tree_predict <- cbind(civet_tree_predict, dummy_tree_23)
 civet_tree <- ggplot(data = civet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
-    geom_line(colour = "#0072b2") +
+    geom_line(colour = "#0072b2", linewidth = 1) +
     ylim(0,0.2) +
     theme_bw() +
-    labs(x = "Tree Cover (%)") +
-    ggtitle(" ")
+    labs(x = "Tree Cover (%)" , y = "Detection Probability") +
+    ggtitle("Civet")
 civet_tree
 
 # GENET & LAKE UREMA (stays black/grey)
@@ -439,10 +439,10 @@ genet_tree_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_tre
 genet_tree_predict <- cbind(genet_tree_predict, dummy_tree_23)
 genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#d55e00", alpha = 0.25) +
-    geom_line(colour = "#d55e00") +
+    geom_line(colour = "#d55e00", linewidth = 1) +
     ylim(0,0.25) +
     theme_bw() +
-    labs(x = "Tree Cover (%)") +
+    labs(x = "Tree Cover (%)", y = "Detection Probability") +
     ggtitle("Genet")
 genet_tree
 
@@ -462,10 +462,10 @@ honey_badger_termite_predict <- predict(fit5_23_predict, type = 'det', newdata =
 honey_badger_termite_predict <- cbind(honey_badger_termite_predict, dummy_termite_23)
 honey_badger_termite <- ggplot(data = honey_badger_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#f0e442", alpha = 0.25) +
-    geom_line(colour = "#f0e442") +
+    geom_line(colour = "#f0e442", linewidth = 1) +
     ylim(0,0.1) +
     theme_bw()+
-    labs(x = "Termite Mounds Within 1km") +
+    labs(x = "Termite Mounds Within 1km", y = "Detection Probability") +
     ggtitle("Honey Badger")
 honey_badger_termite
 
@@ -486,10 +486,10 @@ marsh_mongoose_water_predict <- predict(fit5_23_predict, type = 'det', newdata =
 marsh_mongoose_water_predict <- cbind(marsh_mongoose_water_predict, dummy_water)
 marsh_mongoose_water <- ggplot(data = marsh_mongoose_water_predict, aes(x = water_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#009e73", alpha = 0.25) +
-    geom_line(colour = "#009e73") +
+    geom_line(colour = "#009e73", linewidth = 1) +
     ylim(0,0.1) +
     theme_bw() +
-    labs( x = "Distance to Water (km)") +
+    labs( x = "Distance to Water (km)", y = "Detection Probability") +
     ggtitle("Marsh Mongoose")
 marsh_mongoose_water
 
@@ -541,7 +541,7 @@ dev.off()
 
 #2023 create and save figure with all components
 pdf("scripts/figures/best_interaction_model_predict_23.pdf", width = 8, height = 5)
-ggarrange(civet_water, civet_termite, civet_tree, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
+ggarrange(civet_tree, civet_termite, civet_water, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
 dev.off()
 ```
 
