@@ -68,3 +68,8 @@ honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
 
 (honeybadger_fit21 <- occu(~cover.ground+detect.obscured+termites_500m_count ~1, honeybadger_data))
 
+(honeybadger_fit22 <- occu(~cover.ground+detect.obscured+lion_latedry ~1, honeybadger_data))
+
+(honeybadger_fit23 <- occu(~cover.ground+detect.obscured+lion_latedry+termites_1km_count ~1, honeybadger_data))
+
+(honeybadger_fit00 <- occu(~1 ~1, honeybadger_data))

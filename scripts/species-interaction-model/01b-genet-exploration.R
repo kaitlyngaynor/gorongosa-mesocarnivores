@@ -87,3 +87,23 @@ genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 (genet_fit29 <- occu(~cover.ground+detect.obscured+ termites_1km_count ~1, genet_data))
 
 (genet_fit30 <- occu(~cover.ground+detect.obscured+ termites_1km_count +tree_hansen ~1, genet_data))
+
+(genet_fit31 <- occu(~cover.ground+detect.obscured+tree_hansen + lion_latedry ~1, genet_data))
+
+(genet_fit31 <- occu(~cover.ground+detect.obscured+tree_hansen + lion_latedry ~1, genet_data))
+
+(genet_fit32 <- occu(~cover.ground+detect.obscured+termites_1km_count +water_dist ~1, genet_data))
+
+(genet_fit33 <- occu(~cover.ground+detect.obscured+termites_1km_count +lion_latedry ~1, genet_data))
+
+(genet_fit34 <- occu(~cover.ground+detect.obscured+water_dist +lion_latedry ~1, genet_data))
+
+(genet_fit35 <- occu(~cover.ground+detect.obscured+water_dist +termites_1km_count+tree_hansen ~1, genet_data))
+
+(genet_fit36 <- occu(~cover.ground+detect.obscured+water_dist +tree_hansen+lion_latedry ~1, genet_data))
+
+(genet_fit37 <- occu(~cover.ground+detect.obscured+water_dist +termites_1km_count+lion_latedry ~1, genet_data))
+
+(genet_fit38 <- occu(~cover.ground+detect.obscured+tree_hansen +termites_1km_count+lion_latedry ~1, genet_data))
+
+(genet_fit39 <- occu(~cover.ground+detect.obscured+tree_hansen +termites_1km_count+lion_latedry +water_dist ~1, genet_data))

@@ -24,6 +24,8 @@ marshmongoose_data <- unmarkedFrameOccu(marshmongoose_dh, siteCovs = occ_covs)
 
 (marshmongoose_fit0 <- occu(~cover.ground+detect.obscured ~1, marshmongoose_data))
 
+(marshmongoose_fit00 <- occu(~1 ~1, marshmongoose_data))
+
 (marshmongoose_fit1 <- occu(~cover.ground+detect.obscured ~urema_dist, marshmongoose_data))
 
 (marshmongoose_fit2 <- occu(~cover.ground+detect.obscured ~termite.large.count.100m, marshmongoose_data))
@@ -51,3 +53,7 @@ marshmongoose_data <- unmarkedFrameOccu(marshmongoose_dh, siteCovs = occ_covs)
 (marshmongoose_fit12 <- occu(~cover.ground+detect.obscured ~pans_100m, marshmongoose_data))
 
 (marshmongoose_fit13 <- occu(~cover.ground+detect.obscured+water_dist ~1, marshmongoose_data))
+
+(marshmongoose_fit14 <- occu(~cover.ground+detect.obscured+lion_latedry ~1, marshmongoose_data))
+
+(marshmongoose_fit15 <- occu(~cover.ground+detect.obscured+lion_latedry+water_dist ~1, marshmongoose_data))

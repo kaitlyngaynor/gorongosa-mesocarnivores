@@ -68,7 +68,7 @@ occ_covs_fig <- occ_covs
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
 occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
 occ_covs$termite.large.count.100m = scale(occ_covs$termite.large.count.100m)
-occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
+#occ_covs$lion_latedry = scale(occ_covs$lion_latedry) #lion is already scaled
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
 occ_covs$pans_dist = scale(occ_covs$pans_dist)
 occ_covs$water_dist = scale(occ_covs$water_dist)
@@ -244,6 +244,11 @@ fit5_23_predict <- occuMulti(detFormulas5_23, stateformulas = occFormulas_23, da
 
 fit5_23_predict
 
+#run with predict again in 2023 for best model (incl lion)
+fit6_23_predict <- occuMulti(detFormulas6_23, stateformulas = occFormulas_23, data_predict_23)
+
+fit6_23_predict
+
 #gives a list with one element for the state model
 occ3 <- summary(fit3[1]) 
 det3 <- summary(fit3[2])
@@ -277,6 +282,13 @@ detFormulas5_23 <- c('~detect.obscured+cover.ground + tree_hansen', '~detect.obs
 fit5_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas_23, data)
 
 fit5_23
+
+detFormulas6_23 <- c('~detect.obscured+cover.ground + tree_hansen', '~detect.obscured+cover.ground + water_dist + termites_1km_count + lion_latedry', '~detect.obscured+cover.ground + termites_1km_count', '~detect.obscured+cover.ground + water_dist')
+
+fit6_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas_23, data)
+
+fit6_23
+
 ```
 
 #Try to predict model output
@@ -308,6 +320,18 @@ dummy_water <- data.frame(water_dist = seq(min(occ_covs$water_dist, na.rm=T), ma
          detect.obscured = 0,
          cover.ground = 0,
          water_unscaled = (water_dist * water_dist_scalelist$scale + water_dist_scalelist$center)/1000)
+
+#lion presence
+lion_scalelist <- list(scale = attr(occ_covs$lion_latedry, "scaled:scale"),
+                      center = attr(occ_covs$lion_latedry, "scaled:center"))
+dummy_lion <- data.frame(lion_latedry = seq(min(occ_covs$lion_latedry, na.rm=T), max(occ_covs$lion_latedry, na.rm=T), by = 0.0001)) %>%
+  mutate(termites_1km_count = 0,
+         tree_hansen = 0,
+         detect.obscured = 0,
+         cover.ground = 0,
+         water_dist = 0,
+         lion_unscaled = (lion_latedry * lion_scalelist$scale + lion_scalelist$center))
+
 
 #tree_hansen (thesis)
 tree_hansen_scalelist <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"),
@@ -398,6 +422,18 @@ civet_water
 #pdf("scripts/figures//civet_lake.pdf", width = 6, height = 5)
 #civet_lake
 #dev.off()
+
+# CIVET & LION
+civet_lion_predict <- predict(fit6_23_predict, type = 'det', newdata = dummy_lion, species="civet")
+civet_lion_predict <- cbind(civet_lion_predict, dummy_lion)
+civet_lion <- ggplot(data = civet_lion_predict, aes(x = lion_unscaled, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
+    geom_line(colour = "#0072b2", linewidth = 1) +
+    ylim(0,0.2) +
+    theme_bw() +
+    labs(x = "Lion Presence", y = "Detection Probability") +
+    ggtitle("Civet")
+civet_lion
 
 # CIVET & TERMITE
 civet_termite_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_termite_23, species="civet")
@@ -541,7 +577,7 @@ dev.off()
 
 #2023 create and save figure with all components
 pdf("scripts/figures/best_interaction_model_predict_23.pdf", width = 8, height = 5)
-ggarrange(civet_tree, civet_termite, civet_water, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
+ggarrange(civet_lion, civet_termite, civet_water, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
 dev.off()
 ```
 
@@ -607,6 +643,10 @@ fit13_23
 fit14_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas13_23, data)
 
 fit14_23
+
+fit15_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas13_23, data)
+
+fit15_23
 ```
 
 #starting to think about actual models with ecological background [type 3, includes interaction covariates] 
@@ -846,6 +886,55 @@ occFormulas42_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedr
 fit49_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas42_23, data)
 
 fit49_23
+
+#running in 2023 with different set of covariates, null occ, new termite layer, considering lion as detection
+
+#lion only for genet:civet
+occFormulas37_23 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit50_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas37_23, data)
+
+fit50_23
+
+#lion only for genet:hb
+occFormulas38_23 <- c('~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit51_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas38_23, data)
+
+fit51_23
+
+#lion only for genet:mm
+occFormulas39_23 <- c('~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit52_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas39_23, data)
+
+fit52_23
+
+#lion only for civet: hb
+occFormulas40_23 <- c('~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
+
+fit53_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas40_23, data)
+
+fit53_23
+
+#testing without detect.obscured
+fit47_23_2 <- occuMulti(detformulas = c('~cover.ground + tree_hansen', '~cover.ground + water_dist + termites_1km_count + tree_hansen', '~cover.ground + termites_1km_count', '~cover.ground + water_dist'), stateformulas = occFormulas40_23, data)
+
+fit47_23_2
+
+#lion only for civet:mm
+occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
+
+fit54_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas41_23, data)
+
+fit54_23
+
+#lion only for hb:mm
+occFormulas42_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
+
+fit55_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas42_23, data)
+
+fit55_23
 ```
 #model comparisons
 ```{r}
