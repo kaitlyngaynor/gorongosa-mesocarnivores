@@ -33,7 +33,6 @@ y <- list(genet_dh, civet_dh, honeybadger_dh, marshmongoose_dh)
 names(y) <- c('genet','civet','honey_badger', 'marsh_mongoose')
 
 #load occupancy covariates
-#leaving the column names in for now
 occ_covs <- read_csv("data-publication/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
 
 #scaling all the non-binary, unscaled covariates
@@ -50,7 +49,7 @@ det_covs_23 <- occ_covs
 #July 2023 update: unsure if this has been fixed
 det_covs_23 <- det_covs_23[rep(seq_len(nrow(det_covs_23)), each = 122), ]
 
-#generate data for use with predict function  
+#generate data for use with predict function (separate only because of 2020 bug)
 data_predict_23 <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, obsCovs = det_covs_23)
 
 data_predict_23
@@ -79,25 +78,15 @@ f8: civet: honey badger
 f9: civet: marsh mongoose
 f10: honey badger: marsh mongoose
 
-#run occuMulti
-```{r}
-
-```
-
-# explore model output
-```{r}
-
-```
-
 #type 1 models, no species interactions
 ```{r}
-#null model for both occ and det
-fit0 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','0','0','0','0','0','0','0','0','0','0','0'), data)
-
-fit0
-
 #null occupancy formulas (used for all models)
 occFormulas_23 <- c('~1', '~1', '~1', '~1', '0','0','0','0','0','0', '0', '0', '0', '0', '0')
+
+#null model for both occupancy and detection
+fit0 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = occFormulas_23, data)
+
+fit0
 
 #order: genet, civet, hb, mm
 detFormulas6_23 <- c('~detect.obscured + cover.ground + tree_hansen', '~detect.obscured + cover.ground + water_dist + termites_1km_count + lion_latedry', '~detect.obscured + cover.ground + termites_1km_count', '~detect.obscured + cover.ground + water_dist')
@@ -139,7 +128,6 @@ dummy_lion <- data.frame(lion_latedry = seq(min(occ_covs$lion_latedry, na.rm=T),
          lion_unscaled = (lion_latedry * lion_scalelist$scale + lion_scalelist$center))
 
 #tree_hansen (2023)
-#occ_covs_fig is checking to see if I need to start with unscaled variables
 tree_hansen_scalelist_23 <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"), center = attr(occ_covs$tree_hansen, "scaled:center"))
 dummy_tree_23 <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.0001)) %>%
   mutate(termites_1km_count = 0,
