@@ -102,6 +102,68 @@ fit6_23_predict
 
 ```
 
+#type 2 models, no interaction covariates]
+```{r}
+#null model
+fit01 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
+
+fit01
+
+#type 2, null occupancy plus informative detection covariates
+occFormulas13_23 <- c('~1', '~1', '~1', '~1', '~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit15_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas13_23, data)
+
+fit15_23
+```
+
+#type 3 models, includes interaction covariates
+```{r}
+#running in 2023 with null occupancy and considering lion as detection
+
+#lion only for genet:civet
+occFormulas37_23 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit50_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas37_23, data)
+
+fit50_23
+
+#lion only for genet:hb
+occFormulas38_23 <- c('~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit51_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas38_23, data)
+
+fit51_23
+
+#lion only for genet:mm
+occFormulas39_23 <- c('~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
+
+fit52_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas39_23, data)
+
+fit52_23
+
+#lion only for civet: hb
+occFormulas40_23 <- c('~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
+
+fit53_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas40_23, data)
+
+fit53_23
+
+#lion only for civet:mm
+occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
+
+fit54_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas41_23, data)
+
+fit54_23
+
+#lion only for hb:mm
+occFormulas42_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
+
+fit55_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas42_23, data)
+
+fit55_23
+```
+
 #Graph marginal detection probabilities relative to covariates
 ```{r}
 # MAKE DUMMY DATA
@@ -230,66 +292,4 @@ marsh_mongoose_water
 pdf("scripts/figures/best_interaction_model_predict_23.pdf", width = 8, height = 5)
 ggarrange(civet_lion, civet_termite, civet_water, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
 dev.off()
-```
-
-#type 2 models, no interaction covariates]
-```{r}
-#null model
-fit01 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
-
-fit01
-
-#type 2, null occupancy plus informative detection covariates
-occFormulas13_23 <- c('~1', '~1', '~1', '~1', '~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit15_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas13_23, data)
-
-fit15_23
-```
-
-#type 3 models, includes interaction covariates
-```{r}
-#running in 2023 with null occupancy and considering lion as detection
-
-#lion only for genet:civet
-occFormulas37_23 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit50_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas37_23, data)
-
-fit50_23
-
-#lion only for genet:hb
-occFormulas38_23 <- c('~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit51_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas38_23, data)
-
-fit51_23
-
-#lion only for genet:mm
-occFormulas39_23 <- c('~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit52_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas39_23, data)
-
-fit52_23
-
-#lion only for civet: hb
-occFormulas40_23 <- c('~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
-
-fit53_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas40_23, data)
-
-fit53_23
-
-#lion only for civet:mm
-occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
-
-fit54_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas41_23, data)
-
-fit54_23
-
-#lion only for hb:mm
-occFormulas42_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit55_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas42_23, data)
-
-fit55_23
 ```
