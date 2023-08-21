@@ -6,7 +6,7 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
-Here we go!
+
 #install packages 
 ```{r}
 library("unmarked")  #install.packages("unmarked") 
@@ -20,85 +20,42 @@ library(ggpubr)  #install.packages("ggpubr")
 #use unmarkedFrameOccuMulti to create the data object
 ```{r}
 # load in detection histories
-genet_dh <-read_csv("data/gorongosa-cameras/genet.csv", col_names = FALSE) %>% as.matrix()
+genet_dh <-read_csv("data-publication/genet.csv", col_names = FALSE) %>% as.matrix()
 
-civet_dh <-read_csv("data/gorongosa-cameras/civet.csv", col_names = FALSE) %>% as.matrix()
+civet_dh <-read_csv("data-publication/civet.csv", col_names = FALSE) %>% as.matrix()
 
-honeybadger_dh <-read_csv("data/gorongosa-cameras/honey_badger.csv", col_names = FALSE) %>% as.matrix()
+honeybadger_dh <-read_csv("data-publication/honey_badger.csv", col_names = FALSE) %>% as.matrix()
 
-marshmongoose_dh <-read_csv("data/gorongosa-cameras/marsh_mongoose.csv", col_names = FALSE) %>% as.matrix()
+marshmongoose_dh <-read_csv("data-publication/marsh_mongoose.csv", col_names = FALSE) %>% as.matrix()
 
-#I know I could have done this in the function, but separating it made more sense for me
+#put all data frames together and name them
 y <- list(genet_dh, civet_dh, honeybadger_dh, marshmongoose_dh)
 names(y) <- c('genet','civet','honey_badger', 'marsh_mongoose')
 
-#trying to trouble shoot a below warning
-any_na <- is.na(genet_dh) | is.na(civet_dh) | is.na(honeybadger_dh) | is.na(marshmongoose_dh) 
-identical(genet_dh, civet_dh) #FALSE, which makes sense
-identical(is.na(genet_dh), is.na(civet_dh)) #FALSE, which doesn't make sense
-all.equal(is.na(genet_dh), is.na(civet_dh)) #1 element mismatch
-
 #load occupancy covariates
 #leaving the column names in for now
-occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+occ_covs <- read_csv("data-publication/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
 
-#load in conservative pans distance
-pan_dist_cons <- read_csv("data/gorongosa-cameras/camera-pan-dist.csv", col_names = TRUE)
-
-#load in termite mound density 
-mound_density_count <- read_csv("data/gorongosa-cameras/camera-mound-density-and-count.csv", col_names = TRUE)
-
-#merge pans variable with occupancy covariates
-occ_covs <- left_join(occ_covs, pan_dist_cons, by = "StudySite")
-
-#merge with mound variables
-occ_covs <- left_join(occ_covs, mound_density_count, by = "StudySite")
-
-#calculate distance to nearest water (lake, river or pan)
-#pans are no longer always the closest water source
-occ_covs$water_dist <- apply(occ_covs[,c(2,4,14)], 1, min, na.rm = TRUE)
-
-#write out "full" covariates data frame
-write_csv(occ_covs, "data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = T)
-
-#unscales occ covs for graph
-occ_covs_fig <- occ_covs
-
-#scaling all the non-binary covariates to address the NaN warnings
-occ_covs$urema_dist = scale(occ_covs$urema_dist)
+#scaling all the non-binary, unscaled covariates
 occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
-occ_covs$termite.large.count.100m = scale(occ_covs$termite.large.count.100m)
-#occ_covs$lion_latedry = scale(occ_covs$lion_latedry) #lion is already scaled
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
-occ_covs$pans_dist = scale(occ_covs$pans_dist)
 occ_covs$water_dist = scale(occ_covs$water_dist)
-occ_covs$termites_500m = scale(occ_covs$termites_500m)
 occ_covs$termites_1km_count = scale(occ_covs$termites_1km_count)
 
-# load in GNP cam metadata
-cam_meta <- read_csv("data/gorongosa-cameras/cam_metadata_fromfield_and_raw_raster_withlion.csv")
+#copy occ covs to prep det covs
+det_covs_23 <- occ_covs
 
+#in 2020, there was a bug in the unmarked package that didn't allow detection covariates into siteCovs
+#this repeats each site-level detection covariate for every sample day, needed for predict function
+#July 2023 update: unsure if this has been fixed
+det_covs_23 <- det_covs_23[rep(seq_len(nrow(det_covs_23)), each = 122), ]
 
+#generate data for use with predict function  
+data_predict_23 <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, obsCovs = det_covs_23)
 
-# make p covariates table (detection)
-GNP_p_covariates <- select(cam_meta, detect.obscured, cover.ground)
+data_predict_23
 
-write_csv(GNP_p_covariates, "data/gorongosa-cameras/GNP p covariates.csv", col_names = T)
-
-#this is a workaround because there's a bug in the package that doesn't allow me to put the detection covariates into siteCovs
-#so this repeats each site-level detection covariate for every sample day
-#only using this for the predict function
-#July 2023 edit: this may be fixed by now, I'm not sure
-det_covs <- GNP_p_covariates[rep(seq_len(nrow(GNP_p_covariates)), each = 122), ]
-
-data_predict <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, obsCovs = det_covs)
-#this line yields this warning: In unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, obsCovs = det_covs): Missing obs do not match among species. Converting some obs to NAs so they match.
-#I think this means that the location of the NAs is not the same across all species, but I have no idea why that would be the case
-#there are 459 NAs in civet, mm, and hb detection histories, and 458 in genet
-#not sure where/why the difference is, but also not *too* worried about it?
-#the warning suggests they just added an NA wherever that "extra" observation was
-
-#same warning here, but I think it's fine
+#generate data
 data <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs)
 
 #look at data
@@ -108,17 +65,8 @@ plot(data)
 # Look at f parameter design matrix
 data@fDesign
 data@ylist
-
-#data for 2023
-det_covs_23 <- select(occ_covs, tree_hansen, lion_latedry, detect.obscured, cover.ground, water_dist, termites_1km_count)
-
-#applying the same work around as before because I don't know how to test if it was fixed
-det_covs_23 <- det_covs_23[rep(seq_len(nrow(det_covs_23)), each = 122), ]
-
-data_predict_23 <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, obsCovs = det_covs_23)
-
-data_predict_23
 ```
+
 my f equation order: 
 f1: genet
 f2: civet
@@ -133,183 +81,41 @@ f10: honey badger: marsh mongoose
 
 #run occuMulti
 ```{r}
-# Formulas for state and detection processes
-# dummy model
-
-# Length should match number/order of columns in fDesign
-occFormulas <- c('~urema_dist','~tree_hansen','~termite.large.count.100m','~lion_latedry','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-#order: genet, civet, hb, mm
-occFormulas_23_type1 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','0','0','0','0','0','0', '0', '0', '0', '0', '0')
-
-#Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
-detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
-
-#23 for 2023
-fit_23_type1 <- occuMulti(detFormulas, stateformulas = occFormulas_23_type1, data)
-##^^yields a warning about missing detections that Ken Kellner said was okay to ignore
-
-fit_23_type1
-
-#a priori plus single species exploration
-#order: genet, civet, hb, mm
-occFormulas_2_23 <- c('~termite.large.count.100m','~water_dist','~water_dist','~water_dist','0','0','0','0','0','0', '0', '0', '0', '0', '0')
-
-fit2_23 <- occuMulti(detFormulas, stateformulas = occFormulas_2_23, data)
-
-fit2_23
-
 
 ```
 
 # explore model output
 ```{r}
-#Look at output from dummy model
-fit
 
-#gives a list with one element for the state model
-occ <- summary(fit[1]) 
-
-write_csv(occ, "data/gorongosa-cameras/fit_occ.csv", col_names = T)
-
-#plot(fit)
-
-# occupancy only
-fit@estimates[1]
-
-# detection only
-fit@estimates[2]
-
-#leaving these in because they're potentially helpful to remember as functions that exist
-unclass(fit) 
-attr(fit, "estimates") 
-as.data.frame(coef(fit))
-
-#predict method
-lapply(predict(fit,'state'),head)
-lapply(predict(fit,'det'),head)
-
-#marginal occupancy
-predict(fit,'state',species='civet')
-predict(fit,'state',species='genet') # why is this all 1 / 0 / 0?
-predict(fit,'state',species='honey_badger')
-predict(fit,'state',species='marsh_mongoose')
-predict(fit,'det',  species='civet') # why are all of these the same?
-
-#used to compare outcomes 
-fl <- fitList(fit,fit2, fit3)
-coef(fl)
 ```
 
-#starting to think about actual models with ecological background [type 1, no species interactions]
+#type 1 models, no species interactions
 ```{r}
 #null model for both occ and det
 fit0 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','0','0','0','0','0','0','0','0','0','0','0'), data)
 
 fit0
 
-#null model for only occ
-fit00 <- occuMulti(detformulas = c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground'), stateformulas = c('~1', '~1', '~1', '~1','0','0','0','0','0','0','0','0','0','0','0'), data)
+#null occupancy formulas (used for all models)
+occFormulas_23 <- c('~1', '~1', '~1', '~1', '0','0','0','0','0','0', '0', '0', '0', '0', '0')
 
-fit00
+#order: genet, civet, hb, mm
+detFormulas6_23 <- c('~detect.obscured + cover.ground + tree_hansen', '~detect.obscured + cover.ground + water_dist + termites_1km_count + lion_latedry', '~detect.obscured + cover.ground + termites_1km_count', '~detect.obscured + cover.ground + water_dist')
 
-# Length should match number/order of columns in fDesign
-occFormulas1 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','0','0','0','0','0','0', '0', '0', '0', '0', '0')
+fit6_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas_23, data)
 
-#Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
-detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
-
-fit1 <- occuMulti(detFormulas, stateformulas = occFormulas1, data)
-
-fit1
-
-occFormulas2 <- c('~urema_dist+tree_hansen','~urema_dist + tree_hansen','~termite.large.count.100m + tree_hansen','~urema_dist + tree_hansen','0','0','0','0','0','0', '0', '0', '0', '0', '0')
-
-fit2 <- occuMulti(detFormulas, stateformulas = occFormulas2, data)
-
-fit2
-
-#trying a model based on results from single species explorations
-occFormulas3 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','0','0','0','0','0','0', '0', '0', '0', '0', '0')
-
-fit3 <- occuMulti(detFormulas, stateformulas = occFormulas3, data)
-
-fit3
-
-#running fit3 twice, this time with the detection covariates in obsCovs so predict() runs
-fit3_predict <- occuMulti(detFormulas, stateformulas = occFormulas3, data_predict)
-
-#run with predict again in 2023 for best model
-fit5_23_predict <- occuMulti(detFormulas5_23, stateformulas = occFormulas_23, data_predict_23)
-
-fit5_23_predict
+fit6_23
 
 #run with predict again in 2023 for best model (incl lion)
 fit6_23_predict <- occuMulti(detFormulas6_23, stateformulas = occFormulas_23, data_predict_23)
 
 fit6_23_predict
 
-#gives a list with one element for the state model
-occ3 <- summary(fit3[1]) 
-det3 <- summary(fit3[2])
-
-write_csv(occ3, "data/gorongosa-cameras/occ3.csv", col_names = T)
-
-#never writes row names
-write_csv(det3, "data/gorongosa-cameras/det3.csv", col_names = T)
-
-fit3
-
-#2023 updates
-#type 1 null occupancy formulas
-occFormulas_23 <- c('~1', '~1', '~1', '~1', '0','0','0','0','0','0', '0', '0', '0', '0', '0')
-
-#order: genet, civet, hb, mm
-detFormulas_23 <- c('~detect.obscured+cover.ground + tree_hansen + termite.large.count.100m', '~detect.obscured+cover.ground + water_dist + termite.large.count.100m', '~detect.obscured+cover.ground + termite.large.count.100m', '~detect.obscured+cover.ground + water_dist')
-
-fit3_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas_23, data)
-
-fit3_23
-
-detFormulas4_23 <- c('~detect.obscured+cover.ground + tree_hansen + termites_500m', '~detect.obscured+cover.ground + water_dist + termites_500m', '~detect.obscured+cover.ground + termites_500m', '~detect.obscured+cover.ground + water_dist')
-
-fit4_23 <- occuMulti(detFormulas4_23, stateformulas = occFormulas_23, data)
-
-fit4_23
-
-detFormulas5_23 <- c('~detect.obscured+cover.ground + tree_hansen', '~detect.obscured+cover.ground + water_dist + termites_1km_count + tree_hansen', '~detect.obscured+cover.ground + termites_1km_count', '~detect.obscured+cover.ground + water_dist')
-
-fit5_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas_23, data)
-
-fit5_23
-
-detFormulas6_23 <- c('~detect.obscured+cover.ground + tree_hansen', '~detect.obscured+cover.ground + water_dist + termites_1km_count + lion_latedry', '~detect.obscured+cover.ground + termites_1km_count', '~detect.obscured+cover.ground + water_dist')
-
-fit6_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas_23, data)
-
-fit6_23
-
 ```
 
-#Try to predict model output
+#Graph marginal detection probabilities relative to covariates
 ```{r}
-# explore "predict" function
-predictions <- predict(fit3_predict, type = "state") # predicts based on the covariates at the 60 cameras
-head(predictions$Predicted) # each row corresponds to camera, each column corresponds to a given state
-rowSums(predictions$Predicted) # should sum to 1 (they do)
-predictions$Predicted
-predict(fit3_predict, type = "state", species = "civet")
-
 # MAKE DUMMY DATA
-# lake urema
-urema_dist_scalelist <- list(scale = attr(occ_covs$urema_dist, "scaled:scale"),
-                      center = attr(occ_covs$urema_dist, "scaled:center"))
-dummy_urema <- data.frame(urema_dist = seq(min(occ_covs$urema_dist, na.rm=T), max(occ_covs$urema_dist, na.rm=T), by = 0.0001)) %>%
-  mutate(termite.large.count.100m = 0,
-         tree_hansen = 0,
-         detect.obscured = 0,
-         cover.ground = 0,
-         urema_unscaled = (urema_dist * urema_dist_scalelist$scale + urema_dist_scalelist$center)/1000)
 
 #distance to water
 water_dist_scalelist <- list(scale = attr(occ_covs$water_dist, "scaled:scale"),
@@ -332,17 +138,6 @@ dummy_lion <- data.frame(lion_latedry = seq(min(occ_covs$lion_latedry, na.rm=T),
          water_dist = 0,
          lion_unscaled = (lion_latedry * lion_scalelist$scale + lion_scalelist$center))
 
-
-#tree_hansen (thesis)
-tree_hansen_scalelist <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"),
-                      center = attr(occ_covs$tree_hansen, "scaled:center"))
-dummy_tree <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.0001)) %>%
-  mutate(termite.large.count.100m = 0,
-         urema_dist = 0,
-         detect.obscured = 0,
-         cover.ground = 0,
-         tree_unscaled = (tree_hansen * tree_hansen_scalelist$scale + tree_hansen_scalelist$center))
-
 #tree_hansen (2023)
 #occ_covs_fig is checking to see if I need to start with unscaled variables
 tree_hansen_scalelist_23 <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"), center = attr(occ_covs$tree_hansen, "scaled:center"))
@@ -353,16 +148,6 @@ dummy_tree_23 <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T)
          cover.ground = 0,
          tree_unscaled_23 = (tree_hansen * tree_hansen_scalelist_23$scale + tree_hansen_scalelist_23$center))
 
-#termite mound (thesis)
-termite_scalelist <- list(scale = attr(occ_covs$termite.large.count.100m, "scaled:scale"),
-                      center = attr(occ_covs$termite.large.count.100m, "scaled:center"))
-dummy_termite <- data.frame(termite.large.count.100m = seq(min(occ_covs$termite.large.count.100m, na.rm=T), max(occ_covs$termite.large.count.100m, na.rm=T), by = 0.0001)) %>%
-  mutate(tree_hansen = 0,
-         urema_dist = 0,
-         detect.obscured = 0,
-         cover.ground = 0,
-         termite_unscaled = (termite.large.count.100m * termite_scalelist$scale + termite_scalelist$center))
-
 #termite mound (2023)
 termite_scalelist_23 <- list(scale = attr(occ_covs$termites_1km_count, "scaled:scale"),center = attr(occ_covs$termites_1km_count, "scaled:center"))
 dummy_termite_23 <- data.frame(termites_1km_count = seq(min(occ_covs$termites_1km_count, na.rm=T), max(occ_covs$termites_1km_count, na.rm=T), by = 0.0001)) %>%
@@ -372,41 +157,13 @@ dummy_termite_23 <- data.frame(termites_1km_count = seq(min(occ_covs$termites_1k
          cover.ground = 0,
          termite_unscaled_23 = (termites_1km_count * termite_scalelist_23$scale + termite_scalelist_23$center))
 
-#genet: black, 1
-#civet: blue, 2
-#honey badger: red, 3
-#marsh mongoose: darkgreen, 4
-
-#generate a better color palette
-library(RColorBrewer) #install.packages("RColorBrewer")
-brewer.pal(n = 4, name = "Set1")
-#output: "#E41A1C" "#377EB8" "#4DAF4A" "#984EA3"
-#JK this isn't colorblind friendly
-
-#new colors
-#genet: "#E41A1C"
-#civet: "#377EB8"
-#honey badger: "#4DAF4A"
-#mm:"#984EA3"
-
 #colorblind colors
 #genet:#d55e00
 #civet: #0072b2
 #hb:#f0e442
 #mm:#009e73
 
-#2023 figures needed: genet-tree, civet-tree, civet-water, civet-termite, hb-termite, mm-water
-
-# CIVET & LAKE UREMA 
-civet_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="civet")
-civet_urema_predict <- cbind(civet_urema_predict, dummy_urema)
-civet_lake <- ggplot(data = civet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "skyblue1") +
-    geom_line(colour = "blue") +
-    ylim(0,1) +
-    theme_bw() +
-    labs(x = "Distance to Lake (km)") +
-    ggtitle("Civet")
+#2023 figures needed: genet-tree, civet-lion, civet-water, civet-termite, hb-termite, mm-water
 
 # CIVET & WATER
 civet_water_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_water, species="civet")
@@ -419,9 +176,6 @@ civet_water <- ggplot(data = civet_water_predict, aes(x = water_unscaled, y = Pr
     labs(x = "Distance to Water (km)", y = "Detection Probability") +
     ggtitle(" ")
 civet_water
-#pdf("scripts/figures//civet_lake.pdf", width = 6, height = 5)
-#civet_lake
-#dev.off()
 
 # CIVET & LION
 civet_lion_predict <- predict(fit6_23_predict, type = 'det', newdata = dummy_lion, species="civet")
@@ -447,29 +201,6 @@ civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled_2
     ggtitle(" ")
 civet_termite
 
-# CIVET & TREE
-civet_tree_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_tree_23, species="civet")
-civet_tree_predict <- cbind(civet_tree_predict, dummy_tree_23)
-civet_tree <- ggplot(data = civet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
-    geom_line(colour = "#0072b2", linewidth = 1) +
-    ylim(0,0.2) +
-    theme_bw() +
-    labs(x = "Tree Cover (%)" , y = "Detection Probability") +
-    ggtitle("Civet")
-civet_tree
-
-# GENET & LAKE UREMA (stays black/grey)
-genet_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="genet")
-genet_urema_predict <- cbind(genet_urema_predict, dummy_urema)
-genet_lake <- ggplot(data = genet_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "navajowhite") +
-    geom_line(colour = "darkorange") +
-    ylim(0,1) +
-    theme_bw() +
-    labs(x = "Distance to Lake (km)") +
-    ggtitle("Genet")
-
 #GENET & TREE (2023)
 genet_tree_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_tree_23, species= 'genet')
 genet_tree_predict <- cbind(genet_tree_predict, dummy_tree_23)
@@ -482,17 +213,6 @@ genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled_23, y = Pr
     ggtitle("Genet")
 genet_tree
 
-# HONEY BADGER & LAKE UREMA
-honey_badger_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="honey_badger")
-honey_badger_urema_predict <- cbind(honey_badger_urema_predict, dummy_urema)
-honey_badger_lake <- ggplot(data = honey_badger_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "pink") +
-    geom_line(colour = "red") +
-    ylim(0,1) +
-    theme_bw()+
-    labs(x = "Distance to Lake (km)") +
-    ggtitle("Honey Badger")
-
 # HONEY BADGER & TERMITE (2023)
 honey_badger_termite_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_termite_23, species="honey_badger")
 honey_badger_termite_predict <- cbind(honey_badger_termite_predict, dummy_termite_23)
@@ -504,17 +224,6 @@ honey_badger_termite <- ggplot(data = honey_badger_termite_predict, aes(x = term
     labs(x = "Termite Mounds Within 1km", y = "Detection Probability") +
     ggtitle("Honey Badger")
 honey_badger_termite
-
-# MARSH MONGOOSE & LAKE UREMA
-marsh_mongoose_urema_predict <- predict(fit3_predict, type = 'state', newdata = dummy_urema, species="marsh_mongoose")
-marsh_mongoose_urema_predict <- cbind(marsh_mongoose_urema_predict, dummy_urema)
-marsh_mongoose_lake <- ggplot(data = marsh_mongoose_urema_predict, aes(x = urema_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "darkseagreen2") +
-    geom_line(colour = "darkgreen") +
-    ylim(0,1) +
-    theme_bw() +
-    labs( x = "Distance to Lake (km)") +
-    ggtitle("Marsh Mongoose")
 
 # MARSH MONGOOSE & WATER
 marsh_mongoose_water_predict <- predict(fit5_23_predict, type = 'det', newdata = dummy_water, species="marsh_mongoose")
@@ -529,365 +238,30 @@ marsh_mongoose_water <- ggplot(data = marsh_mongoose_water_predict, aes(x = wate
     ggtitle("Marsh Mongoose")
 marsh_mongoose_water
 
-#CIVET & TERMITE
-civet_termite_predict <- predict(fit3_predict, type = 'state', newdata = dummy_termite, species="civet")
-civet_termite_predict <- cbind(civet_termite_predict, dummy_termite)
-civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "skyblue1") +
-    geom_line(colour = "blue") +
-    ylim(0,1) +
-    theme_bw() +
-    labs(x = "Termite Mound Density") +
-    ggtitle("")
-
-#MARSH MONGOOSE & TERMITE
-marsh_mongoose_termite_predict <- predict(fit3_predict, type = 'state', newdata = dummy_termite, species="marsh_mongoose")
-marsh_mongoose_termite_predict <- cbind(marsh_mongoose_termite_predict, dummy_termite)
-marsh_mongoose_termite <- ggplot(data = marsh_mongoose_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "darkseagreen2") +
-    geom_line(colour = "darkgreen") +
-    ylim(0,1) +
-    theme_bw() +
-    labs( x = "Termite Mound Density") +
-    ggtitle("Marsh Mongoose")
-
-#HONEY BADGER & TREE
-honey_badger_tree_predict <- predict(fit3_predict, type = 'state', newdata = dummy_tree, species="honey_badger")
-honey_badger_tree_predict <- cbind(honey_badger_tree_predict, dummy_tree)
-honey_badger_tree <- ggplot(data = honey_badger_tree_predict, aes(x = tree_unscaled, y = Predicted)) +
-    geom_ribbon(aes(ymin = lower, ymax = upper), fill = "pink") +
-    geom_line(colour = "red") +
-    ylim(0,1) +
-    theme_bw() +
-    labs( x = "Tree Cover (%)") +
-    ggtitle("")
-
-
-# now put everything together with patchwork!
-#grid <- (civet_lake + civet_termite) /
-#        (honey_badger_lake + honey_badger_tree) /
-#        (genet_lake + marsh_mongoose_termite)
-  # add plot labels
-# plot_annotation(title = "Marginal Occupancies", tag_suffix = ")")
-
-#create and save figure with all components
-pdf("scripts/figures/best_interaction_model_predict.pdf", width = 6, height = 5)
-ggarrange(civet_water, civet_termite, honey_badger_lake, honey_badger_tree, genet_lake, marsh_mongoose_termite, ncol = 2, nrow = 3)
-dev.off()
-
 #2023 create and save figure with all components
 pdf("scripts/figures/best_interaction_model_predict_23.pdf", width = 8, height = 5)
 ggarrange(civet_lion, civet_termite, civet_water, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
 dev.off()
 ```
 
-#starting to think about actual models with ecological background [type 2, no interaction covariates]
+#type 2 models, no interaction covariates]
 ```{r}
 #null model
 fit01 <- occuMulti(detformulas = c('~1', '~1', '~1', '~1'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
 
 fit01
 
-#null model
-fit001 <- occuMulti(detformulas = c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground'), stateformulas = c('~1', '~1', '~1', '~1','~1','~1','~1','~1','~1','~1','0','0','0','0','0'), data)
-
-fit001
-
-#a priori hypotheses
-occFormulas11_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-#a priori hypotheses plus single species exploration
-occFormulas12_23 <- c('~termite.large.count.100m','~water_dist', '~water_dist', '~water_dist','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-# Length should match number/order of columns in fDesign
-#single 'best' occ covariate from reading
-occFormulas11 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-#Length should match number/order of species in data@ylist (genet, civet, honey badger, marsh mongoose)
-detFormulas <- c('~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground', '~detect.obscured+cover.ground')
-
-fit11 <- occuMulti(detFormulas, stateformulas = occFormulas11, data)
-
-fit11_23 <- occuMulti(detFormulas, stateformulas = occFormulas11_23, data)
-
-fit11_23
-
-fit12_23 <- occuMulti(detFormulas, stateformulas = occFormulas12_23, data)
-
-fit12_23
-
-#why does this not produce anything except estimates?
-fit11
-
-#top two occ covariates from reading
-occFormulas12 <- c('~urema_dist+tree_hansen','~urema_dist + tree_hansen','~termite.large.count.100m + tree_hansen','~urema_dist + tree_hansen','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit12 <- occuMulti(detFormulas, stateformulas = occFormulas12, data)
-
-fit12
-
-#best occ covariates from single species exploration
-occFormulas13 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit13 <- occuMulti(detFormulas, stateformulas = occFormulas13, data)
-
-fit13
-
-#type 2, null occ plus informative detection covariates
+#type 2, null occupancy plus informative detection covariates
 occFormulas13_23 <- c('~1', '~1', '~1', '~1', '~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit13_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas13_23, data)
-
-fit13_23
-
-fit14_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas13_23, data)
-
-fit14_23
 
 fit15_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas13_23, data)
 
 fit15_23
 ```
 
-#starting to think about actual models with ecological background [type 3, includes interaction covariates] 
-
+#type 3 models, includes interaction covariates
 ```{r}
-# Length should match number/order of columns in fDesign
-occFormulas21 <- c('~urema_dist','~urema_dist','~termite.large.count.100m','~urema_dist','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit21 <- occuMulti(detFormulas, stateformulas = occFormulas21, data)
-
-fit21
-
-#top two occ covariates from reading
-occFormulas22 <- c('~urema_dist+tree_hansen','~urema_dist + tree_hansen','~termite.large.count.100m + tree_hansen','~urema_dist + tree_hansen','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit22 <- occuMulti(detFormulas, stateformulas = occFormulas22, data)
-
-fit22
-
-#best occ covariates from single species exploration
-occFormulas23 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit23 <- occuMulti(detFormulas, stateformulas = occFormulas23, data)
-
-fit23
-```
-
-#trying to see when the model breaks with the interaction term
-```{r}
-#starting with only an interaction covariate for genet/civet
-occFormulas31 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit31 <- occuMulti(detFormulas, stateformulas = occFormulas31, data)
-
-fit31
-
-occFormulas32 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit32 <- occuMulti(detFormulas, stateformulas = occFormulas32, data)
-
-fit32
-
-occFormulas33 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit33 <- occuMulti(detFormulas, stateformulas = occFormulas33, data)
-
-fit33
-
-#34 didn't even run...
-occFormulas34 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
-
-fit34 <- occuMulti(detFormulas, stateformulas = occFormulas34, data)
-
-fit34
-
-occFormulas35 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
-
-fit35 <- occuMulti(detFormulas, stateformulas = occFormulas35, data)
-
-fit35
-
-occFormulas36 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~lion_latedry','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit36 <- occuMulti(detFormulas, stateformulas = occFormulas36, data)
-
-fit36
-
-occFormulas37 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit37 <- occuMulti(detFormulas, stateformulas = occFormulas37, data)
-
-fit37
-
-occFormulas38 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit38 <- occuMulti(detFormulas, stateformulas = occFormulas38, data)
-
-fit38
-
-occFormulas39 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
-
-fit39 <- occuMulti(detFormulas, stateformulas = occFormulas39, data)
-
-fit39
-
-occFormulas40 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
-
-fit40 <- occuMulti(detFormulas, stateformulas = occFormulas40, data)
-
-fit40
-
-occFormulas41 <- c('~urema_dist','~urema_dist + termite.large.count.100m','~urema_dist + tree_hansen','~termite.large.count.100m','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit41 <- occuMulti(detFormulas, stateformulas = occFormulas41, data)
-
-fit41
-
-#running in 2023 with different set of covariates
-
-#lion only for genet:civet
-occFormulas31_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit31_23 <- occuMulti(detFormulas, stateformulas = occFormulas31_23, data)
-
-fit31_23
-
-#lion only for genet:hb
-occFormulas32_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit32_23 <- occuMulti(detFormulas, stateformulas = occFormulas32_23, data)
-
-fit32_23
-
-#lion only for genet:mm
-occFormulas33_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit33_23 <- occuMulti(detFormulas, stateformulas = occFormulas33_23, data)
-
-fit33_23
-
-#lion only for civet: hb
-occFormulas34_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
-
-fit34_23 <- occuMulti(detFormulas, stateformulas = occFormulas34_23, data)
-
-fit34_23
-
-#lion only for civet:mm
-occFormulas35_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
-
-fit35_23 <- occuMulti(detFormulas, stateformulas = occFormulas35_23, data)
-
-fit35_23
-
-#lion only for hb:mm
-occFormulas36_23 <- c('~pans_dist + termite.large.count.100m + tree_hansen','~pans_dist + termite.large.count.100m + tree_hansen','~termite.large.count.100m','~pans_dist','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit36_23 <- occuMulti(detFormulas, stateformulas = occFormulas36_23, data)
-
-fit36_23
-
-#running in 2023 with different set of covariates, null occ
-
-#lion only for genet:civet
-occFormulas37_23 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit37_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas37_23, data)
-
-fit37_23
-
-#lion only for genet:hb
-occFormulas38_23 <- c('~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit38_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas38_23, data)
-
-fit38_23
-
-#lion only for genet:mm
-occFormulas39_23 <- c('~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit39_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas39_23, data)
-
-fit39_23
-
-#lion only for civet: hb
-occFormulas40_23 <- c('~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
-
-fit40_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas40_23, data)
-
-fit40_23
-
-#lion only for civet:mm
-occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
-
-fit41_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas41_23, data)
-
-fit41_23
-
-#lion only for hb:mm
-occFormulas42_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit42_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas42_23, data)
-
-fit42_23
-
-occFormulas43_23 <- c('~1','~1','~1','~1','~lion_latedry','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit43_23 <- occuMulti(detFormulas_23, stateformulas = occFormulas43_23, data)
-
-fit43_23
-
-#running in 2023 with different set of covariates, null occ, new termite layer
-
-#lion only for genet:civet
-occFormulas37_23 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit44_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas37_23, data)
-
-fit44_23
-
-#lion only for genet:hb
-occFormulas38_23 <- c('~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit45_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas38_23, data)
-
-fit45_23
-
-#lion only for genet:mm
-occFormulas39_23 <- c('~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1','~1', '0', '0', '0', '0', '0')
-
-fit46_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas39_23, data)
-
-fit46_23
-
-#lion only for civet: hb
-occFormulas40_23 <- c('~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1','~1', '0', '0', '0', '0', '0')
-
-fit47_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas40_23, data)
-
-fit47_23
-
-#testing without detect.obscured
-fit47_23_2 <- occuMulti(detformulas = c('~cover.ground + tree_hansen', '~cover.ground + water_dist + termites_1km_count + tree_hansen', '~cover.ground + termites_1km_count', '~cover.ground + water_dist'), stateformulas = occFormulas40_23, data)
-
-fit47_23_2
-
-#lion only for civet:mm
-occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
-
-fit48_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas41_23, data)
-
-fit48_23
-
-#lion only for hb:mm
-occFormulas42_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry', '0', '0', '0', '0', '0')
-
-fit49_23 <- occuMulti(detFormulas5_23, stateformulas = occFormulas42_23, data)
-
-fit49_23
-
-#running in 2023 with different set of covariates, null occ, new termite layer, considering lion as detection
+#running in 2023 with null occupancy and considering lion as detection
 
 #lion only for genet:civet
 occFormulas37_23 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
@@ -917,11 +291,6 @@ fit53_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas40_23, data)
 
 fit53_23
 
-#testing without detect.obscured
-fit47_23_2 <- occuMulti(detformulas = c('~cover.ground + tree_hansen', '~cover.ground + water_dist + termites_1km_count + tree_hansen', '~cover.ground + termites_1km_count', '~cover.ground + water_dist'), stateformulas = occFormulas40_23, data)
-
-fit47_23_2
-
 #lion only for civet:mm
 occFormulas41_23 <- c('~1','~1','~1','~1','~1','~1','~1','~1','~lion_latedry','~1', '0', '0', '0', '0', '0')
 
@@ -936,40 +305,3 @@ fit55_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas42_23, data)
 
 fit55_23
 ```
-#model comparisons
-```{r}
-#List of fitted models
-fl <- fitList(fit0, fit00, fit1, fit2, fit3, fit01, fit001, fit11, fit12, fit13, fit21, fit22, fit23)
-coef(fl)
-
-#Model selection
-modsel <- modSel(fl)
-modSel(fl)
-summary(modsel)
-
-ms <- modSel(fl, nullmod="fit0")
-ms
- 
-coef(ms)                            # Estimates only
-SE(ms)                              # Standard errors only
-(toExport <- as(ms, "data.frame"))  # Everything as a data frame
-
-#model comparison 2023
-#I'm now not actually convinced we used this in 2020
-fl_23 <- fitList(fit0, fit5_23, fit01, fit14_23, fit44_23, fit45_23, fit46_23, fit47_23, fit48_23, fit49_23)
-
-modsel_23 <- modSel(fl_23, nullmod="fit0")
-#modSel(fl)
-summary(modsel_23)
-coef(modsel_23)
-```
-
-```{r}
-#conditional occupancy
-head(predict(fit3,'state',species='civet')) #civet | genet present
-head(predict(fit,'state',species='tiger',cond='bear')) #tiger | bear present
-head(predict(fit,'state',species='tiger',cond='-bear')) #bear absent
-head(predict(fit,'state',species='tiger',cond=c('coyote','-bear')))
-
-```
-
