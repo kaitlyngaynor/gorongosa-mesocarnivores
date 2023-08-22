@@ -40,6 +40,7 @@ record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_s
 
 # subset to dates of interest
 #I believe this works as intended, includes detections from 8/1 and 11/30
+#August 2023 note: this isn't the correct format, I think it should be "%m/%d/%Y %H:%M"
 record_table_subset <- record_table %>% 
     mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
                           format = "%m/%d/%y %H:%M")) %>% 
