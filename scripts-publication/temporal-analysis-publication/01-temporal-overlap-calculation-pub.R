@@ -1,20 +1,18 @@
 # Temporal overlap analysis
-# Kaitlyn Gaynor, July 13 2020
-
 
 # Import data -------------------------------------------------------------
 
-library(overlap) #install.packages("overlap")
+library(overlap)
 library(tidyverse)
-library(circular) #install.packages("circular")
+library(circular)
 library(ggplot2)
 library(ggpubr)
-library("grid") #install.packages("grid") 
-library("ggplotify") #install.packages("ggplotify") 
+library(grid)
+library(ggplotify)
 library(tidyverse)
 library(dplyr)
 
-# load in Gorongosa record table (note: if you use read_csv from tidyverse instead of read.csv, it will automatically format date)
+# load in Gorongosa record table
 record_table <- read_csv("data-publication/recordtable_allrecordscleaned.csv")
 
 # this already has the "Time.Sun" column, where times have been scaled to radians 
@@ -22,51 +20,83 @@ record_table <- read_csv("data-publication/recordtable_allrecordscleaned.csv")
 # so this is what we need for analysis
 
 
-# Subset data to periods and species of interest --------------------------
+# Subset data to species of interest --------------------------
 
-start.date <- "2016-08-01"
-end.date <- "2016-11-30"
-
-# subset record table to dates of interest 
-record_table_subset <- record_table %>% 
-  mutate(Date = as.Date(DateTimeOriginal, # format date column as date for subsetting
-                        format = "%m/%d/%Y %H:%M")) %>% 
-  filter(Date >= as.Date(start.date) & Date <= as.Date(end.date))
-
-# extract the data for civets for the dates of interest
-civets <- record_table_subset %>% 
+# extract the data for civets
+civets <- record_table %>% 
     filter(Species == "Civet") 
 
-# extract the data for genets for the dates of interest
-genets <- record_table_subset %>% 
+# extract the data for genets
+genets <- record_table %>% 
     filter(Species == "Genet") 
 
-# extract the data for honey badgers for the dates of interest
-honey_badgers <- record_table_subset %>%
+# extract the data for honey badgers
+honey_badgers <- record_table %>%
     filter(Species == "Honey_badger")
 
-# extract the data for marsh mongooses for the dates of interest
-marsh_mongoose <-  record_table_subset %>%
+# extract the data for marsh mongooses
+marsh_mongoose <-  record_table %>%
   filter(Species == "Mongoose_marsh")
 
-# Make overlap plots using source code --------------------------------
-source("scripts-publication/temporal-analysis-publication/02-temporal-figure-functions-pub.R")
+# Make activity pattern plot ------------------------------------------
 
-#4 species temporal overlap
-pdf("scripts-publication/figures-publication/activity-patterns-all_23.pdf", width = 8, height = 5)
+# define function for plotting 4 species (noon to noon) 
+timeplot4_noon <-function (A, B, C, D, xscale = 24, linecol = c("#e41a1c","#377eb8","#4daf4a", "black"),
+                           linetype = c(1,2,4,3),
+                           n.grid = 128, kmax = 3, adjust = 1, 
+                           ...) 
+{
+    bwA <- getBandWidth(A, kmax = kmax)/adjust
+    bwB <- getBandWidth(B, kmax = kmax)/adjust
+    bwC <- getBandWidth(C, kmax = kmax)/adjust
+    bwD <- getBandWidth(D, kmax = kmax)/adjust
+    if (is.na(bwA) || is.na(bwB)) 
+        stop("Bandwidth estimation failed.")
+    xsc <- if (is.na(xscale))
+        1
+    else xscale/(2 * pi)
+    xxRad <- seq(pi, 3 * pi, length = n.grid)
+    xx <- xxRad * xsc
+    densA <- densityFit(A, xxRad, bwA)/xsc
+    densB <- densityFit(B, xxRad, bwB)/xsc
+    densC <- densityFit(C, xxRad, bwC)/xsc
+    densD <- densityFit(D, xxRad, bwD)/xsc
+    densOL <- pmin(densA, densB, densC, densD)
+    ylim <- c(0, max(densA, densB, densC, densD))
+    plot(0, 0, type = "n", ylim = ylim, xlim = range(xx), xlab = "Time of Day", 
+         ylab = "Density of Activity", xaxt = "n", ...)
+    if (is.na(xscale)) {
+        axis(1, at = c(pi, 3*pi/2, 2*pi, 5 * pi/2, 3 * pi), labels = c("0", 
+                                                                       expression(pi/2), expression(pi), expression(3 * 
+                                                                                                                        pi/2), expression(2 * pi)))
+    }
+    else if (xscale == 24) {
+        axis(1, at = c(12, 18, 24, 30, 36), labels = c("Noon", 
+                                                       "Sunset", "Midnight", "Sunrise", "Noon"))
+    }
+    else {
+        axis(1)
+    }
+    lines(xx, densA, col = linecol[1], lwd=3, lty = linetype[1])
+    lines(xx, densB, col = linecol[2], lwd=3, lty = linetype[2])
+    lines(xx, densC, col = linecol[3], lwd=3, lty = linetype[3])
+    lines(xx, densD, col = linecol[4], lwd=3, lty = linetype[4])
+    return(invisible(list(x = xx, densityA = densA, densityB = densB, densityC = densC, densityD=densB)))
+}
+
+#generate plot
 timeplot4_noon(genets$Time.Sun, civets$Time.Sun, honey_badgers$Time.Sun, marsh_mongoose$Time.Sun, linecol = c("#d55e00", "#0072b2", "#f0e442", "#009e73"),
                linetype = c(1,1,1,1))
 legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,1,1,1), col=c("#d55e00", "#0072b2", "#f0e442", "#009e73"),
        bg="white", cex = 0.8)
-dev.off()
+
 
 # Calculate overlap coefficient -------------------------------------------
 
 #genet:civet
 overlapEst(genets$Time.Sun, civets$Time.Sun)
-# Dhat4 is what we want (they are just different ways to calculate; dhat4 is for sample sizes > 50)
+# Dhat4 is what we want (for sample sizes > 50)
 # this ranges from 0 (no overlap) to 1 (complete overlap)
-# it's the area of the grey polygon under the curves (area under each curve is 1)
 
 #genet:honey badger
 overlapEst(genets$Time.Sun, honey_badgers$Time.Sun)
@@ -83,7 +113,9 @@ overlapEst(civets$Time.Sun, marsh_mongoose$Time.Sun)
 #honey badger:marsh mongoose
 overlapEst(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
-# if you want a confidence interval, you have to get it by bootstrapping (takes a LONG time, be warned)
+
+# Calculate confidence intervals with bootstrapping -------------------------------------------
+
 #genet:civet
 Dhats_inout <- overlapEst(genets$Time.Sun, civets$Time.Sun)
 bs_civets <- resample(civets$Time.Sun, 10000)
