@@ -7,14 +7,14 @@ editor_options:
   chunk_output_type: console
 ---
 
-#install packages 
+#load packages 
 ```{r}
-library("unmarked")  #install.packages("unmarked") 
-library(camtrapR) #install.packages("camtrapR")
+library(unmarked)
+library(camtrapR)
 library(tidyverse)
 library(dplyr)
-library(patchwork) #install.packages("patchwork")
-library(ggpubr)  #install.packages("ggpubr")
+library(patchwork)
+library(ggpubr)
 ```
 
 #use unmarkedFrameOccuMulti to create the data object
