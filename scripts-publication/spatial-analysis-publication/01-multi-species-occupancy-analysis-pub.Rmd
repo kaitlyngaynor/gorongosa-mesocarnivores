@@ -81,7 +81,6 @@ detFormulas <- c('~detect.obscured + cover.ground + tree_hansen', '~detect.obscu
 fit_1 <- occuMulti(detFormulas, stateformulas = occFormulas_1, data)
 
 fit_1
-
 ```
 
 #type 2 models, no interaction covariates
@@ -149,8 +148,6 @@ fit_36
 
 #Graph marginal detection probabilities relative to covariates
 ```{r}
-# MAKE DUMMY DATA
-
 #distance to water
 water_dist_scalelist <- list(scale = attr(occ_covs$water_dist,"scaled:scale"),
                       center = attr(occ_covs$water_dist, "scaled:center"))
@@ -174,7 +171,7 @@ dummy_lion <- data.frame(lion_latedry = seq(min(occ_covs$lion_latedry, na.rm=T),
          water_dist = 0,
          lion_unscaled = (lion_latedry * lion_scalelist$scale + lion_scalelist$center))
 
-#tree_hansen (2023)
+#tree_hansen
 tree_hansen_scalelist_23 <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"), center = attr(occ_covs$tree_hansen, "scaled:center"))
 dummy_tree_23 <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.0001)) %>%
   mutate(termites_1km_count = 0,
@@ -184,7 +181,7 @@ dummy_tree_23 <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T)
          lion_latedry = 0,
          tree_unscaled_23 = (tree_hansen * tree_hansen_scalelist_23$scale + tree_hansen_scalelist_23$center))
 
-#termite mound (2023)
+#termite mound
 termite_scalelist_23 <- list(scale = attr(occ_covs$termites_1km_count, "scaled:scale"),center = attr(occ_covs$termites_1km_count, "scaled:center"))
 dummy_termite_23 <- data.frame(termites_1km_count = seq(min(occ_covs$termites_1km_count, na.rm=T), max(occ_covs$termites_1km_count, na.rm=T), by = 0.0001)) %>%
   mutate(tree_hansen = 0,
@@ -193,14 +190,6 @@ dummy_termite_23 <- data.frame(termites_1km_count = seq(min(occ_covs$termites_1k
          cover.ground = 0,
          lion_latedry = 0,
          termite_unscaled_23 = (termites_1km_count * termite_scalelist_23$scale + termite_scalelist_23$center))
-
-#colorblind colors
-#genet:#d55e00
-#civet: #0072b2
-#hb:#f0e442
-#mm:#009e73
-
-#2023 figures needed: genet-tree, civet-lion, civet-water, civet-termite, hb-termite, mm-water
 
 # CIVET & WATER
 civet_water_predict <- predict(fit_1, type = 'det', newdata = dummy_water, species="civet")
@@ -238,7 +227,7 @@ civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled_2
     ggtitle(" ")
 civet_termite
 
-#GENET & TREE (2023)
+#GENET & TREE
 genet_tree_predict <- predict(fit_1, type = 'det', newdata = dummy_tree_23, species= 'genet')
 genet_tree_predict <- cbind(genet_tree_predict, dummy_tree_23)
 genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
@@ -250,7 +239,7 @@ genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled_23, y = Pr
     ggtitle("Genet")
 genet_tree
 
-# HONEY BADGER & TERMITE (2023)
+# HONEY BADGER & TERMITE
 honey_badger_termite_predict <- predict(fit_1, type = 'det', newdata = dummy_termite_23, species="honey_badger")
 honey_badger_termite_predict <- cbind(honey_badger_termite_predict, dummy_termite_23)
 honey_badger_termite <- ggplot(data = honey_badger_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
@@ -274,8 +263,6 @@ marsh_mongoose_water <- ggplot(data = marsh_mongoose_water_predict, aes(x = wate
     ggtitle("Marsh Mongoose")
 marsh_mongoose_water
 
-#2023 create and save figure with all components
-pdf("scripts-publication/figures-publication/best_interaction_model_predict_23.pdf", width = 8, height = 5)
+#create figure with all components
 ggarrange(civet_lion, civet_termite, civet_water, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
-dev.off()
 ```
