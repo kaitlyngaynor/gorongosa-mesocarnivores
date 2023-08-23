@@ -33,7 +33,7 @@ y <- list(genet_dh, civet_dh, honeybadger_dh, marshmongoose_dh)
 names(y) <- c('genet','civet','honey_badger', 'marsh_mongoose')
 
 #load occupancy covariates
-occ_covs <- read_csv("GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
+occ_covs <- read_csv("GNP_data.csv", col_names = TRUE) %>% as.data.frame()
 
 #scaling all the non-binary, unscaled covariates
 occ_covs$tree_hansen = scale(occ_covs$tree_hansen)

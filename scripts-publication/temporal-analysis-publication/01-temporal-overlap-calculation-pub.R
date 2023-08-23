@@ -13,7 +13,7 @@ library(tidyverse)
 library(dplyr)
 
 # load in Gorongosa record table
-record_table <- read_csv("data-publication/recordtable_allrecordscleaned.csv")
+record_table <- read_csv("data-publication/recordtable_cleaned_EE.csv")
 
 # this already has the "Time.Sun" column, where times have been scaled to radians 
 # where pi/2 = sunrise, pi = solar noon, 3pi/2 = sunset, and 2pi = solar midnight

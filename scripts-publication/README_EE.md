@@ -14,15 +14,21 @@ Details on camera placement can be found in Gaynor et al. (2021). After identify
 
 #### Raw input data
 
-##### **Camera_operation_years1and2.csv**
+##### **GNP_data.csv**
 
-Camera operation information for the sixty cameras during the first two years of deployment (2016-2017). Used as input in a previous version of camtrapR to generate detection histories. Each row corresponds to an individual camera. Columns include: 
+Camera operation information for the sixty cameras during the first two years of deployment (2016-2017) and covariate values for all camera locations in the study area. Used as input in a previous version of camtrapR to generate detection histories and in 01-multi-species-occupancy-analysis-pub.Rmd. Each row corresponds to an individual camera. Columns include: 
 
 * Camera: unique camera ID
 * Start: date camera was deployed, M/D/YY
 * End: date camera was taken down, M/D/YY
 * Problem1_from, Problem2_from, Problem3_from: start date(s) of any problems with the camera (up to three), M/D/YY
 * Problem1_to, Problem2_to, Problem3_to: end date(s) of any problems with the camera (up to three), M/D/YY
+* tree_hansen: Percent tree cover; from Global Forest Change database
+* lion_latedry: scaled measure of lion presence, see text for calculation
+* detect.obscured: binary measure of whether the camera’s maximum 10m range was obscured
+* cover.ground: percentage of ground cover in a 10m radius around the camera (estimated visually)
+* termites_1km_count: number of termite mounds within a 1km radius of the camera
+* water_dist: distance to nearest water; available water included rivers, large pans (>1km2 in area, hand-digitized from 2015 DigitalGlobe imagery), and Lake Urema (dry season boundary)
 
 ##### **recordtable_allrecordscleaned_speciesmetadata.csv**
 
@@ -32,18 +38,6 @@ Record table of all camera trap detections. Each row corresponds to a record. Us
 * Species: common name of species in record
 * DateTimeOriginal: M/D/YY H:M, GMT+2
 * Time.Sun: time of camera record, scaled in radians. pi/2 = sunrise, pi = solar noon, 3pi/2 = sunset, and 2pi = solar midnight
-
-##### **GNP_covariates_with_pan.csv**
-
-Covariate values for all camera locations in the study area. Each row corresponds to a camera. Used in 02-multi-species-occupancy-analysis-GNP-2023.Rmd. Columns include: 
-
-* StudySite: unique camera ID
-* tree_hansen: Percent tree cover; from Global Forest Change database
-* lion_latedry: scaled measure of lion presence, see text for calculation
-* detect.obscured: binary measure of whether the camera’s maximum 10m range was obscured
-* cover.ground: percentage of ground cover in a 10m radius around the camera (estimated visually)
-* termites_1km_count: number of termite mounds within a 1km radius of the camera
-* water_dist: distance to nearest water; available water included rivers, large pans (>1km2 in area, hand-digitized from 2015 DigitalGlobe imagery), and Lake Urema (dry season boundary)
 
 ##### **genet.csv, civet.csv, honey_badger.csv, marsh_mongoose.csv**
 
