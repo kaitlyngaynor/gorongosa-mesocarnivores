@@ -67,8 +67,11 @@ occ_covs_fig <- occ_covs
 #messing with lion covariate to understand scaling
 occ_covs$lion_latedry_scaled = scale(occ_covs$lion_latedry)
 plot(occ_covs$lion_latedry, occ_covs$lion_latedry_scaled)
+plot(occ_covs$lion_latedry_double, occ_covs$lion_latedry_scaled)
 hist(occ_covs$lion_latedry)
 hist(occ_covs$lion_latedry_scaled)
+hist(occ_covs$lion_latedry_double)
+occ_covs$lion_latedry_double = scale(occ_covs$lion_latedry_scaled)
 
 #scaling all the non-binary covariates to address the NaN warnings
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
