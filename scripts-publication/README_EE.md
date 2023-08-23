@@ -1,7 +1,12 @@
 Data for "Limited spatiotemporal niche partitioning among mesocarnivores in Gorongosa National Park, Mozambique"
 ---
 
-Brief summary of dataset contents, contextualized in experimental procedures and results.
+Gorongosa National Park (GNP) is in central Mozambique at the southern extent of the Great Rift Valley.The protected area encompasses a variety of landscapes, including grassland, savanna, and woodland habitats, as well as seasonally-inundated floodplain that surrounds Lake Urema. The 4000 km² park experiences distinct wet and dry seasons, with most of the 700-900 mm of annual rainfall in the park’s interior during the wet season from December to March. 
+
+We used camera traps to examine spatiotemporal patterns of mesocarnivore activity at GNP. We arranged 60 motion-activated camera traps (Bushnell TrophyCam) in a grid in a 300 km² area of woodland south of Lake Urema. We used data from the 2016 late dry season (August ‒ November; 122 days) to better meet model assumptions of closure. We chose the late dry season because there is less vegetation during that time to obscure mesocarnivores, and because resource scarcity at this time might be associated with the strongest patterns of spatiotemporal niche partitioning. Nine of the cameras were inoperable for some portion of the study period, but we retained them in the analysis as all were active for at least 23 days.
+
+Details on camera placement can be found in Gaynor et al. (2021). After identifying all photographed animals to species level, we generated a detection record using the camtrapR package in R v3.6.3. We considered a species to be detected on a given date if there was at least one photograph containing the species and undetected if not. 
+
 
 ## Description of the data scripts
 
@@ -14,10 +19,10 @@ Brief summary of dataset contents, contextualized in experimental procedures and
 Camera operation information for the sixty cameras during the first two years of deployment (2016-2017). Used as input in a previous version of camtrapR to generate detection histories. Each row corresponds to an individual camera. Columns include: 
 
 * Camera: unique camera ID
-* Start: date camera was deployed
-* End: date camera was taken down
-* Problem1_from, Problem2_from, Problem3_from: start date(s) of any problems with the camera (up to three)
-* Problem1_to, Problem2_to, Problem3_to: end date(s) of any problems with the camera (up to three)
+* Start: date camera was deployed, M/D/YY
+* End: date camera was taken down, M/D/YY
+* Problem1_from, Problem2_from, Problem3_from: start date(s) of any problems with the camera (up to three), M/D/YY
+* Problem1_to, Problem2_to, Problem3_to: end date(s) of any problems with the camera (up to three), M/D/YY
 
 ##### **recordtable_allrecordscleaned_speciesmetadata.csv**
 
@@ -25,7 +30,7 @@ Record table of all camera trap detections. Each row corresponds to a record. Us
 
 * Camera: unique camera ID
 * Species: common name of species in record
-* DateTimeOriginal: M/D/YY HH:MM:SS XM, GMT+2
+* DateTimeOriginal: M/D/YY H:M, GMT+2
 * Time.Sun: time of camera record, scaled in radians. pi/2 = sunrise, pi = solar noon, 3pi/2 = sunset, and 2pi = solar midnight
 
 ##### **GNP_covariates_with_pan.csv**
