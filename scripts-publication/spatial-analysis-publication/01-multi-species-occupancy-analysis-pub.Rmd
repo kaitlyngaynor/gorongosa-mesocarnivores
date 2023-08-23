@@ -101,8 +101,6 @@ fit_2
 
 #type 3 models, includes interaction covariates
 ```{r}
-#running in 2023 with null occupancy and considering lion as detection
-
 #lion only for genet:civet
 occFormulas_31 <- c('~1','~1','~1','~1','~lion_latedry','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
 
