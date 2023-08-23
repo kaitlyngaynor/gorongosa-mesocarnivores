@@ -40,6 +40,7 @@ occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
 occ_covs$water_dist = scale(occ_covs$water_dist)
 occ_covs$termites_1km_count = scale(occ_covs$termites_1km_count)
+occ_covs$lion_latedry = scale(occ_covs$lion_latedry)
 
 #generate data
 data <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs)
@@ -158,9 +159,8 @@ dummy_water <- data.frame(water_dist = seq(min(occ_covs$water_dist, na.rm=T), ma
          water_unscaled = (water_dist * water_dist_scalelist$scale + water_dist_scalelist$center)/1000)
 
 #lion presence
-#lion_latedry is already scaled, so it doesn't need to be scaled for the models themselves but it does for this code
-lion_scalelist <- list(scale = attr(scale(occ_covs$lion_latedry), "scaled:scale"),
-                      center = attr(scale(occ_covs$lion_latedry), "scaled:center"))
+lion_scalelist <- list(scale = attr(occ_covs$lion_latedry, "scaled:scale"),
+                      center = attr(occ_covs$lion_latedry, "scaled:center"))
 dummy_lion <- data.frame(lion_latedry = seq(min(occ_covs$lion_latedry, na.rm=T), max(occ_covs$lion_latedry, na.rm=T), by = 0.0001)) %>%
   mutate(termites_1km_count = 0,
          tree_hansen = 0,
