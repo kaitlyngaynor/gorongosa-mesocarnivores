@@ -20,20 +20,20 @@ library(ggpubr)
 #use unmarkedFrameOccuMulti to create the data object
 ```{r}
 # load in detection histories
-genet_dh <-read_csv("data-publication/genet.csv", col_names = FALSE) %>% as.matrix()
+genet_dh <-read_csv("genet.csv", col_names = FALSE) %>% as.matrix()
 
-civet_dh <-read_csv("data-publication/civet.csv", col_names = FALSE) %>% as.matrix()
+civet_dh <-read_csv("civet.csv", col_names = FALSE) %>% as.matrix()
 
-honeybadger_dh <-read_csv("data-publication/honey_badger.csv", col_names = FALSE) %>% as.matrix()
+honeybadger_dh <-read_csv("honey_badger.csv", col_names = FALSE) %>% as.matrix()
 
-marshmongoose_dh <-read_csv("data-publication/marsh_mongoose.csv", col_names = FALSE) %>% as.matrix()
+marshmongoose_dh <-read_csv("marsh_mongoose.csv", col_names = FALSE) %>% as.matrix()
 
 #put all data frames together and name them
 y <- list(genet_dh, civet_dh, honeybadger_dh, marshmongoose_dh)
 names(y) <- c('genet','civet','honey_badger', 'marsh_mongoose')
 
 #load occupancy covariates
-occ_covs <- read_csv("data-publication/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
+occ_covs <- read_csv("GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
 
 #scaling all the non-binary, unscaled covariates
 occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
