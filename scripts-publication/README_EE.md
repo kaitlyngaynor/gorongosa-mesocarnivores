@@ -17,7 +17,7 @@ Camera operation information for the sixty cameras during the first two years of
 * Start: date camera was deployed
 * End: date camera was taken down
 * Problem1_from, Problem2_from, Problem3_from: start date(s) of any problems with the camera (up to three)
-*Problem1_to, Problem2_to, Problem3_to: end date(s) of any problems with the camera (up to three)
+* Problem1_to, Problem2_to, Problem3_to: end date(s) of any problems with the camera (up to three)
 
 ##### **recordtable_allrecordscleaned_speciesmetadata.csv**
 
@@ -25,7 +25,7 @@ Record table of all camera trap detections. Each row corresponds to a record. Us
 
 * Camera: unique camera ID
 * Species: common name of species in record
-* DateTimeOrginal: M/D/YY HH:MM:SS XM, Central Africa Time
+* DateTimeOriginal: M/D/YY HH:MM:SS XM, GMT+2
 * Time.Sun: time of camera record, scaled in radians. pi/2 = sunrise, pi = solar noon, 3pi/2 = sunset, and 2pi = solar midnight
 
 ##### **GNP_covariates_with_pan.csv**
