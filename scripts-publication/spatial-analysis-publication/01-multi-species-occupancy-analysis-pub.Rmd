@@ -209,7 +209,7 @@ civet_lion <- ggplot(data = civet_lion_predict, aes(x = lion_unscaled, y = Predi
     geom_line(colour = "#0072b2", linewidth = 1) +
     ylim(0,0.2) +
     theme_bw() +
-    labs(x = "Lion Presence", y = "Detection Probability") +
+    labs(x = "Relative Lion Activity", y = "Detection Probability") +
     ggtitle("Civet")
 civet_lion
 
