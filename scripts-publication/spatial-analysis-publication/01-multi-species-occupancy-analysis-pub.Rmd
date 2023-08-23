@@ -170,24 +170,24 @@ dummy_lion <- data.frame(lion_latedry = seq(min(occ_covs$lion_latedry, na.rm=T),
          lion_unscaled = (lion_latedry * lion_scalelist$scale + lion_scalelist$center))
 
 #tree_hansen
-tree_hansen_scalelist_23 <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"), center = attr(occ_covs$tree_hansen, "scaled:center"))
-dummy_tree_23 <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.0001)) %>%
+tree_hansen_scalelist <- list(scale = attr(occ_covs$tree_hansen, "scaled:scale"), center = attr(occ_covs$tree_hansen, "scaled:center"))
+dummy_tree <- data.frame(tree_hansen = seq(min(occ_covs$tree_hansen, na.rm=T), max(occ_covs$tree_hansen, na.rm=T), by = 0.0001)) %>%
   mutate(termites_1km_count = 0,
          water_dist = 0,
          detect.obscured = 0,
          cover.ground = 0,
          lion_latedry = 0,
-         tree_unscaled_23 = (tree_hansen * tree_hansen_scalelist_23$scale + tree_hansen_scalelist_23$center))
+         tree_unscaled = (tree_hansen * tree_hansen_scalelist$scale + tree_hansen_scalelist$center))
 
 #termite mound
-termite_scalelist_23 <- list(scale = attr(occ_covs$termites_1km_count, "scaled:scale"),center = attr(occ_covs$termites_1km_count, "scaled:center"))
-dummy_termite_23 <- data.frame(termites_1km_count = seq(min(occ_covs$termites_1km_count, na.rm=T), max(occ_covs$termites_1km_count, na.rm=T), by = 0.0001)) %>%
+termite_scalelist <- list(scale = attr(occ_covs$termites_1km_count, "scaled:scale"),center = attr(occ_covs$termites_1km_count, "scaled:center"))
+dummy_termite <- data.frame(termites_1km_count = seq(min(occ_covs$termites_1km_count, na.rm=T), max(occ_covs$termites_1km_count, na.rm=T), by = 0.0001)) %>%
   mutate(tree_hansen = 0,
          water_dist = 0,
          detect.obscured = 0,
          cover.ground = 0,
          lion_latedry = 0,
-         termite_unscaled_23 = (termites_1km_count * termite_scalelist_23$scale + termite_scalelist_23$center))
+         termite_unscaled = (termites_1km_count * termite_scalelist$scale + termite_scalelist$center))
 
 # CIVET & WATER
 civet_water_predict <- predict(fit_1, type = 'det', newdata = dummy_water, species="civet")
@@ -214,9 +214,9 @@ civet_lion <- ggplot(data = civet_lion_predict, aes(x = lion_unscaled, y = Predi
 civet_lion
 
 # CIVET & TERMITE
-civet_termite_predict <- predict(fit_1, type = 'det', newdata = dummy_termite_23, species="civet")
-civet_termite_predict <- cbind(civet_termite_predict, dummy_termite_23)
-civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
+civet_termite_predict <- predict(fit_1, type = 'det', newdata = dummy_termite, species="civet")
+civet_termite_predict <- cbind(civet_termite_predict, dummy_termite)
+civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#0072b2", alpha = 0.25) +
     geom_line(colour = "#0072b2", linewidth = 1) +
     ylim(0,0.2) +
@@ -226,9 +226,9 @@ civet_termite <- ggplot(data = civet_termite_predict, aes(x = termite_unscaled_2
 civet_termite
 
 #GENET & TREE
-genet_tree_predict <- predict(fit_1, type = 'det', newdata = dummy_tree_23, species= 'genet')
-genet_tree_predict <- cbind(genet_tree_predict, dummy_tree_23)
-genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled_23, y = Predicted)) +
+genet_tree_predict <- predict(fit_1, type = 'det', newdata = dummy_tree, species= 'genet')
+genet_tree_predict <- cbind(genet_tree_predict, dummy_tree)
+genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#d55e00", alpha = 0.25) +
     geom_line(colour = "#d55e00", linewidth = 1) +
     ylim(0,0.25) +
@@ -238,9 +238,9 @@ genet_tree <- ggplot(data = genet_tree_predict, aes(x = tree_unscaled_23, y = Pr
 genet_tree
 
 # HONEY BADGER & TERMITE
-honey_badger_termite_predict <- predict(fit_1, type = 'det', newdata = dummy_termite_23, species="honey_badger")
-honey_badger_termite_predict <- cbind(honey_badger_termite_predict, dummy_termite_23)
-honey_badger_termite <- ggplot(data = honey_badger_termite_predict, aes(x = termite_unscaled_23, y = Predicted)) +
+honey_badger_termite_predict <- predict(fit_1, type = 'det', newdata = dummy_termite, species="honey_badger")
+honey_badger_termite_predict <- cbind(honey_badger_termite_predict, dummy_termite)
+honey_badger_termite <- ggplot(data = honey_badger_termite_predict, aes(x = termite_unscaled, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), fill = "#f0e442", alpha = 0.25) +
     geom_line(colour = "#f0e442", linewidth = 1) +
     ylim(0,0.1) +
