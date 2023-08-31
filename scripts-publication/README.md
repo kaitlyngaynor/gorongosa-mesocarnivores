@@ -57,10 +57,6 @@ Runs models using the unmarked package in R for models with no species interacti
 
 Calculates pairwise temporal (24-hr) overlap between all pairs of species, using overlap package. Makes temporal overlap plot for four focal species. Input file is recordtable_allrecordscleaned_speciesmetadata.csv.
 
-##### **02-temporal-figure-functions.R**
-
-Function for plotting temporal activity of four species. Used in 01-temporal-overlap-calculation.R. 
-
 ## Sharing/access Information
 
 The data was not derived from another source.
