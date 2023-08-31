@@ -30,7 +30,7 @@ Camera operation information for the sixty cameras during the first two years of
 * termites_1km_count: number of termite mounds within a 1km radius of the camera
 * water_dist: distance to nearest water; available water included rivers, large pans (>1km2 in area, hand-digitized from 2015 DigitalGlobe imagery), and Lake Urema (dry season boundary)
 
-##### **recordtable_allrecordscleaned_speciesmetadata.csv**
+##### **recordtable_cleaned_EE.csv**
 
 Record table of all camera trap detections. Each row corresponds to a record. Used to generate species detection histories using a previous version of camtrapR and in 01-temporal-overlap-calculation.R. Columns include: 
 
@@ -55,7 +55,7 @@ Runs models using the unmarked package in R for models with no species interacti
 
 ##### **01-temporal-overlap-calculation-pub.R**
 
-Calculates pairwise temporal (24-hr) overlap between all pairs of species, using overlap package. Makes temporal overlap plot for four focal species. Input file is recordtable_allrecordscleaned_speciesmetadata.csv.
+Calculates pairwise temporal (24-hr) overlap between all pairs of species, using overlap package. Makes temporal overlap plot for four focal species. Input file is recordtable_cleaned_EE.csv.
 
 ## Sharing/access Information
 
