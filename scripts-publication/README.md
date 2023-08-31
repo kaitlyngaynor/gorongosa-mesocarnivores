@@ -47,13 +47,13 @@ Detection histories for four focal species: African civet, large-spotted genet, 
 
 #### Spatial analysis
 
-##### **01-multi-species-occupancy-analysis-GNP-2023.R**
+##### **01-multi-species-occupancy-analysis-pub.R**
 
 Runs models using the unmarked package in R for models with no species interactions, those with constant species interactions, and those with interaction covariates. Generates figures of species detection probabilities against significant covariates. Takes genet.csv, civet.csv, honey_badger.csv, marsh_mongoose.csv, and GNP_covariates_with_pan.csv as inputs. 
 
 #### Temporal analysis
 
-##### **01-temporal-overlap-calculation.R**
+##### **01-temporal-overlap-calculation-pub.R**
 
 Calculates pairwise temporal (24-hr) overlap between all pairs of species, using overlap package. Makes temporal overlap plot for four focal species. Input file is recordtable_allrecordscleaned_speciesmetadata.csv.
 
