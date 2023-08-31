@@ -32,7 +32,7 @@ Camera operation information for the sixty cameras during the first two years of
 
 ##### **recordtable_cleaned_EE.csv**
 
-Record table of all camera trap detections. Each row corresponds to a record. Used to generate species detection histories using a previous version of camtrapR and in 01-temporal-overlap-calculation.R. Columns include: 
+Record table of all camera trap detections. Each row corresponds to a record. Used to generate species detection histories using a previous version of camtrapR and in 01-temporal-overlap-calculation-pub.R. Columns include: 
 
 * Camera: unique camera ID
 * Species: common name of species in record
@@ -41,7 +41,7 @@ Record table of all camera trap detections. Each row corresponds to a record. Us
 
 ##### **genet.csv, civet.csv, honey_badger.csv, marsh_mongoose.csv**
 
-Detection histories for four focal species: African civet, large-spotted genet, honey badger and marsh mongoose. Generated using detectionHistory in a previous version of camtrapR. Used in 02-multi-species-occupancy-analysis-GNP-2023.Rmd. Each row corresponds to a camera. Each column corresponds to a day during the study period (August 1-November 30, 2016; 122 days). 0: species not detected, 1: species detected, NA: camera not functioning. 
+Detection histories for four focal species: African civet, large-spotted genet, honey badger and marsh mongoose. Generated using detectionHistory in a previous version of camtrapR. Used in 01-multi-species-occupancy-analysis-pub.Rmd. Each row corresponds to a camera. Each column corresponds to a day during the study period (August 1-November 30, 2016; 122 days). 0: species not detected, 1: species detected, NA: camera not functioning. 
 
 ### Scripts
 
@@ -49,7 +49,7 @@ Detection histories for four focal species: African civet, large-spotted genet, 
 
 ##### **01-multi-species-occupancy-analysis-pub.R**
 
-Runs models using the unmarked package in R for models with no species interactions, those with constant species interactions, and those with interaction covariates. Generates figures of species detection probabilities against significant covariates. Takes genet.csv, civet.csv, honey_badger.csv, marsh_mongoose.csv, and GNP_covariates_with_pan.csv as inputs. 
+Runs models using the unmarked package in R for models with no species interactions, those with constant species interactions, and those with interaction covariates. Generates figures of species detection probabilities against significant covariates. Takes genet.csv, civet.csv, honey_badger.csv, marsh_mongoose.csv, and GNP_data.csv as inputs. 
 
 #### Temporal analysis
 
