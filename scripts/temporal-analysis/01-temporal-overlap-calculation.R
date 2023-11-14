@@ -14,6 +14,33 @@ library("ggplotify") #install.packages("ggplotify")
 library(tidyverse)
 library(dplyr)
 
+#magic loop from Kaitlyn--------------------------------------------------
+
+#should be able to work with cleaned data
+record.table <- read_csv("data-publication/recordtable_cleaned_EE.csv")
+
+# Make an empty column to mark photos in
+record.table$Check <- as.character("")
+
+# store datetimeoriginal in new column, and format it as date
+record.table$DTNew <- as.POSIXct(record.table$DateTimeOriginal, format = "%m/%d/%Y %H:%M")
+
+# Make sure we're actually sorted in chronological/alphabetical order
+record.table <- record.table[with(record.table, order(Camera, Species, DTNew)),]
+
+# Run the magic loop
+#### Assuming that all photos are timestamped sequentially, this loop compares each line of data to the line
+#### before it, and sees if they have the same camera/species/date, and, if so, whether they fall within 30 seconds
+for(i in 1:nrow(record.table)){
+  ifelse(as.numeric(difftime(record.table$DTNew[i+1], record.table$DTNew[i], units = "mins")) < 15 # if less than 15 min apart
+         && record.table[i, "Camera"] == record.table[i+1, "Camera"] # and same camera
+         && record.table[i, "Species"] == record.table[i+1, "Species"], # and same species
+         record.table[i+1, "Check"] <- "REMOVE", record.table[i,]) 
+}
+# then filter out all records where "Check" == "REMOVE"
+
+
+
 # load in Gorongosa record table (note: if you use read_csv from tidyverse instead of read.csv, it will automatically format date)
 record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
 
