@@ -627,19 +627,19 @@ fit6_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1',
 fit4.5_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','~1','~1','0', '0', '0', '0', '0', '0'), data)
 
 ##let's try some predicting/conditional stuff
-#civet detection probability given mm present
-civet_mm <- predict(fit5_rev_predict, type="det", species="civet", cond="marsh_mongoose")
+#civet occ given mm present
+civet_mm <- predict(fit5_rev_predict, type="state", species="civet", cond="marsh_mongoose")
 
 #civet detection probability given mm absent
-civet_nomm <- predict(fit5_rev_predict, type="det", species="civet", cond="-marsh_mongoose")
+civet_nomm <- predict(fit5_rev_predict, type="state", species="civet", cond="-marsh_mongoose")
 
 #now let's try to plot
 cond_data <- rbind(civet_mm[1,], civet_nomm[1,])
 cond_data$mm_status <- c("Present","Absent")
 
-plot(1:2, cond_data$Predicted, ylim=c(0,0.3), 
+plot(1:2, cond_data$Predicted, ylim=c(0,1), 
      xlim=c(0.5,2.5), pch=19, cex=1.5, xaxt='n', 
-     xlab="Marsh Mongoose Status", ylab="Civet detection probability and 95% CI")
+     xlab="Marsh Mongoose Status", ylab="Civet occupancy and 95% CI")
 axis(1, at=1:2, labels=cond_data$mm_status)
 
 # CIs
@@ -650,6 +650,29 @@ for (i in 1:2){
   segments(i-top, cond_data$upper[i], i+top)
 }
 
+#now the other way around
+#mm occ given civet present
+mm_civet <- predict(fit5_rev_predict, type="state", species="marsh_mongoose", cond="civet")
+
+#civet detection probability given mm absent
+mm_nocivet <- predict(fit5_rev_predict, type="state", species="marsh_mongoose", cond="-civet")
+
+#now let's try to plot
+cond_data_mm_civet <- rbind(mm_civet[1,], mm_nocivet[1,])
+cond_data_mm_civet$civet_status <- c("Present","Absent")
+
+plot(1:2, cond_data_mm_civet$Predicted, ylim=c(0,1), 
+     xlim=c(0.5,2.5), pch=19, cex=1.5, xaxt='n', 
+     xlab="Civet Status", ylab="Marsh Mongoose occupancy and 95% CI")
+axis(1, at=1:2, labels=cond_data_mm_civet$civet_status)
+
+# CIs
+top <- 0.1
+for (i in 1:2){
+  segments(i, cond_data_mm_civet$lower[i], i, cond_data_mm_civet$upper[i])
+  segments(i-top, cond_data_mm_civet$lower[i], i+top)
+  segments(i-top, cond_data_mm_civet$upper[i], i+top)
+}
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]
