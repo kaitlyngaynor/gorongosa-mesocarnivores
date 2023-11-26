@@ -17,6 +17,61 @@ library(dplyr)
 #magic loop from Kaitlyn--------------------------------------------------
 
 #should be able to work with cleaned data
+#make one record table for 1 min between records
+record.table.1 <- read_csv("data-publication/recordtable_cleaned_EE.csv")
+
+# Make an empty column to mark photos in
+record.table.1$Check <- as.character("")
+
+# store datetimeoriginal in new column, and format it as date
+record.table.1$DTNew <- as.POSIXct(record.table.1$DateTimeOriginal, format = "%m/%d/%Y %H:%M")
+
+# Make sure we're actually sorted in chronological/alphabetical order
+record.table.1 <- record.table.1[with(record.table.1, order(Camera, Species, DTNew)),]
+
+# Run the magic loop
+#### Assuming that all photos are timestamped sequentially, this loop compares each line of data to the line
+#### before it, and sees if they have the same camera/species/date, and, if so, whether they fall within 30 seconds
+for(i in 1:nrow(record.table.1)){
+  ifelse(as.numeric(difftime(record.table.1$DTNew[i+1], record.table.1$DTNew[i], units = "mins")) < 1 # if less than 15 min apart
+         && record.table.1[i, "Camera"] == record.table.1[i+1, "Camera"] # and same camera
+         && record.table.1[i, "Species"] == record.table.1[i+1, "Species"], # and same species
+         record.table.1[i+1, "Check"] <- "REMOVE", record.table.1[i,]) 
+}
+# then filter out all records where "Check" == "REMOVE"
+
+sum(record.table.1$Check == "REMOVE")
+
+#make another record table with >10 min between records
+
+#should be able to work with cleaned data
+#make one record table for 1 min between records
+record.table.10 <- read_csv("data-publication/recordtable_cleaned_EE.csv")
+
+# Make an empty column to mark photos in
+record.table.10$Check <- as.character("")
+
+# store datetimeoriginal in new column, and format it as date
+record.table.10$DTNew <- as.POSIXct(record.table.10$DateTimeOriginal, format = "%m/%d/%Y %H:%M")
+
+# Make sure we're actually sorted in chronological/alphabetical order
+record.table.10 <- record.table.10[with(record.table.10, order(Camera, Species, DTNew)),]
+
+# Run the magic loop
+#### Assuming that all photos are timestamped sequentially, this loop compares each line of data to the line
+#### before it, and sees if they have the same camera/species/date, and, if so, whether they fall within 30 seconds
+for(i in 1:nrow(record.table.10)){
+  ifelse(as.numeric(difftime(record.table.10$DTNew[i+1], record.table.10$DTNew[i], units = "mins")) < 10 # if less than 15 min apart
+         && record.table.10[i, "Camera"] == record.table.10[i+1, "Camera"] # and same camera
+         && record.table.10[i, "Species"] == record.table.10[i+1, "Species"], # and same species
+         record.table.10[i+1, "Check"] <- "REMOVE", record.table.10[i,]) 
+}
+# then filter out all records where "Check" == "REMOVE"
+
+sum(record.table.10$Check == "REMOVE")
+
+#make record table using original 30 sec
+#make one record table for 1 min between records
 record.table <- read_csv("data-publication/recordtable_cleaned_EE.csv")
 
 # Make an empty column to mark photos in
@@ -31,18 +86,20 @@ record.table <- record.table[with(record.table, order(Camera, Species, DTNew)),]
 # Run the magic loop
 #### Assuming that all photos are timestamped sequentially, this loop compares each line of data to the line
 #### before it, and sees if they have the same camera/species/date, and, if so, whether they fall within 30 seconds
-for(i in 1:nrow(record.table)){
-  ifelse(as.numeric(difftime(record.table$DTNew[i+1], record.table$DTNew[i], units = "mins")) < 15 # if less than 15 min apart
-         && record.table[i, "Camera"] == record.table[i+1, "Camera"] # and same camera
-         && record.table[i, "Species"] == record.table[i+1, "Species"], # and same species
-         record.table[i+1, "Check"] <- "REMOVE", record.table[i,]) 
+for(i in 1:nrow(record.table.1)){
+  ifelse(as.numeric(difftime(record.table.1$DTNew[i+1], record.table.1$DTNew[i], units = "mins")) < 1 # if less than 15 min apart
+         && record.table.1[i, "Camera"] == record.table.1[i+1, "Camera"] # and same camera
+         && record.table.1[i, "Species"] == record.table.1[i+1, "Species"], # and same species
+         record.table.1[i+1, "Check"] <- "REMOVE", record.table.1[i,]) 
 }
 # then filter out all records where "Check" == "REMOVE"
 
+sum(record.table.1$Check == "REMOVE")
 
 
 # load in Gorongosa record table (note: if you use read_csv from tidyverse instead of read.csv, it will automatically format date)
-record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
+# already done above
+# record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_speciesmetadata.csv")
 
 # this already has the "TimeSun" column, where times have been scaled to radians 
 # where pi/2 = sunrise, pi = solar noon, 3pi/2 = sunset, and 2pi = solar midnight
@@ -52,23 +109,59 @@ record_table <- read_csv("data/gorongosa-cameras/recordtable_allrecordscleaned_s
 # Subset data to periods and species of interest --------------------------
 
 # subset record table to dates of interest 
-record_table_subset <- record_table[record_table$Date >= as.Date("8/1/16", format = "%m/%d/%y") #inclusive dates
-                                    & record_table$Date <= as.Date("11/30/16", format = "%m/%d/%y"),]
+#already done with new input file
+#record_table_subset <- record_table[record_table$Date >= as.Date("8/1/16", format = "%m/%d/%y") #inclusive dates
+#                                    & record_table$Date <= as.Date("11/30/16", format = "%m/%d/%y"),]
 
+#for 1 min
 # just extract the data for civets for the dates of interest
-civets <- record_table_subset %>% 
+civets.1 <- record.table.1 %>% 
     filter(Species == "Civet") 
 
 # just extract the data for genets for the dates of interest
-genets <- record_table_subset %>% 
+genets.1 <- record.table.1 %>% 
     filter(Species == "Genet") 
 
 # just extract the data for honey badgers for the dates of interest
-honey_badgers <- record_table_subset %>%
+honey_badgers.1 <- record.table.1 %>%
     filter(Species == "Honey_badger")
 
 #just extract the data for marsh mongooses for the dates of interest
-marsh_mongoose <-  record_table_subset %>%
+marsh_mongoose.1 <-  record.table.1 %>%
+  filter(Species == "Mongoose_marsh")
+
+#for 10 min
+# just extract the data for civets for the dates of interest
+civets.10 <- record.table.10 %>% 
+  filter(Species == "Civet") 
+
+# just extract the data for genets for the dates of interest
+genets.10 <- record.table.10 %>% 
+  filter(Species == "Genet") 
+
+# just extract the data for honey badgers for the dates of interest
+honey_badgers.10 <- record.table.10 %>%
+  filter(Species == "Honey_badger")
+
+#just extract the data for marsh mongooses for the dates of interest
+marsh_mongoose.10 <-  record.table.10 %>%
+  filter(Species == "Mongoose_marsh")
+
+#for OG 30 seconds
+# just extract the data for civets for the dates of interest
+civets <- record.table %>% 
+  filter(Species == "Civet") 
+
+# just extract the data for genets for the dates of interest
+genets <- record.table %>% 
+  filter(Species == "Genet") 
+
+# just extract the data for honey badgers for the dates of interest
+honey_badgers <- record.table %>%
+  filter(Species == "Honey_badger")
+
+#just extract the data for marsh mongooses for the dates of interest
+marsh_mongoose <-  record.table %>%
   filter(Species == "Mongoose_marsh")
 
 # Make overlap plots ------------------------------------------------------
@@ -180,6 +273,22 @@ legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(
        bg="white", cex = 0.8)
 dev.off()
 
+#4 line version for 2023, 1 min filter
+pdf("scripts/figures/activity-patterns-all_23_1min.pdf", width = 8, height = 5)
+timeplot4_noon(genets.1$Time.Sun, civets.1$Time.Sun, honey_badgers.1$Time.Sun, marsh_mongoose.1$Time.Sun, linecol = c("#d55e00", "#0072b2", "#f0e442", "#009e73"),
+               linetype = c(1,1,1,1))
+legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,1,1,1), col=c("#d55e00", "#0072b2", "#f0e442", "#009e73"),
+       bg="white", cex = 0.8)
+dev.off()
+
+#4 line version for 2023, 10 min filter
+pdf("scripts/figures/activity-patterns-all_23_10min.pdf", width = 8, height = 5)
+timeplot4_noon(genets.10$Time.Sun, civets.10$Time.Sun, honey_badgers.10$Time.Sun, marsh_mongoose.10$Time.Sun, linecol = c("#d55e00", "#0072b2", "#f0e442", "#009e73"),
+               linetype = c(1,1,1,1))
+legend("topleft", c("Genet", "Civet", "Honey Badger", "Marsh Mongoose"), lty= c(1,1,1,1), col=c("#d55e00", "#0072b2", "#f0e442", "#009e73"),
+       bg="white", cex = 0.8)
+dev.off()
+
 # Compare distributions with Watson test ----------------------------------
 
 #genet:civet
@@ -204,26 +313,50 @@ watson.two.test(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 
 # Calculate overlap coefficient -------------------------------------------
 
-#genet:civet
-overlapEst(genets$Time.Sun, civets$Time.Sun)
+#genet:civet 1 min
+overlapEst(genets.1$Time.Sun, civets.1$Time.Sun) #0.8145
 # Dhat4 is what we want (they are just different ways to calculate; dhat4 is for sample sizes > 50)
 # this ranges from 0 (no overlap) to 1 (complete overlap)
 # it's the area of the grey polygon under the curves (area under each curve is 1)
 
-#genet:honey badger
-overlapEst(genets$Time.Sun, honey_badgers$Time.Sun)
+#genet:civet 10 min
+overlapEst(genets.10$Time.Sun, civets.10$Time.Sun) #0.8145
 
-#genet:marsh mongoose
-overlapEst(genets$Time.Sun, marsh_mongoose$Time.Sun)
+#genet:honey badger 1 min
+overlapEst(genets.1$Time.Sun, honey_badgers.1$Time.Sun) #0.7328
 
-#civet:honey badger
-overlapEst(civets$Time.Sun, honey_badgers$Time.Sun)
+#genet:honey badger 10 min
+overlapEst(genets.10$Time.Sun, honey_badgers.10$Time.Sun) #0.7328
 
-#civet:marsh mongoose
-overlapEst(civets$Time.Sun, marsh_mongoose$Time.Sun)
+#genet:marsh mongoose 1 min
+overlapEst(genets.1$Time.Sun, marsh_mongoose.1$Time.Sun) #0.868
 
-#honey badger:marsh mongoose
-overlapEst(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
+#genet:marsh mongoose 10 min
+overlapEst(genets.10$Time.Sun, marsh_mongoose.10$Time.Sun)  #0.868
+
+#genet:marsh mongoose OG 30 seconds
+overlapEst(genets$Time.Sun, marsh_mongoose$Time.Sun) #0.868
+
+#civet:honey badger 1 min
+overlapEst(civets.1$Time.Sun, honey_badgers.1$Time.Sun) #0.747
+
+#civet:honey badger 10 min
+overlapEst(civets.10$Time.Sun, honey_badgers.10$Time.Sun) #0.747
+
+#civet:marsh mongoose 1 min
+overlapEst(civets.1$Time.Sun, marsh_mongoose.1$Time.Sun) #0.8403
+
+#civet:marsh mongoose 10 min
+overlapEst(civets.10$Time.Sun, marsh_mongoose.10$Time.Sun) #0.8403
+
+#honey badger:marsh mongoose 1 min
+overlapEst(honey_badgers.1$Time.Sun, marsh_mongoose.1$Time.Sun) #0.8017
+
+#honey badger:marsh mongoose 10 min
+overlapEst(honey_badgers.10$Time.Sun, marsh_mongoose.10$Time.Sun) #0.8017
+
+#honey badger:marsh mongoose OG 30 seconds
+overlapEst(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun) #0.8017
 
 # if you want a confidence interval, you have to get it by bootstrapping (takes a LONG time, be warned)
 #genet:civet
@@ -270,7 +403,7 @@ bs_cm <- as.vector(bsOut_cm[,2])
 #honey badger: marsh mongoose
 Dhats_inout_hm <- overlapEst(honey_badgers$Time.Sun, marsh_mongoose$Time.Sun)
 bsOut_hm <- bootEst(bs_honey_badgers, bs_marsh_mongoose)
-colMeans(bsOut_hm) ## dhat bootstrapped
+colMeans(bsOut_hm) ## dhat bootstrapped, Dhat4 = 0.7868437
 bs_hm <- as.vector(bsOut_hm[,2])
 (bsCI_inout_hm <- bootCI(Dhats_inout_hm[2], bs_hm)) ## use basic
-
+#basic: 0.7119402 - 0.9338601 (rerun 11-14-23)

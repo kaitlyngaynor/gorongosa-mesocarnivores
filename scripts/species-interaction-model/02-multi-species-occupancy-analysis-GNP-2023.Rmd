@@ -77,7 +77,7 @@ occ_covs$lion_latedry_double = scale(occ_covs$lion_latedry_scaled)
 occ_covs$urema_dist = scale(occ_covs$urema_dist)
 occ_covs$tree_hansen = scale(occ_covs$tree_hansen)
 occ_covs$termite.large.count.100m = scale(occ_covs$termite.large.count.100m)
-#occ_covs$lion_latedry = scale(occ_covs$lion_latedry) #lion is already scaled
+occ_covs$lion_latedry = scale(occ_covs$lion_latedry) #lion is already scaled
 occ_covs$cover.ground = scale(occ_covs$cover.ground)
 occ_covs$pans_dist = scale(occ_covs$pans_dist)
 occ_covs$water_dist = scale(occ_covs$water_dist)
@@ -588,6 +588,40 @@ dev.off()
 pdf("scripts/figures/best_interaction_model_predict_23.pdf", width = 8, height = 5)
 ggarrange(civet_lion, civet_termite, civet_water, genet_tree, honey_badger_termite, marsh_mongoose_water, ncol = 3, nrow = 2)
 dev.off()
+```
+
+#manuscript revision Nov 2023: testing models that include one constant interaction term at a time
+
+```{r}
+#just collecting lines from other parts of the script to run these models
+
+#this is constant occupancy for all species and all interaction pairs
+occFormulas13_23 <- c('~1', '~1', '~1', '~1', '~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
+
+#this is constant occupancy for individual spp, no interactions
+occFormulas_23 <- c('~1', '~1', '~1', '~1', '0','0','0','0','0','0', '0', '0', '0', '0', '0')
+
+#these are the final detection covariates we landed on
+detFormulas6_23 <- c('~detect.obscured+cover.ground + tree_hansen', '~detect.obscured+cover.ground + water_dist + termites_1km_count + lion_latedry', '~detect.obscured+cover.ground + termites_1km_count', '~detect.obscured+cover.ground + water_dist')
+
+#this is how to run the model
+fit15_23 <- occuMulti(detFormulas6_23, stateformulas = occFormulas13_23, data)
+
+#throws a warning about missing detections that should be fine
+fit1_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '~1','0','0','0','0','0', '0', '0', '0', '0', '0'), data)
+
+fit2_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','~1','0','0','0','0', '0', '0', '0', '0', '0'), data)
+
+fit3_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','~1','0','0','0', '0', '0', '0', '0', '0'), data)
+
+fit4_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','~1','0','0', '0', '0', '0', '0', '0'), data)
+
+fit5_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','0','~1','0', '0', '0', '0', '0', '0'), data)
+
+fit6_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','0','0','~1', '0', '0', '0', '0', '0'), data)
+
+fit4.5_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','~1','~1','0', '0', '0', '0', '0', '0'), data)
+
 ```
 
 #starting to think about actual models with ecological background [type 2, no interaction covariates]

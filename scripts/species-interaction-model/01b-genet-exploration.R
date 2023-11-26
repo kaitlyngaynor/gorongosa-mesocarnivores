@@ -5,7 +5,7 @@ genet_dh <-read_csv("data/gorongosa-cameras/genet.csv", col_names = FALSE) %>% a
 
 #load occupancy covariates
 #leaving the column names in for now
-occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+#occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
 #load occ covs with pan (didn't use to test termite stuff)
 occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
@@ -33,6 +33,8 @@ genet_data <- unmarkedFrameOccu(genet_dh, siteCovs = occ_covs)
 (genet_fit1 <- occu(~cover.ground+detect.obscured ~urema_dist, genet_data))
 
 (genet_fit2 <- occu(~cover.ground+detect.obscured ~termite.large.count.100m, genet_data))
+
+(genet_fit2.1 <- occu(~cover.ground+detect.obscured ~termites_1km_count, genet_data))
 
 (genet_fit3 <- occu(~cover.ground+detect.obscured ~tree_hansen, genet_data))
 

@@ -5,7 +5,7 @@ honeybadger_dh <-read_csv("data/gorongosa-cameras/honey_badger.csv", col_names =
 
 #load occupancy covariates
 #leaving the column names in for now
-occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
+#occ_covs <- read_csv("data/gorongosa-cameras/GNP covariates.csv", col_names = TRUE) %>% as.data.frame()
 
 #load occ covs with pan (didn't use this one for checking additional termite stuff)
 occ_covs <- read_csv("data/gorongosa-cameras/GNP_covariates_with_pan.csv", col_names = TRUE) %>% as.data.frame()
@@ -31,6 +31,8 @@ honeybadger_data <- unmarkedFrameOccu(honeybadger_dh, siteCovs = occ_covs)
 (honeybadger_fit0 <- occu(~cover.ground+detect.obscured ~1, honeybadger_data))
 
 (honeybadger_fit1 <- occu(~cover.ground+detect.obscured ~urema_dist, honeybadger_data))
+
+(honeybadger_fit2.1 <- occu(~cover.ground+detect.obscured ~termites_1km_count, honeybadger_data))
 
 (honeybadger_fit2 <- occu(~cover.ground+detect.obscured ~termite.large.count.100m, honeybadger_data))
 

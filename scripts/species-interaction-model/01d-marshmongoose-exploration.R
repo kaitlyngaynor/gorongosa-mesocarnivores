@@ -30,6 +30,8 @@ marshmongoose_data <- unmarkedFrameOccu(marshmongoose_dh, siteCovs = occ_covs)
 
 (marshmongoose_fit2 <- occu(~cover.ground+detect.obscured ~termite.large.count.100m, marshmongoose_data))
 
+(marshmongoose_fit2.1 <- occu(~cover.ground+detect.obscured ~termites_1km_count, marshmongoose_data))
+
 (marshmongoose_fit3 <- occu(~cover.ground+detect.obscured ~tree_hansen, marshmongoose_data))
 
 (marshmongoose_fit4 <- occu(~cover.ground+detect.obscured ~lion_latedry, marshmongoose_data))
