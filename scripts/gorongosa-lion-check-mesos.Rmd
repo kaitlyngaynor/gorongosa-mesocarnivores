@@ -1,0 +1,156 @@
+---
+title: "Gorongosa lion spatial analysis"
+author: "Kaitlyn Gaynor"
+date: "2/5/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, message = F}
+setwd("~/Documents/github-repos/gorongosa/gorongosa-camera-traps/gis/Spatial data/Lion_Isopleths")
+
+library(sf)
+library(maptools)
+library(magrittr)
+library(raster)
+library(progress)
+library(dplyr)
+```
+
+Paola defined three seasons, as follows:
+
+* Season 1 (S1) = wet = Dec, Jan, Feb, Mar
+* Season 2 (S2) = earlydry = Apr, May, Jun, Jul
+* Season 3 (S3) = latedry = Aug, Sep, Oct, Nov
+
+Working here only with S3.
+
+A note that Manondo_2015_S3.s0.015.a92925.3563923098.iso.srt-nep.iso-q.h1443.i5.00.iso is entirely outside of the study area and thus causes some issues below. Rather than deal with the issues, I have removed this file from the folder and excluded from analysis.
+
+Load shape files for lion isopleths into a list - separate for 2014 vs 2015.
+
+```{r load lion isopleth shapefiles, message = F}
+# read in list of all file names in folder
+filenames2014 <- list.files("./meso_s3_exploration_2014v15/2014_latedry",
+                            pattern = "*.shp", 
+                            full.names = TRUE)
+isopleths.all.list2014 <- lapply(filenames2014, read_sf)
+
+# plot one for fun
+plot(isopleths.all.list2014[[1]])
+
+filenames2015 <- list.files("./meso_s3_exploration_2014v15/2015_latedry",
+                            pattern = "*.shp", 
+                            full.names = TRUE)
+isopleths.all.list2015 <- lapply(filenames2015, read_sf)
+```
+
+Why does it look like this? There are 5 polygons associate with each shapefile, representing isopleths at 95, 75, 50, 25, and 10% use levels (in that order). Bouley et al. used the 95% isopleths in the paper, so let's go with that. In this case, it means taking the first polygon of each shape file.
+
+```{r take 95 CI isopleth}
+isopleths.95.2014 <- lapply(isopleths.all.list2014, function (i) {i[1,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+isopleths.75.2014 <- lapply(isopleths.all.list2014, function (i) {i[2,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+isopleths.50.2014 <- lapply(isopleths.all.list2014, function (i) {i[3,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+isopleths.25.2014 <- lapply(isopleths.all.list2014, function (i) {i[4,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+isopleths.10.2014 <- lapply(isopleths.all.list2014, function (i) {i[5,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+
+isopleths.95.2015 <- lapply(isopleths.all.list2015, function (i) {i[1,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+isopleths.75.2015 <- lapply(isopleths.all.list2015, function (i) {i[2,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+isopleths.50.2015 <- lapply(isopleths.all.list2015, function (i) {i[3,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+isopleths.25.2015 <- lapply(isopleths.all.list2015, function (i) {i[4,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+isopleths.10.2015 <- lapply(isopleths.all.list2015, function (i) {i[5,]}) %>% 
+  bind_rows %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+```
+
+Bring in a raster to use as a template.
+```{r raster template}
+template.raster.coarse <- raster("boundary.dist.norm.coarse.tif")
+```
+
+Create all wet and all late dry - add up the 95, 75, 50, 25, 10. Didn't do this smart; just did it quick.
+```{r sum multiple isopleths}
+all.summed2014 <- bind_rows(
+  isopleths.95.2014,
+  isopleths.75.2014,
+  isopleths.50.2014,
+  isopleths.25.2014,
+  isopleths.10.2014
+)
+
+all.summed2015 <- bind_rows(
+  isopleths.95.2015,
+  isopleths.75.2015,
+  isopleths.50.2015,
+  isopleths.25.2015,
+  isopleths.10.2015
+)
+
+```
+
+
+We need to sum them all up. Here I write a function to do so. It will also normalize (set mean of 0 and SD of 1) and crop to the study area.
+```{r rasterize 3}
+rasterizeSum <- function(x, coarsetemplate = template.raster.coarse, shapefile = hexes) {
+  
+  pb <- progress_bar$new(format = "  rasterizing [:bar] :percent eta: :eta",
+                 total = nrow(x), clear = FALSE, width= 60)
+  
+  a <- list() # create an empty raster stack
+  
+  # rasterize each polygon in the SPDF
+  for (i in 1:nrow(x)) {
+    pb$tick()
+    a[[i]] <- rasterize(x = x[i,], y = coarsetemplate, field = 1, background = 0) # background must be 0 or the values will be NA where the polygon is absent, and then they won't add nicely
+  }
+  
+  b <- do.call("sum", a)  
+
+  plot(b)
+  return(b)
+}
+```
+
+Now run the rasterizing function on the list of subset isopleths (by sex/season).
+```{r rasterize 4}
+isopleths.rasterized2014 <- rasterizeSum(all.summed2014)
+isopleths.rasterized2015 <- rasterizeSum(all.summed2015)
+```
+
+Extract camera sites
+```{r}
+cameras <- read.csv("~/Documents/github-repos/gorongosa/gorongosa-camera-traps/gis/Camera layers/Camera_coordinates.csv")
+
+cameras_sf <- sf::st_as_sf(cameras, coords = c("Longitude", "Latitude"), crs=4326) %>% 
+  sf::st_transform(crs = "+proj=utm +south +zone=36 +ellps=WGS84")
+
+# bring in raster we've been using
+lionall <- raster::raster("all.latedry.summed.tif")
+cameras_sf$all <- raster::extract(lionall, cameras_sf)
+
+cameras_sf$lion2014 <- raster::extract(isopleths.rasterized2014, cameras_sf)
+cameras_sf$lion2015 <- raster::extract(isopleths.rasterized2015, cameras_sf)
+
+plot(all ~ lion2015, data = cameras_sf)
+plot(lion2015 ~ lion2014, data = cameras_sf)
+```
+
