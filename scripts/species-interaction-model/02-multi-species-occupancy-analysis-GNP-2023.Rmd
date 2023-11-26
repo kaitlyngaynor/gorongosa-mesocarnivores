@@ -594,6 +594,7 @@ dev.off()
 
 ```{r}
 #just collecting lines from other parts of the script to run these models
+data_predict_rev_23 <- unmarkedFrameOccuMulti(y = y, siteCovs = occ_covs, obsCovs = det_covs)
 
 #this is constant occupancy for all species and all interaction pairs
 occFormulas13_23 <- c('~1', '~1', '~1', '~1', '~1','~1','~1','~1','~1','~1', '0', '0', '0', '0', '0')
@@ -618,9 +619,36 @@ fit4_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1',
 
 fit5_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','0','~1','0', '0', '0', '0', '0', '0'), data)
 
+#seeing if I can use this to predict
+fit5_rev_predict <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','0','~1','0', '0', '0', '0', '0', '0'), data_predict)
+
 fit6_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','0','0','~1', '0', '0', '0', '0', '0'), data)
 
 fit4.5_rev <- occuMulti(detFormulas6_23, stateformulas = c('~1', '~1', '~1', '~1', '0','0','0','~1','~1','0', '0', '0', '0', '0', '0'), data)
+
+##let's try some predicting/conditional stuff
+#civet detection probability given mm present
+civet_mm <- predict(fit5_rev_predict, type="det", species="civet", cond="marsh_mongoose")
+
+#civet detection probability given mm absent
+civet_nomm <- predict(fit5_rev_predict, type="det", species="civet", cond="-marsh_mongoose")
+
+#now let's try to plot
+cond_data <- rbind(civet_mm[1,], civet_nomm[1,])
+cond_data$mm_status <- c("Present","Absent")
+
+plot(1:2, cond_data$Predicted, ylim=c(0,0.3), 
+     xlim=c(0.5,2.5), pch=19, cex=1.5, xaxt='n', 
+     xlab="Marsh Mongoose Status", ylab="Civet detection probability and 95% CI")
+axis(1, at=1:2, labels=cond_data$mm_status)
+
+# CIs
+top <- 0.1
+for (i in 1:2){
+  segments(i, cond_data$lower[i], i, cond_data$upper[i])
+  segments(i-top, cond_data$lower[i], i+top)
+  segments(i-top, cond_data$upper[i], i+top)
+}
 
 ```
 
