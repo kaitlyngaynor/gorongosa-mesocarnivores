@@ -32,7 +32,10 @@ end.date.19 <- "2019-10-13"
 
 #load in Gorongosa camera operations data table
 #updated with consolidated data for 2016-2019 (THANK YOU KAITLYN AND MEREDITH, YOU ROCK)
-camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1-4_consolidated.csv")
+#V2 fixed an error from camera F01 that had problem 2 until 3/14/2019 and problem 3 starting 3/14/2019
+#so I combined the problems
+#same fix for J03 - need to ask why they were different problems to begin with
+camtraps <- read_csv("data/gorongosa-cameras/Camera_operation_years1-4_consolidated_V2.csv")
 
 #need to reformat data to include sessions--------------------------------------------------------------------------------------------
 #PROBABLY NOT USING THIS CHUNK (going to try to work from the consolidated version)
@@ -73,6 +76,11 @@ write.csv(dat4, "data/gorongosa-cameras/Camera_operation_year1-4_sessions.csv", 
 #added occasionStartTime because it changed to being a variable in this function
 #note: Since version 2.1, setup and retrieval are assumed to have happened at 12 noon (resulting in daily
 #effort of 0.5 instead of 1).
+#2024 update: this is now the notice when you run this code:
+#occasionStartTime = 12 and retrieval time is noon. Occasions beginning on 
+#retrieval day (at noon) thus have no effort, but are set to 0 instead of NA to 
+#prevent omission of records on retrieval day. Include effort as a detection 
+#covariate in your models to account for this.
 camop <- cameraOperation(CTtable      = camtraps,
                          stationCol   = "Camera",
                          #sessionCol = "session" #I might need to work with this variable (for the moment, I've worked around it)
@@ -87,6 +95,7 @@ camop <- cameraOperation(CTtable      = camtraps,
 #would this be worth writing into a single function?
 
 #create 2016 camera operation matrix; subsets to 2016 data
+#throws a warning for using select(), wants you to use select(all_of()) instead but this throws an error
 camop_subset_16 <- camop %>% 
   as.data.frame %>% # first need to convert matrix to data frame
   select(start.date.16.camop:end.date.16.camop) %>% # select columns of interest
@@ -121,8 +130,11 @@ camop_subset_19 <- camop %>%
 
 # load in Gorongosa record table, updated for 2016-2019
 # columns for site, species, datetime, behavior
+#V2 adjusts times that are 00:00:00 to be 00:00:01 because the recordtable function was cranky
+#so trying this as a potential fix
 record_table <- read_csv("data/gorongosa-cameras/wildcam_mesocarnivores.csv")
 
+#but my fix for the record table spreadsheet messes up these commands
 # subset to dates of interest 2016
 # also need to cut the cameras we're not using (otherwise the function to create the detection history gets cranky)
 record_table_subset_16 <- record_table %>% 
@@ -157,6 +169,30 @@ record_table_subset_19 <- record_table %>%
 #THIS IS FOR FOUR YEARS
 # This yields a spreadsheet with a row for each camera, a column
 # for each date in the season. 0: not detected, 1: detected, NA: camera not operational
+
+#troubleshooting outside the function
+# make detection history for 2016 (without trapping effort)
+#throws this error: Error in detectionHistory(recordTable = record_table_subset_16, camOp = camop_subset_16,  : 
+#3 out of 1194 entries in recordDateTimeCol of recordTable could not be interpreted using recordDateTimeFormat (NA). row 48, 261, 2592
+#all those rows have a time of 00:00:00
+DetHist_16_genet <- detectionHistory(recordTable     = record_table_subset_16,
+                               camOp                = camop_subset_16, 
+                               stationCol           = "site", 
+                               speciesCol           = "species", 
+                               recordDateTimeCol    = "datetime", 
+                               recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                               timeZone             = "Africa/Maputo",
+                               species              = "genet",
+                               occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                               day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                               includeEffort        = FALSE
+                               #occasionStartTime    = 12  #start at noon b/c nocturnal animals
+)
+
+DetHist_16_genet <- as.data.frame(DetHist_16_genet) 
+
+write_csv(DetHist_16_genet, paste("data/gorongosa-cameras/derived/", "genet", "_16.csv", sep = ""), col_names = F) 
+
 detectionHistoryfourseasons <- function(species_name) {
   
   # make detection history for 2016 (without trapping effort)
