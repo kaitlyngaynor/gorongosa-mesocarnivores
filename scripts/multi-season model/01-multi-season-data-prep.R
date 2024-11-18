@@ -140,21 +140,29 @@ record_table <- read_csv("data/gorongosa-cameras/wildcam_mesocarnivores.csv")
 record_table_subset_16 <- record_table %>% 
   mutate(Date = as.Date(datetime, # format date column as date for subsetting (edited for this spreadsheet)
                         format = "%m/%d/%Y %H:%M:%S")) %>% 
-  filter(Date >= as.Date(start.date.16) & Date <= as.Date(end.date.16)) # %>%
+  filter(Date >= as.Date(start.date.16) & Date <= as.Date(end.date.16)) %>%
+  mutate(datetime = format(datetime, "%Y-%m-%d %H:%M:%S")) # %>% #this line addresses the issue with the 00:00:00 time stamps
   #filter(Camera %in% rownames(camop_subset_17))  #selects only the cameras that are in the 2017 data; trying it out with all cameras
+
+#this was the error when running detectionHistory that made me reformat the datetime column:
+#throws this error: Error in detectionHistory(recordTable = record_table_subset_16, camOp = camop_subset_16,  : 
+#3 out of 1194 entries in recordDateTimeCol of recordTable could not be interpreted using recordDateTimeFormat (NA). row 48, 261, 2592
+#all those rows have a time of 00:00:00
 
 # subset to dates of interest 2017
 # don't need to worry about cutting inoperable cameras from 2016 because they're already cut with selecting dates
 record_table_subset_17 <- record_table %>% 
   mutate(Date = as.Date(datetime, # format date column as date for subsetting
                         format = "%m/%d/%Y %H:%M:%S")) %>% 
-  filter(Date >= as.Date(start.date.17) & Date <= as.Date(end.date.17))
+  filter(Date >= as.Date(start.date.17) & Date <= as.Date(end.date.17)) %>%
+  mutate(datetime = format(datetime, "%Y-%m-%d %H:%M:%S"))
 
 #2018
 record_table_subset_18 <- record_table %>% 
   mutate(Date = as.Date(datetime, # format date column as date for subsetting
                         format = "%m/%d/%Y %H:%M:%S")) %>% 
-  filter(Date >= as.Date(start.date.18) & Date <= as.Date(end.date.18))
+  filter(Date >= as.Date(start.date.18) & Date <= as.Date(end.date.18)) %>%
+  mutate(datetime = format(datetime, "%Y-%m-%d %H:%M:%S"))
 
 #2019
 #E04 was inoperable during this period 
@@ -162,19 +170,18 @@ record_table_subset_19 <- record_table %>%
   mutate(Date = as.Date(datetime, # format date column as date for subsetting
                         format = "%m/%d/%Y %H:%M:%S")) %>% 
   filter(Date >= as.Date(start.date.19) & Date <= as.Date(end.date.19)) %>%
-  filter(site != "E04") #I believe this cut all records from E04 because they were incorrectly dated
+  filter(site != "E04") %>% #I believe this cut all records from E04 because they were incorrectly dated
+  mutate(datetime = format(datetime, "%Y-%m-%d %H:%M:%S"))
 
-
-# Make detection history for species ------------------------------------------------------------------------------------------------
-#THIS IS FOR FOUR YEARS
-# This yields a spreadsheet with a row for each camera, a column
-# for each date in the season. 0: not detected, 1: detected, NA: camera not operational
-
-#troubleshooting outside the function
+#Make detection history for species----
+#trying to get this code to run outside the function to figure out where the issue is
 # make detection history for 2016 (without trapping effort)
-#throws this error: Error in detectionHistory(recordTable = record_table_subset_16, camOp = camop_subset_16,  : 
-#3 out of 1194 entries in recordDateTimeCol of recordTable could not be interpreted using recordDateTimeFormat (NA). row 48, 261, 2592
-#all those rows have a time of 00:00:00
+#let's start with genets
+#...this runs just fine
+#merging throws some warnings, but I'm 99% sure they're fine
+#they're just saying there are duplicated column names, which I think is okay
+#going to leave this in here for now though in case I need to troubleshoot again
+
 DetHist_16_genet <- detectionHistory(recordTable     = record_table_subset_16,
                                camOp                = camop_subset_16, 
                                stationCol           = "site", 
@@ -191,7 +198,90 @@ DetHist_16_genet <- detectionHistory(recordTable     = record_table_subset_16,
 
 DetHist_16_genet <- as.data.frame(DetHist_16_genet) 
 
-write_csv(DetHist_16_genet, paste("data/gorongosa-cameras/derived/", "genet", "_16.csv", sep = ""), col_names = F) 
+write_csv(DetHist_16_genet, paste("data/gorongosa-cameras/derived/genet_16_new24.csv", sep = ""), col_names = F) 
+
+# make detection history for 2017 (without trapping effort)
+DetHist_17_genet <- detectionHistory(recordTable     = record_table_subset_17,
+                               camOp                = camop_subset_17,
+                               stationCol           = "site",
+                               speciesCol           = "species",
+                               recordDateTimeCol    = "datetime",
+                               recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                               timeZone             = "Africa/Maputo",
+                               species              = "genet",
+                               occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                               day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                               includeEffort        = FALSE
+                               #occasionStartTime    = 12  #start at noon b/c nocturnal animals
+)
+
+DetHist_17_genet <- as.data.frame(DetHist_17_genet)
+
+write_csv(DetHist_17_genet, paste("data/gorongosa-cameras/derived/genet_17_new24.csv", sep = ""), col_names = F) 
+
+# make detection history for 2018 (without trapping effort)
+DetHist_18_genet <- detectionHistory(recordTable     = record_table_subset_18,
+                               camOp                = camop_subset_18,
+                               stationCol           = "site",
+                               speciesCol           = "species",
+                               recordDateTimeCol    = "datetime",
+                               recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                               timeZone             = "Africa/Maputo",
+                               species              = "genet",
+                               occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                               day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                               includeEffort        = FALSE
+                               #occasionStartTime    = 12  #start at noon b/c nocturnal animals
+)
+
+DetHist_18_genet <- as.data.frame(DetHist_18_genet)
+
+write_csv(DetHist_18_genet, paste("data/gorongosa-cameras/derived/genet_18_new24.csv", sep = ""), col_names = F) 
+
+# make detection history for 2019 (without trapping effort)
+# no records from E04 for 2019
+DetHist_19_genet <- detectionHistory(recordTable     = record_table_subset_19,
+                               camOp                = camop_subset_19,
+                               stationCol           = "site",
+                               speciesCol           = "species",
+                               recordDateTimeCol    = "datetime",
+                               recordDateTimeFormat = "%Y-%m-%d %H:%M:%S",
+                               timeZone             = "Africa/Maputo",
+                               species              = "genet",
+                               occasionLength       = 1, #sampling period (in days) represented by a single column in the occupancy matrix
+                               day1                 = "survey", #dates/columns in resulting matrix will match up (starts each row on the date the first camera was set up)
+                               includeEffort        = FALSE
+                               #occasionStartTime    = 12  #start at noon b/c nocturnal animals
+)
+
+DetHist_19_genet <- as.data.frame(DetHist_19_genet)
+
+write_csv(DetHist_19_genet, paste("data/gorongosa-cameras/derived/genet_19_new24.csv", sep = ""), col_names = F) 
+
+#need to combine all data frames
+DetHist_16_17_genet <- merge(DetHist_16_genet, DetHist_17_genet, by = 0, all = TRUE)%>% #merges 16 & 17 detection histories by row name, keeps all rows
+  column_to_rownames('Row.names') #puts the camera names as row names again for merging
+#write_csv(DetHist_16_17, "data/gorongosa-cameras/derived/genet_16_17.csv", col_names = F)
+
+
+DetHist_16_17_18_genet <- merge(DetHist_16_17_genet, DetHist_18_genet, by = 0, all = TRUE)%>% #merges 16&17 with 18 detection histories by row name
+  column_to_rownames('Row.names') #puts camera names back as row names to allow for merging
+#write_csv(DetHist_16_17_18, "data/gorongosa-cameras/derived/genet_16_17_18.csv", col_names = F)
+
+DetHist_complete_genet <- merge(DetHist_16_17_18_genet, DetHist_19_genet, by = 0, all = TRUE) #merges 16/17/18 with 19; throws a warning
+padding <- data.frame(matrix(NA, nrow = 60, ncol = 48)) #creating a matrix to pad the "missing" data from 2019
+padding$Row.names <- DetHist_complete_genet$Row.names #need a shared column to merge the two data frames
+DetHist_complete_genet <- merge(DetHist_complete_genet, padding, by = "Row.names")
+DetHist_complete_genet$Row.names <- NULL #merging the two data frames created a Row.names column, which I don't need in the final detection history 
+
+write_csv(DetHist_complete_genet, paste("data/gorongosa-cameras/derived/genet_complete_new24.csv", sep = ""), col_names = F)
+
+options(warning.length = 6000L) #need to extend the warning messages
+
+# Make detection history for species ------------------------------------------------------------------------------------------------
+#THIS IS FOR FOUR YEARS
+# This yields a spreadsheet with a row for each camera, a column
+# for each date in the season. 0: not detected, 1: detected, NA: camera not operational
 
 detectionHistoryfourseasons <- function(species_name) {
   
@@ -294,6 +384,7 @@ detectionHistoryfourseasons <- function(species_name) {
   
 }
 #-------------------------------------------------------------------------------------------------------------------------------------
+
 
 
 # now run the above function for different species
@@ -410,7 +501,7 @@ detectionHistorythreeseasons(species_name = "honey_badger")
 DetHist_honey_badger_three <- read.csv("data/gorongosa-cameras/derived/honey_badger_three.csv", header = FALSE) #reads in detection history that comes out of the function
 
 #marsh mongoose
-#can't run yet, 2019 data hasn't been cleaned for different mongoose species
+#this is fine for 2016-2018
 detectionHistorythreeseasons(species_name = "mongoose_marsh")
 DetHist_mongoose_marsh_three <- read.csv("data/gorongosa-cameras/derived/mongoose_marsh_three.csv", header = FALSE) #reads in detection history that comes out of the function
 
@@ -444,11 +535,13 @@ GNP_covs <- select(cam_meta, StudySite, urema_dist, tree_hansen, termite.large.c
   #filter(Camera %in% rownames(camop_subset_17))  # remove unused sites (USING ALL SITES NOW)
 
 #scaling all the non-binary covariates to address the NaN warnings
-GNP_covs$urema_dist = scale(GNP_covs$urema_dist)
-GNP_covs$tree_hansen = scale(GNP_covs$tree_hansen)
-GNP_covs$termite.large.count.100m = scale(GNP_covs$termite.large.count.100m)
-GNP_covs$lion_latedry = scale(GNP_covs$lion_latedry)
-GNP_covs$cover.ground = scale(GNP_covs$cover.ground)
+#added the c() to avoid an issue when writing the csv
+#scale returns a matrix 
+GNP_covs$urema_dist =  c(scale(GNP_covs$urema_dist))
+GNP_covs$tree_hansen = c(scale(GNP_covs$tree_hansen))
+GNP_covs$termite.large.count.100m = c(scale(GNP_covs$termite.large.count.100m))
+GNP_covs$lion_latedry = c(scale(GNP_covs$lion_latedry))
+GNP_covs$cover.ground = c(scale(GNP_covs$cover.ground))
 
 write_csv(GNP_covs, "data/gorongosa-cameras/GNP covs.csv", col_names = T)
 
@@ -462,6 +555,16 @@ GNP_umf_genet <- unmarkedMultFrame(y=DetHist_genet_three, #creates the actual da
                          numPrimary=3) #number of primary time periods (in this case, years)
 
 summary(GNP_umf_genet) #look at UMF
+
+#what about one for civets?
+GNP_umf_civet <- unmarkedMultFrame(y=DetHist_civet_three, #creates the actual data object; sets y to detection history (matrix of observed data)
+                                   siteCovs=GNP_covs[,2:7], yearlySiteCovs=yearlysitecovs_wd, #assigns siteCovs to the proposed environmental and detection covariates; assigns yearlySiteCovs as created (covariates at the site-year level)
+                                   numPrimary=3) #number of primary time periods (in this case, years)
+
+summary(GNP_umf_civet) 
+
+#huzzah!
+
 
 #Let's try and run some models, shall we?---------------------------------------------------------------------------------------------
 #notes included here so I don't have to keep switching between tabs
